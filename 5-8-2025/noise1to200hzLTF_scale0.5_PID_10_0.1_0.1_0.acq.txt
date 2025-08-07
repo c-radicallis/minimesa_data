@@ -1,8 +1,8 @@
 LNEC Test File eXtractor
 
-File: noise1to200hzLTF_scale0.5_PID_10_0.1_0.1.acq
+File: noise1to200hzLTF_scale0.5_PID_10_0.1_0.1_0.acq
 
-Created in: 2025-08-07 17:10:55.630796
+Created in: 2025-08-07 17:29:31.140559
 
 Number of channels: 6
 

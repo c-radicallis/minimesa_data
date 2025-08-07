@@ -47,7 +47,7 @@ file = 'Noise1to200Hz_convertable_0.drv'; % load input drv
 LTF_to_TXT_then_load( file , 'InputFolder',folder_18 , 'OutputFolder', folder_18); % load input drv
 
 folder_58 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\5-8-2025\';
-file = 'noise1to200hzLTF_PID_10_0.1_0.1.acq'; % load output acq
+file = 'noise1to200hzLTF_PID_10_0.1_0.1_0.acq'; % load output acq
 scale = 1;
 LTF_to_TXT_then_load( file , 'InputFolder', folder_58 , 'OutputFolder', folder_58);
 
@@ -62,9 +62,15 @@ val_data2.InputName  = train_data.InputName;
 val_data2.OutputName = train_data.OutputName;
 val_data2.TimeUnit   = train_data.TimeUnit;
 
+%DOESNT SEEM TO BE RIGHT %  % file = 'noise1to200hzLTF_scale0.5_PID_10_0.1_0.1.acq'; % load output acq   
+
 % val_data3
-%DOESNT SEEM TO BE RIGHT file = 'noise1to200hzLTF_scale0.5_PID_10_0.1_0.1.acq'; % load output acq   
-file = 'noise1to200hzLTF_scale0.5_PID_10_0.1_0.1.acq';
+
+file = 'Noise_convertable_0.drv'; % load input drv
+LTF_to_TXT_then_load( file , 'InputFolder',folder_18 , 'OutputFolder', folder_18); % load input drv
+
+%DOESNT SEEM TO BE RIGHT %  file ='noiseLTF_scale0.5_PID_10_0.1_0.1_0.acq';
+% MAY BE GENERALIZED ISSUE WITH SCALED DRIVERS FROM THE NOISE LTF's
 scale = 0.5;
 LTF_to_TXT_then_load( file , 'InputFolder', folder_58 , 'OutputFolder', folder_58);
 
