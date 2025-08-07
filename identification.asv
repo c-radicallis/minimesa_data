@@ -66,15 +66,15 @@ val_data2.TimeUnit   = train_data.TimeUnit;
 %% Model training
 nx = 3;
 
-n4sid_sys = n4sid(train_data,nx,'Ts',Ts)
-n4sid_sys.InputName  = val_data.InputName;
-n4sid_sys.OutputName = val_data.OutputName;
-
-n4sid_sys_1 = n4sid(val_data,nx,'Ts',Ts)
-n4sid_sys_1.InputName  = val_data.InputName;
+n4sid_sys_1 = n4sid(train_data,nx,'Ts',Ts)
+n4sid_sys_1.InputName  = val_data.InputName;% Copy names from val_data into your model:
 n4sid_sys_1.OutputName = val_data.OutputName;
 
-n4sid_sys_2 = n4sid(val_data2,nx,'Ts',Ts)
+n4sid_sys_2 = n4sid(val_data,nx,'Ts',Ts)
+n4sid_sys_2.InputName  = val_data.InputName;% Copy names from val_data into your model:
+n4sid_sys_2.OutputName = val_data.OutputName;
+
+n4sid_sys_2 = n4sid(val_data,nx,'Ts',Ts)
 n4sid_sys_2.InputName  = val_data.InputName;
 n4sid_sys_2.OutputName = val_data.OutputName;
 
@@ -83,16 +83,16 @@ fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on');
 opts1=bodeoptions('cstprefs');
 opts1.FreqUnits = 'Hz';
 opts1.XLim={[1 40]};
+bodeplot(tf_model1,opts1)
+bodeplot(arx_model,opts1)
 bodeplot(n4sid_sys,opts1)
-bodeplot(n4sid_sys_1,opts1)
-bodeplot(n4sid_sys_2,opts1)
 legend()
 grid on
 
 figure(2); hold on;
-compare(train_data,n4sid_sys,n4sid_sys_1,n4sid_sys_2)
+compare(train_data,tf_model1,arx_model,n4sid_sys)
 title('Model Training');
 
 figure(3); hold on;
-compare(val_data,n4sid_sys,n4sid_sys_1,n4sid_sys_2) 
+compare(val_data,tf_model1,arx_model,n4sid_sys) 
 title('Model Validation');
