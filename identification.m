@@ -43,7 +43,7 @@ val_data.TimeUnit   = train_data.TimeUnit;
 %% Validation  val_data 2
 
 folder_18 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\1-8-2025\';
-file = 'Noise1to200Hz.drv'; % load input drv
+file = 'Noise1to200Hz_convertable_0.drv'; % load input drv
 LTF_to_TXT_then_load( file , 'InputFolder',folder_18 , 'OutputFolder', folder_18); % load input drv
 
 folder_58 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\5-8-2025\';
@@ -51,12 +51,11 @@ file = 'noise1to200hzLTF_PID_10_0.1_0.1.acq'; % load output acq
 scale = 1;
 LTF_to_TXT_then_load( file , 'InputFolder', folder_58 , 'OutputFolder', folder_58);
 
-% n1 = numel(x_drv_T_0);
-% n2 = numel(x_acq_T);
-% nmin = min(n1, n2);
-% x_drv_T_0 = x_drv_T_0(1:nmin); % Truncate both to the shortest length
-% x_acq_T = x_acq_T(1:nmin);
-% ddx_acq_T = ddx_acq_T(1:nmin);
+n1 = numel(x_drv_T_0);
+n2 = numel(x_acq_T);
+nmin = min(n1, n2);
+x_drv_T_0 = x_drv_T_0(1:nmin); % Truncate boh to the shortest length
+x_acq_T = x_acq_T(1:nmin);
 
 val_data2 = iddata(x_acq_T, scale*x_drv_T_0, Ts);
 val_data2.InputName  = train_data.InputName;
@@ -89,10 +88,14 @@ bodeplot(n4sid_sys_2,opts1)
 legend()
 grid on
 
-figure(2); hold on;
+figure(2); 
 compare(train_data,n4sid_sys,n4sid_sys_1,n4sid_sys_2)
-title('Model Training');
+%title('Model Training');
 
-figure(3); hold on;
+figure(3); 
 compare(val_data,n4sid_sys,n4sid_sys_1,n4sid_sys_2) 
-title('Model Validation');
+%title('Model Validation');
+
+figure(4); 
+compare(val_data2,n4sid_sys,n4sid_sys_1,n4sid_sys_2) 
+%title('Model Validation');
