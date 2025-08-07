@@ -34,8 +34,10 @@ end
 fprintf(fidOut, 'time \t PosT \t PosL \n');
 
 % Write each line: time value and the original data line unchanged
+% Write each line: time value and the adjusted data value (x1e-3)
 for i = 1:n
-    fprintf(fidOut, '%.6f\t %s\t 0.0 \n', time(i), dataLines{i});
+    value = str2double(dataLines{i}) * 1e-3;
+    fprintf(fidOut, '%.6f\t%.15g \t 0.0 \n', time(i), value);
 end
 
 fclose(fidOut);
