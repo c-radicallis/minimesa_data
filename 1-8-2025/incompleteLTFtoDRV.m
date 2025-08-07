@@ -1,5 +1,5 @@
 % Open the source text file
-inputFilename = 'Noise1to200Hz.ltf.txt';  % change as needed
+inputFilename = 'Noise.ltf.txt';  % change as needed
 fid = fopen(inputFilename, 'r');
 if fid == -1
     error('Cannot open file: %s', inputFilename);
@@ -8,11 +8,12 @@ end
 % Read and store header line
 originalHeader = fgetl(fid);
 
-% Read remaining lines as raw strings (to preserve formatting)
+% Read remaining lines as raw strings
 dataLines = {};
 line = fgetl(fid);
 while ischar(line)
-    dataLines{end+1,1} = line*1e-3;
+    % Store raw line (no arithmetic here)
+    dataLines{end+1,1} = line;
     line = fgetl(fid);
 end
 fclose(fid);
@@ -24,20 +25,25 @@ n = numel(dataLines);
 time = (0:n-1)' * 0.005;
 
 % Prepare output file and write header and data
-outputFilename = 'Noise1to200Hz_convertable_0.txt';  % change as needed
+outputFilename = 'Noise_convertable_0.txt';  % change as needed
 fidOut = fopen(outputFilename, 'w');
 if fidOut == -1
     error('Cannot open output file: %s', outputFilename);
 end
 
-% Write new header: time and the original header text
-fprintf(fidOut, 'time \t PosT \t PosL \n');
+% Write new header: time and the original header text (plus any extra column names)
+% Assuming originalHeader is single column name
+fprintf(fidOut, 'time\t%s\tPosL\n', originalHeader);
 
-% Write each line: time value and the original data line unchanged
-% Write each line: time value and the adjusted data value (x1e-3)
+% Write each line: time, scaled data value, and a zero constant (PosL)
 for i = 1:n
-    value = str2double(dataLines{i}) * 1e-3;
-    fprintf(fidOut, '%.6f\t%.15g \t 0.0 \n', time(i), value);
+    % Convert string to number and scale
+    rawValue = str2double(dataLines{i});
+    if isnan(rawValue)
+        error('Non-numeric data encountered on line %d: "%s"', i+1, dataLines{i});
+    end
+    scaledValue = rawValue * 1e-3;
+    fprintf(fidOut, '%.6f\t%.15g\t%.1f\n', time(i), scaledValue, 0.0);
 end
 
 fclose(fidOut);

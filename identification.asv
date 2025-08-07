@@ -63,8 +63,7 @@ val_data2.OutputName = train_data.OutputName;
 val_data2.TimeUnit   = train_data.TimeUnit;
 
 % val_data3
-%DOESNT SEEM TO BE RIGHT file = 'noise1to200hzLTF_scale0.5_PID_10_0.1_0.1.acq'; % load output acq   
-file = 'noise1to200hzLTF_scale0.5_PID_10_0.1_0.1.acq';
+file = 'noise1to200hzLTF_scale0.5_PID_10_0.1_0.1.acq'; % load output acq
 scale = 0.5;
 LTF_to_TXT_then_load( file , 'InputFolder', folder_58 , 'OutputFolder', folder_58);
 
@@ -106,7 +105,6 @@ opts1.XLim={[1 40]};
 bodeplot(n4sid_sys,opts1)
 bodeplot(n4sid_sys_1,opts1)
 bodeplot(n4sid_sys_2,opts1)
-bodeplot(n4sid_sys_3,opts1)
 legend()
 grid on
 
