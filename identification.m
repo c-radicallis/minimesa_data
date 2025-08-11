@@ -6,6 +6,7 @@ addpath 'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma
 func_folder  =  'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\uniaxial_table_model\Adapting_Driver_Signal\';
 addpath(func_folder);
 Ts = 0.005;
+opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[1 40]};
 
 %% Training data2
 input_file_folder ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\31-7-2025\tgt and noise drv\';
@@ -79,20 +80,20 @@ n4sid_sys3 = n4sid(data3,nx,'Ts',Ts); n4sid_sys3.InputName  = data2.InputName;n4
 n4sid_sys4 = n4sid(data4,nx,'Ts',Ts); n4sid_sys4.InputName  = data2.InputName; n4sid_sys4.OutputName = data2.OutputName;
 
 %% Figures
-fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on');opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[1 40]};
-bodeplot(n4sid_sys1,opts1)
-bodeplot(n4sid_sys2,opts1)
-bodeplot(n4sid_sys3,opts1)
-bodeplot(n4sid_sys4,opts1)
-legend(); grid on
-
-figure(2); compare(data1,n4sid_sys1,n4sid_sys2,n4sid_sys3,n4sid_sys4) %title('Model Training');
-
-figure(3); compare(data2,n4sid_sys1,n4sid_sys2,n4sid_sys3,n4sid_sys4) %title('Model Validation');
-
-figure(4); compare(data3,n4sid_sys1,n4sid_sys2,n4sid_sys3,n4sid_sys4) %title('Model Validation');
-
-figure(5); compare(data4,n4sid_sys1,n4sid_sys2,n4sid_sys3,n4sid_sys4) %title('Model Validation');
+% fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on');
+% bodeplot(n4sid_sys1,opts1)
+% bodeplot(n4sid_sys2,opts1)
+% bodeplot(n4sid_sys3,opts1)
+% bodeplot(n4sid_sys4,opts1)
+% legend(); grid on
+% 
+% figure(2); compare(data1,n4sid_sys1,n4sid_sys2,n4sid_sys3,n4sid_sys4) %title('Model Training');
+% 
+% figure(3); compare(data2,n4sid_sys1,n4sid_sys2,n4sid_sys3,n4sid_sys4) %title('Model Validation');
+% 
+% figure(4); compare(data3,n4sid_sys1,n4sid_sys2,n4sid_sys3,n4sid_sys4) %title('Model Validation');
+% 
+% figure(5); compare(data4,n4sid_sys1,n4sid_sys2,n4sid_sys3,n4sid_sys4) %title('Model Validation');
 
 %% Proportional=1 &  I=D=0
 % file = 'pink_noise_40Hz_T3mm_0.drv'; % load input drv
@@ -166,8 +167,8 @@ G_open.StateName  = arrayfun(@(k) sprintf('x%d',k), 1:n_states, 'UniformOutput',
 
 plant_aug = ss(G_open.A, G_open.B,[eye(n_states);G_open.C],G_open.D);
 plant_aug.InputName = {'i_sv'};   % plant input: control signal
-plant_aug.OutputName = [G_open.StateName ; {'y_xT'}];  % plant output
-sumblk1 = sumblk('e = x_tgt - y_xT'); % Compute the error signal: e = r - y
+plant_aug.OutputName = [G_open.StateName ; {'x_acq_T'}];  % plant output
+sumblk1 = sumblk('e = x_drv_T_0 - x_acq_T'); % Compute the error signal: e = r - y
 integrator = tf(1,[1 0]); % The integrator integrates the tracking error.
 integrator.InputName = {'e'};    % error: e = r - y
 integrator.OutputName = {'xi'};  % integrated error
@@ -181,7 +182,7 @@ Ki = K_lqi(end);        % integrator gain
 controller = ss([], [], [], -[K, Ki]); %   u = -[K  Ki] * [x; xi]
 controller.InputName = [ G_open.StateName ; {'xi'}];
 controller.OutputName = {'i_sv'};
-Optimal_closed_loop = connect(plant_aug,  controller , integrator, sumblk1, 'x_tgt','y_xT')
+Optimal_closed_loop = connect(plant_aug,  controller , integrator, sumblk1, 'x_drv_T_0','x_acq_T')
 
 close all;
 fig9 = figure(9);ax9 = axes(fig9); hold(ax9, 'on');
@@ -191,4 +192,5 @@ bodeplot(G_closed_PIDF_15Hz,opts1);
 bodeplot(Optimal_closed_loop,opts1);
 legend(); grid on;
 
-figure(10); compare(data4,G_closed,G_closed_PIDF_10Hz,G_closed_PIDF_15Hz,Optimal_closed_loop) %title('Model Validation');
+% figure(10); compare(data3,G_closed,G_closed_PIDF_10Hz,G_closed_PIDF_15Hz,Optimal_closed_loop) ;
+% ylim([-1 1]*6e-3)
