@@ -172,7 +172,7 @@ integrator = tf(1,[1 0]); % The integrator integrates the tracking error.
 integrator.InputName = {'e'};    % error: e = r - y
 integrator.OutputName = {'xi'};  % integrated error
 
-Q = 1e19*diag([zeros(1,n_states),1]);%blkdiag(eye(nx), eye(ny));
+Q = 1e20*diag([zeros(1,n_states),1]);%blkdiag(eye(nx), eye(ny));
 R = 1e-99*eye(size(G_open.B,2));
 K_lqi = lqi(G_open, Q, R)% Design the LQI controller for the original system
 
@@ -183,12 +183,10 @@ controller.InputName = [ G_open.StateName ; {'xi'}];
 controller.OutputName = {'i_sv'};
 Optimal_closed_loop = connect(plant_aug,  controller , integrator, sumblk1, 'x_tgt','y_xT')
 
-close all;
+
 fig9 = figure(9);ax9 = axes(fig9); hold(ax9, 'on');
 bodeplot(G_closed,opts1);
 bodeplot(G_closed_PIDF_10Hz,opts1);
 bodeplot(G_closed_PIDF_15Hz,opts1); 
-bodeplot(Optimal_closed_loop,opts1);
+bodeplot(Optimal_closed_loop)
 legend(); grid on;
-
-figure(10); compare(data4,G_closed,G_closed_PIDF_10Hz,G_closed_PIDF_15Hz,Optimal_closed_loop) %title('Model Validation');
