@@ -47,16 +47,16 @@ data3 = iddata(x_acq_T(1:nmin), scale*x_drv_T_0(1:nmin), Ts);data3.InputName  = 
 %DOESNT SEEM TO BE RIGHT %  file ='noiseLTF_scale0.5_PID_10_0.1_0.1_0.acq';
 % MAY BE GENERALIZED ISSUE WITH SCALED DRIVERS FROM THE NOISE LTF's
 
-%% data4
-file = 'Noise_convertable_0.drv'; % load input drv
-LTF_to_TXT_then_load( file , 'InputFolder',folder_18 , 'OutputFolder', folder_18); % load input drv
-
-file = 'noiseLTF_PID_10_0.1_0.1_0.acq';
-scale = 1;
-LTF_to_TXT_then_load( file , 'InputFolder', folder_58 , 'OutputFolder', folder_58);
-
-n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
-data4 = iddata(x_acq_T(1:nmin), scale*x_drv_T_0(1:nmin), Ts);data4.InputName  = data1.InputName;data4.OutputName = data1.OutputName;data4.TimeUnit   = data1.TimeUnit;
+% %% data4
+% file = 'Noise_convertable_0.drv'; % load input drv
+% LTF_to_TXT_then_load( file , 'InputFolder',folder_18 , 'OutputFolder', folder_18); % load input drv
+% 
+% file = 'noiseLTF_PID_10_0.1_0.1_0.acq';
+% scale = 1;
+% LTF_to_TXT_then_load( file , 'InputFolder', folder_58 , 'OutputFolder', folder_58);
+% 
+% n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
+% data4 = iddata(x_acq_T(1:nmin), scale*x_drv_T_0(1:nmin), Ts);data4.InputName  = data1.InputName;data4.OutputName = data1.OutputName;data4.TimeUnit   = data1.TimeUnit;
 
 %% val_data4
 
@@ -72,28 +72,28 @@ data4 = iddata(x_acq_T(1:nmin), scale*x_drv_T_0(1:nmin), Ts);data4.InputName  = 
 
 
 %% Model training
-nx = 3;
+nx = 5 ;
 
 n4sid_sys1 = n4sid(data1,nx,'Ts',Ts);n4sid_sys1.InputName  = data2.InputName;n4sid_sys1.OutputName = data2.OutputName;
 n4sid_sys2 = n4sid(data2,nx,'Ts',Ts); n4sid_sys2.InputName  = data2.InputName; n4sid_sys2.OutputName = data2.OutputName;
 n4sid_sys3 = n4sid(data3,nx,'Ts',Ts); n4sid_sys3.InputName  = data2.InputName;n4sid_sys3.OutputName = data2.OutputName;
 n4sid_sys4 = n4sid(data4,nx,'Ts',Ts); n4sid_sys4.InputName  = data2.InputName; n4sid_sys4.OutputName = data2.OutputName;
 
-%% Figures
-% fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on');
-% bodeplot(n4sid_sys1,opts1)
-% bodeplot(n4sid_sys2,opts1)
-% bodeplot(n4sid_sys3,opts1)
-% bodeplot(n4sid_sys4,opts1)
-% legend(); grid on
-% 
-% figure(2); compare(data1,n4sid_sys1,n4sid_sys2,n4sid_sys3,n4sid_sys4) %title('Model Training');
-% 
-% figure(3); compare(data2,n4sid_sys1,n4sid_sys2,n4sid_sys3,n4sid_sys4) %title('Model Validation');
-% 
-% figure(4); compare(data3,n4sid_sys1,n4sid_sys2,n4sid_sys3,n4sid_sys4) %title('Model Validation');
-% 
-% figure(5); compare(data4,n4sid_sys1,n4sid_sys2,n4sid_sys3,n4sid_sys4) %title('Model Validation');
+% Figures
+fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on');
+bodeplot(n4sid_sys1,opts1)
+bodeplot(n4sid_sys2,opts1)
+bodeplot(n4sid_sys3,opts1)
+bodeplot(n4sid_sys4,opts1)
+legend(); grid on
+
+figure(2); compare(data1,n4sid_sys1,n4sid_sys2,n4sid_sys3,n4sid_sys4) %title('Model Training');
+
+figure(3); compare(data2,n4sid_sys1,n4sid_sys2,n4sid_sys3,n4sid_sys4) %title('Model Validation');
+
+figure(4); compare(data3,n4sid_sys1,n4sid_sys2,n4sid_sys3,n4sid_sys4) %title('Model Validation');
+
+figure(5); compare(data4,n4sid_sys1,n4sid_sys2,n4sid_sys3,n4sid_sys4) %title('Model Validation');
 
 %% Proportional=1 &  I=D=0
 % file = 'pink_noise_40Hz_T3mm_0.drv'; % load input drv
