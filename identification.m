@@ -77,14 +77,25 @@ data_all = [data1; data2; data3;data4];
 %% Model training
 nx = 5 ;
 
+g_data1 = spa(data1);
 n4sid_sys1 = n4sid(data1,nx,'Ts',Ts); n4sid_sys1.InputName  = data2.InputName;n4sid_sys1.OutputName = data2.OutputName;
+g_data2 = spa(data2);
 n4sid_sys2 = n4sid(data2,nx,'Ts',Ts); n4sid_sys2.InputName  = data2.InputName; n4sid_sys2.OutputName = data2.OutputName;
+g_data3 = spa(data3);
 n4sid_sys3 = n4sid(data3,nx,'Ts',Ts); n4sid_sys3.InputName  = data2.InputName;n4sid_sys3.OutputName = data2.OutputName;
+g_data4 = spa(data4);
 n4sid_sys4 = n4sid(data4,nx,'Ts',Ts); n4sid_sys4.InputName  = data2.InputName; n4sid_sys4.OutputName = data2.OutputName;
+g_data_all = spa(data_all);
 n4sid_sys_all = n4sid(data_all,nx,'Ts',Ts); n4sid_sys_all.InputName  = data2.InputName; n4sid_sys_all.OutputName = data2.OutputName;
+
 
 % Figures
 fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on');
+bodeplot(g_data1,opts1)
+bodeplot(g_data2,opts1)
+bodeplot(g_data3,opts1)
+bodeplot(g_data4,opts1)
+bodeplot(g_data_all,opts1)
 bodeplot(n4sid_sys1,opts1)
 bodeplot(n4sid_sys2,opts1)
 bodeplot(n4sid_sys3,opts1)
@@ -160,8 +171,11 @@ LTF_to_TXT_then_load( file , 'InputFolder', folder_58 , 'OutputFolder', folder_5
 n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
 data7 = iddata(x_acq_T(1:nmin), scale*x_drv_T_0(1:nmin), Ts);data4.InputName  = data1.InputName;data4.OutputName = data1.OutputName;data4.TimeUnit   = data1.TimeUnit;
 
+g_data5 = spa(data5);
 n4sid_sys5 = n4sid(data5,nx,'Ts',Ts); n4sid_sys5.InputName  = data2.InputName; n4sid_sys5.OutputName = data2.OutputName;
+g_data6 = spa(data6);
 n4sid_sys6 = n4sid(data6,nx,'Ts',Ts); n4sid_sys6.InputName  = data2.InputName; n4sid_sys6.OutputName = data2.OutputName;
+g_data7 = spa(data7);
 n4sid_sys7 = n4sid(data7,nx,'Ts',Ts); n4sid_sys7.InputName  = data2.InputName; n4sid_sys7.OutputName = data2.OutputName;
 
 % figure(6); compare(data5,n4sid_sys5,n4sid_sys6,n4sid_sys7) ; title('P=1 & I=D=0');
@@ -169,6 +183,9 @@ n4sid_sys7 = n4sid(data7,nx,'Ts',Ts); n4sid_sys7.InputName  = data2.InputName; n
 % figure(8); compare(data7,n4sid_sys5,n4sid_sys6,n4sid_sys7) ; title('P=1 & I=D=0');
 
 figure(fig1);
+bodeplot(g_data5,opts1)
+bodeplot(g_data6,opts1)
+bodeplot(g_data7,opts1)
 bodeplot(n4sid_sys5,opts1)
 bodeplot(n4sid_sys6,opts1)
 bodeplot(n4sid_sys7,opts1)
