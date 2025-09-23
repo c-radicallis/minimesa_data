@@ -79,7 +79,7 @@ nx = 5 ;
 
 g_data1 = spa(data1);
 n4sid_sys1 = n4sid(data1,nx,'Ts',Ts); n4sid_sys1.InputName  = data2.InputName;n4sid_sys1.OutputName = data2.OutputName;
-g_data2 = spa(data2);
+g_data2 = spa(data2,100);
 n4sid_sys2 = n4sid(data2,nx,'Ts',Ts); n4sid_sys2.InputName  = data2.InputName; n4sid_sys2.OutputName = data2.OutputName;
 g_data3 = spa(data3);
 n4sid_sys3 = n4sid(data3,nx,'Ts',Ts); n4sid_sys3.InputName  = data2.InputName;n4sid_sys3.OutputName = data2.OutputName;
@@ -91,16 +91,16 @@ n4sid_sys_all = n4sid(data_all,nx,'Ts',Ts); n4sid_sys_all.InputName  = data2.Inp
 
 % Figures
 fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on');
-bodeplot(g_data1,opts1)
-bodeplot(g_data2,opts1)
-bodeplot(g_data3,opts1)
-bodeplot(g_data4,opts1)
-bodeplot(g_data_all,opts1)
-bodeplot(n4sid_sys1,opts1)
-bodeplot(n4sid_sys2,opts1)
-bodeplot(n4sid_sys3,opts1)
-bodeplot(n4sid_sys4,opts1)
-bodeplot(n4sid_sys_all,opts1)
+bodeplot(g_data1   ,opts1, "r--")
+bodeplot(g_data2   ,opts1, "g--")
+bodeplot(g_data3   ,opts1, "b--")
+bodeplot(g_data4   ,opts1, "c--")
+bodeplot(g_data_all,opts1, "m--")
+bodeplot(n4sid_sys1   ,opts1, "r-")
+bodeplot(n4sid_sys2   ,opts1, "g-")
+bodeplot(n4sid_sys3   ,opts1, "b-")
+bodeplot(n4sid_sys4   ,opts1, "c-")
+bodeplot(n4sid_sys_all,opts1, "m-")
 legend(); grid on
 
 % figure(2); compare(data1,n4sid_sys1,n4sid_sys2,n4sid_sys3,n4sid_sys4) 
@@ -183,12 +183,12 @@ n4sid_sys7 = n4sid(data7,nx,'Ts',Ts); n4sid_sys7.InputName  = data2.InputName; n
 % figure(8); compare(data7,n4sid_sys5,n4sid_sys6,n4sid_sys7) ; title('P=1 & I=D=0');
 
 figure(fig1);
-bodeplot(g_data5,opts1)
-bodeplot(g_data6,opts1)
-bodeplot(g_data7,opts1)
-bodeplot(n4sid_sys5,opts1)
-bodeplot(n4sid_sys6,opts1)
-bodeplot(n4sid_sys7,opts1)
+bodeplot(g_data5   ,opts1 , "y--")
+bodeplot(g_data6   ,opts1 , "k--")
+bodeplot(g_data7   ,opts1 , "r--")
+bodeplot(n4sid_sys5,opts1 , "y-")
+bodeplot(n4sid_sys6,opts1 , "k-")
+bodeplot(n4sid_sys7,opts1 , "r-")
 %legend(); grid on
 
 %%
