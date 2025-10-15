@@ -48,19 +48,24 @@ G_open.InputName =  'i_sv';
 
 %%
 tuner_opts = pidtuneOptions('DesignFocus','reference-tracking');
+
+cutoff_frequency = 5; % Hz
+PIDF  = pidtune(G_open,'PIDF',cutoff_frequency*2*pi,tuner_opts)
+G_PIDF_5Hz = feedback(PIDF*G_open, 1);
+
 cutoff_frequency = 10; % Hz
 PIDF  = pidtune(G_open,'PIDF',cutoff_frequency*2*pi,tuner_opts)
 G_PIDF_10Hz = feedback(PIDF*G_open, 1);
 
 cutoff_frequency = 15; % Hz
-PIDF   = pidtune(G_open,'PIDF',cutoff_frequency*2*pi,tuner_opts);
+PIDF   = pidtune(G_open,'PIDF',cutoff_frequency*2*pi,tuner_opts)
 G_PIDF_15Hz = feedback(PIDF*G_open, 1);
 
 %%
-obs = vpa(obsv(G_open));
-r_obsv = rank(obs)
-ctrlb = vpa(ctrb(G_open));
-r_ctrlb = rank(ctrlb)
+% obs = vpa(obsv(G_open));
+% r_obsv = rank(obs)
+% ctrlb = vpa(ctrb(G_open));
+% r_ctrlb = rank(ctrlb)
 
 %
 n_states=size(G_open.A,1);
@@ -93,7 +98,7 @@ figure;pzmap(Optimal_closed_loop);
 fig9 = figure(9);ax9 = axes(fig9); hold(ax9, 'on');
 % bodeplot(sys4,opts1);
 bodeplot(G_closed,opts1);
-bodeplot(G_PIDF_10Hz,opts1);
+bodeplot(G_PIDF_10Hz,opts1);    
 bodeplot(G_PIDF_15Hz,opts1); 
 bodeplot(Optimal_closed_loop,opts1);
 legend();
@@ -110,14 +115,23 @@ lim_force = 200e3; % N
 s=tf('s') ;
 scale=0.0375;
 ddx_ref=scale*ddx_ref;
-x_ref = lsim(1/s^2,  ddx_ref , t_vector ,'foh');
+x_ref = lsim(1/s^2,  ddx_ref , t_vector ,'zoh');
 % max_xref = max(x_ref);
 % while max_xref > lim_displacement % Scaling down if necessary
 %     scale = 0.95*scale;
 %     ddx_ref = 0.95*ddx_ref;
-%     x_ref = lsim(1/s^2,  ddx_ref , t_vector ,'foh');
+%     x_ref = lsim(1/s^2,  ddx_ref , t_vector ,'zoh');
 %     max_xref = max(x_ref);
 % end
+
+%%  PIDF differences
+
+% for i = t_vector
+% uP_k = Kp*e_k
+% uI_k = Ki*Ts*e_k1 + uI_k1
+% uD_k = Kd*(e_k - e_k1)/Tf + (Tf-Ts)*uD_k1/Tf
+% 
+% u = uP_k + uI_k + uD_k
 
 %% Finding Response Spectre of Ground
 f_i=0.1; %freq inicial

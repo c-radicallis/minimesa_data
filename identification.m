@@ -6,7 +6,7 @@ addpath 'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma
 func_folder  =  'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\uniaxial_table_model\Adapting_Driver_Signal\';
 addpath(func_folder);
 Ts = 0.005;
-opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[0.5 40]};%opts1.Ylim={[-40 10]};
+opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[0.7 40]};opts1.PhaseWrapping="on";%opts1.PhaseWrappingBranch=0;%opts1.Ylim={[-40 10]};
 
 %% Data 1
 input_file_folder ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\31-7-2025\tgt and noise drv\';
@@ -77,25 +77,28 @@ data_all = [data1; data2; data3;data4];
 %% Model training
 nx = 5 ;
 
-g_data1 = spa(data1);
+%g_data0 = spa(data1, 10);
+g_data1 = spa(data1, 1000);
 n4sid_sys1 = n4sid(data1,nx,'Ts',Ts); n4sid_sys1.InputName  = data2.InputName;n4sid_sys1.OutputName = data2.OutputName;
-g_data2 = spa(data2,100);
+g_data2 = spa(data2, 1000);
 n4sid_sys2 = n4sid(data2,nx,'Ts',Ts); n4sid_sys2.InputName  = data2.InputName; n4sid_sys2.OutputName = data2.OutputName;
-g_data3 = spa(data3);
+g_data3 = spa(data3, 1000);
 n4sid_sys3 = n4sid(data3,nx,'Ts',Ts); n4sid_sys3.InputName  = data2.InputName;n4sid_sys3.OutputName = data2.OutputName;
-g_data4 = spa(data4);
+g_data4 = spa(data4, 1000);
 n4sid_sys4 = n4sid(data4,nx,'Ts',Ts); n4sid_sys4.InputName  = data2.InputName; n4sid_sys4.OutputName = data2.OutputName;
-g_data_all = spa(data_all);
+g_data_all = spa(data_all , 1000);
 n4sid_sys_all = n4sid(data_all,nx,'Ts',Ts); n4sid_sys_all.InputName  = data2.InputName; n4sid_sys_all.OutputName = data2.OutputName;
 
 
 % Figures
 fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on');
-bodeplot(g_data1   ,opts1, "r--")
+%bodeplot(g_data0   ,opts1, "*");
+h=bodeplot(g_data1   ,opts1, "r--");
 bodeplot(g_data2   ,opts1, "g--")
 bodeplot(g_data3   ,opts1, "b--")
 bodeplot(g_data4   ,opts1, "c--")
 bodeplot(g_data_all,opts1, "m--")
+showConfidence(h,3);
 bodeplot(n4sid_sys1   ,opts1, "r-")
 bodeplot(n4sid_sys2   ,opts1, "g-")
 bodeplot(n4sid_sys3   ,opts1, "b-")
