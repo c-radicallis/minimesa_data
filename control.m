@@ -98,6 +98,7 @@ figure;pzmap(Optimal_closed_loop);
 fig9 = figure(9);ax9 = axes(fig9); hold(ax9, 'on');
 % bodeplot(sys4,opts1);
 bodeplot(G_closed,opts1);
+bodeplot(G_PIDF_5Hz,opts1);    
 bodeplot(G_PIDF_10Hz,opts1);    
 bodeplot(G_PIDF_15Hz,opts1); 
 bodeplot(Optimal_closed_loop,opts1);
@@ -143,6 +144,10 @@ f_vector = logspace( log10(f_i) , log10(f_n) , n_points);
 x_cl = lsim(d2d(G_closed,Ts) ,  x_ref , t_vector,'zoh');
 ddx_cl = secondDerivativeTime(x_cl , Ts);
 [picos_ddx_cl , picos_x_cl] = ResponseSpectrum( t_vector , x_cl , ddx_cl, f_vector , 1);
+
+x_PIDF_5Hz = lsim(d2d(G_PIDF_5Hz,Ts) ,  x_ref , t_vector,'zoh');
+ddx_PIDF_5Hz = secondDerivativeTime(x_PIDF_5Hz , Ts);
+[picos_ddx_PIDF_5Hz , picos_x_PIDF_5Hz] = ResponseSpectrum( t_vector , x_PIDF_5Hz , ddx_PIDF_5Hz, f_vector , 1);
 
 x_PIDF_10Hz = lsim(d2d(G_PIDF_10Hz,Ts) ,  x_ref , t_vector,'zoh');
 ddx_PIDF_10Hz = secondDerivativeTime(x_PIDF_10Hz , Ts);

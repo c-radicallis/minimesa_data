@@ -10,7 +10,6 @@ opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[0.7 40]};opts1
 
 %% Data 1
 input_file_folder ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\31-7-2025\tgt and noise drv\';
-addpath(input_file_folder);
 file = 'pink_noise_40Hz_T3mm_0.drv'; % load input drv
 LTF_to_TXT_then_load( file , 'InputFolder', input_file_folder , 'OutputFolder', input_file_folder); % load input drv
 
@@ -74,6 +73,29 @@ data4 = iddata(x_acq_T(1:nmin), scale*x_drv_T_0(1:nmin), Ts);data4.InputName  = 
 
 data_all = [data1; data2; data3;data4];
 
+%% Data PIDF 5hz tune
+% scale 1.0
+input_file_folder ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\31-7-2025\tgt and noise drv\';
+file = 'pink_noise_40Hz_T3mm_0.drv'; % load input drv
+LTF_to_TXT_then_load( file , 'InputFolder', input_file_folder , 'OutputFolder', input_file_folder); % load input drv
+
+folder_1310 = 'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\13-10-2025\';
+file = '1.0_pinkNoise_PIDF_5Hz.acq'; % load output acq
+scale = 1;
+LTF_to_TXT_then_load( file , 'InputFolder', folder_1310 , 'OutputFolder', folder_1310);% load output acq
+
+n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
+data_PIDF_5hz_scl1 = iddata(x_acq_T(1:nmin), scale*x_drv_T_0(1:nmin), Ts);data_PIDF_5hz_scl1.InputName  = 'x_drv_T_0';data_PIDF_5hz_scl1.OutputName = 'x_acq_T';data_PIDF_5hz_scl1.TimeUnit   = 'seconds';
+
+% scale 0.7
+file = '0.7_pinkNoise_PIDF_5Hz.acq'; % load output acq
+scale = 0.7;
+LTF_to_TXT_then_load( file , 'InputFolder', folder_1310 , 'OutputFolder', folder_1310);% load output acq
+
+n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
+data_PIDF_5hz_scl07 = iddata(x_acq_T(1:nmin), scale*x_drv_T_0(1:nmin), Ts);data_PIDF_5hz_scl07.InputName  = 'x_drv_T_0';data_PIDF_5hz_scl07.OutputName = 'x_acq_T';data_PIDF_5hz_scl07.TimeUnit   = 'seconds';
+
+
 %% Model training
 nx = 5 ;
 
@@ -89,21 +111,34 @@ n4sid_sys4 = n4sid(data4,nx,'Ts',Ts); n4sid_sys4.InputName  = data2.InputName; n
 g_data_all = spa(data_all , 1000);
 n4sid_sys_all = n4sid(data_all,nx,'Ts',Ts); n4sid_sys_all.InputName  = data2.InputName; n4sid_sys_all.OutputName = data2.OutputName;
 
+g_data_PIDF_5hz_scl1 = spa(data_PIDF_5hz_scl1, 1000);
+n4sid_sys_PIDF_5hz_scl1 = n4sid(data_PIDF_5hz_scl1,nx,'Ts',Ts); n4sid_sys_PIDF_5hz_scl1.InputName  = data2.InputName; n4sid_sys_PIDF_5hz_scl1.OutputName = data2.OutputName;
+g_data_PIDF_5hz_scl07 = spa(data_PIDF_5hz_scl07, 1000);
+n4sid_sys_PIDF_5hz_scl07 = n4sid(data_PIDF_5hz_scl07,nx,'Ts',Ts); n4sid_sys_PIDF_5hz_scl07.InputName  = data2.InputName; n4sid_sys_PIDF_5hz_scl07.OutputName = data2.OutputName;
+
 
 % Figures
 fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on');
 %bodeplot(g_data0   ,opts1, "*");
-h=bodeplot(g_data1   ,opts1, "r--");
-bodeplot(g_data2   ,opts1, "g--")
-bodeplot(g_data3   ,opts1, "b--")
-bodeplot(g_data4   ,opts1, "c--")
-bodeplot(g_data_all,opts1, "m--")
+% bodeplot(g_data1   ,opts1, "r--");
+% bodeplot(g_data2   ,opts1, "g--")
+% bodeplot(g_data3   ,opts1, "b--")
+% bodeplot(g_data4   ,opts1, "c--")
+h = bodeplot(g_data_all,opts1, "m--");
+
+%bodeplot(G_PIDF_5Hz)
+bodeplot(g_data_PIDF_5hz_scl1,opts1, "m--")
+%bodeplot(g_data_PIDF_5hz_scl07,opts1, "r--")
 showConfidence(h,3);
-bodeplot(n4sid_sys1   ,opts1, "r-")
-bodeplot(n4sid_sys2   ,opts1, "g-")
-bodeplot(n4sid_sys3   ,opts1, "b-")
-bodeplot(n4sid_sys4   ,opts1, "c-")
+
+% bodeplot(n4sid_sys1   ,opts1, "r-")
+% bodeplot(n4sid_sys2   ,opts1, "g-")
+% bodeplot(n4sid_sys3   ,opts1, "b-")
+% bodeplot(n4sid_sys4   ,opts1, "c-")
 bodeplot(n4sid_sys_all,opts1, "m-")
+
+bodeplot(n4sid_sys_PIDF_5hz_scl1,opts1, "m-")
+%bodeplot(n4sid_sys_PIDF_5hz_scl07,opts1, "r-")
 legend(); grid on
 
 % figure(2); compare(data1,n4sid_sys1,n4sid_sys2,n4sid_sys3,n4sid_sys4) 
