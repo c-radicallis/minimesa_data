@@ -14,13 +14,13 @@ input_file_folder ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de
 file = 'pink_noise_40Hz_T3mm_0.drv'; % load input drv
 LTF_to_TXT_then_load( file , 'InputFolder', input_file_folder , 'OutputFolder', input_file_folder); % load input drv
 
-folder_2810 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\28-10-2025\';
-file = 'pink_noise_40Hz_T3mm_0_scl1_P6.acq'; % load output acq
+folder_2910 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\29-10-2025\';
+file = 'pink_noise_40Hz_T3mm_scl1_P6_I0_D0_Fmax_0.acq'; % load output acq
 scale = 1;
-LTF_to_TXT( file , folder_2810 , 'OutputFolder', folder_2810);
+LTF_to_TXT_then_load_wSV( file , folder_2910 , 'OutputFolder', folder_2910);
 
-n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
-data1 = iddata(x_acq_T(1:nmin), scale*x_drv_T_0(1:nmin), Ts);data1.InputName  = 'x_drv_T_0';data1.OutputName = 'x_acq_T';data1.TimeUnit   = 'seconds';
+% n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
+% data1 = iddata(x_acq_T(1:nmin), scale*x_drv_T_0(1:nmin), Ts);data1.InputName  = 'x_drv_T_0';data1.OutputName = 'x_acq_T';data1.TimeUnit   = 'seconds';
 
 %% Old data
 % Data 1

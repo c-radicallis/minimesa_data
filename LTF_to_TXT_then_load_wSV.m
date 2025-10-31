@@ -1,4 +1,4 @@
-function LTF_to_TXT( filename_with_ext, input_folder, varargin)
+function LTF_to_TXT_then_load_wSV( filename_with_ext, input_folder, varargin)
 % LTF_to_TXT Convert a .drv, .tgt or .acq file via Python and load its .txt.
 %
 %   LTF_to_TXT(filename_with_ext)
@@ -133,6 +133,16 @@ function LTF_to_TXT( filename_with_ext, input_folder, varargin)
     end
     if ~isfile(output_path)
         warning('Python reported output path but file not found: %s', output_path);
+    end
+
+   %--- Call loadTXT on the converted .txt file ---
+    try
+        if verbose
+            fprintf('Calling loadTXT on: %s\n', output_path);
+        end
+        loadTXT_wSV(output_path);
+    catch ME
+        fprintf('Error in loadTXT for file %s: %s\n', output_path, ME.message);
     end
 
 end
