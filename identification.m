@@ -148,102 +148,102 @@ legend(); grid on
 
 %%
 
-Ts_fpga= 1/1600;
-z = tf('z',Ts_fpga);
-Kc=10;
-Ti=0.1;
-Ki=Kc*Ts_fpga/Ti;
-Controller = Kc + Ki/(z-1)
-
-G_closed_sys1 = d2d(n4sid_sys1 , Ts_fpga);
-G_open_sys1= minreal( G_closed_sys1/(Controller*(1-G_closed_sys1))); G_open_sys1.InputName =  'i_sv';
-
-G_closed_sys2 = d2d(n4sid_sys2 , Ts_fpga);
-G_open_sys2= minreal( G_closed_sys2/(Controller*(1-G_closed_sys2))); G_open_sys2.InputName =  'i_sv';
-
-G_closed_sys3 = d2d(n4sid_sys3 , Ts_fpga);
-G_open_sys3= minreal( G_closed_sys3/(Controller*(1-G_closed_sys3))); G_open_sys3.InputName =  'i_sv';
-
-G_closed_sys4 = d2d(n4sid_sys4 , Ts_fpga);
-G_open_sys4= minreal( G_closed_sys4/(Controller*(1-G_closed_sys4))); G_open_sys4.InputName =  'i_sv';
-
-G_closed_sys_all = d2d(n4sid_sys_all , Ts_fpga);
-G_open_sys_all= minreal( G_closed_sys_all/(Controller*(1-G_closed_sys_all))); G_open_sys_all.InputName =  'i_sv';
-
-fig10 = figure(10);ax10 = axes(fig10); hold(ax10, 'on');
-bodeplot(G_open_sys1,opts1);
-bodeplot(G_open_sys2,opts1);
-bodeplot(G_open_sys3,opts1);
-bodeplot(G_open_sys4,opts1);
-bodeplot(G_open_sys_all,opts1);
-legend(); grid on;
+% Ts_fpga= 1/1600;
+% z = tf('z',Ts_fpga);
+% Kc=10;
+% Ti=0.1;
+% Ki=Kc*Ts_fpga/Ti;
+% Controller = Kc + Ki/(z-1)
+% 
+% G_closed_sys1 = d2d(n4sid_sys1 , Ts_fpga);
+% G_open_sys1= minreal( G_closed_sys1/(Controller*(1-G_closed_sys1))); G_open_sys1.InputName =  'i_sv';
+% 
+% G_closed_sys2 = d2d(n4sid_sys2 , Ts_fpga);
+% G_open_sys2= minreal( G_closed_sys2/(Controller*(1-G_closed_sys2))); G_open_sys2.InputName =  'i_sv';
+% 
+% G_closed_sys3 = d2d(n4sid_sys3 , Ts_fpga);
+% G_open_sys3= minreal( G_closed_sys3/(Controller*(1-G_closed_sys3))); G_open_sys3.InputName =  'i_sv';
+% 
+% G_closed_sys4 = d2d(n4sid_sys4 , Ts_fpga);
+% G_open_sys4= minreal( G_closed_sys4/(Controller*(1-G_closed_sys4))); G_open_sys4.InputName =  'i_sv';
+% 
+% G_closed_sys_all = d2d(n4sid_sys_all , Ts_fpga);
+% G_open_sys_all= minreal( G_closed_sys_all/(Controller*(1-G_closed_sys_all))); G_open_sys_all.InputName =  'i_sv';
+% 
+% fig10 = figure(10);ax10 = axes(fig10); hold(ax10, 'on');
+% bodeplot(G_open_sys1,opts1);
+% bodeplot(G_open_sys2,opts1);
+% bodeplot(G_open_sys3,opts1);
+% bodeplot(G_open_sys4,opts1);
+% bodeplot(G_open_sys_all,opts1);
+% legend(); grid on;
 
 %% Proportional=1 &  I=D=0      %%%     %%%      %%%%%%%%%%%
-file = 'pink_noise_40Hz_T3mm_0.drv'; % load input drv
-LTF_to_TXT_then_load( file , 'InputFolder', input_file_folder , 'OutputFolder', input_file_folder); % load input drv
-
-file = 'pink_noise_40Hz_T3mm_0_P=1_I=D=0_scale0.5_0.acq';
-scale = 0.5;
-LTF_to_TXT_then_load( file , 'InputFolder', folder_58 , 'OutputFolder', folder_58);
-
-n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
-data5 = iddata(x_acq_T(1:nmin), scale*x_drv_T_0(1:nmin), Ts);data4.InputName  = data1.InputName;data4.OutputName = data1.OutputName;data4.TimeUnit   = data1.TimeUnit;
+% file = 'pink_noise_40Hz_T3mm_0.drv'; % load input drv
+% LTF_to_TXT_then_load( file , 'InputFolder', input_file_folder , 'OutputFolder', input_file_folder); % load input drv
+% 
+% file = 'pink_noise_40Hz_T3mm_0_P=1_I=D=0_scale0.5_0.acq';
+% scale = 0.5;
+% LTF_to_TXT_then_load( file , 'InputFolder', folder_58 , 'OutputFolder', folder_58);
+% 
+% n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
+% data5 = iddata(x_acq_T(1:nmin), scale*x_drv_T_0(1:nmin), Ts);data4.InputName  = data1.InputName;data4.OutputName = data1.OutputName;data4.TimeUnit   = data1.TimeUnit;
+% 
+% %
+% file = 'pink_noise_40Hz_T3mm_0.drv'; % load input drv
+% LTF_to_TXT_then_load( file , 'InputFolder', input_file_folder , 'OutputFolder', input_file_folder); % load input drv
+% file = 'pink_noise_40Hz_T3mm_0_P=1_I=D=0_0.acq';
+% scale = 1;
+% LTF_to_TXT_then_load( file , 'InputFolder', folder_58 , 'OutputFolder', folder_58);
+% 
+% n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
+% data6 = iddata(x_acq_T(1:nmin), scale*x_drv_T_0(1:nmin), Ts);data4.InputName  = data1.InputName;data4.OutputName = data1.OutputName;data4.TimeUnit   = data1.TimeUnit;
+% 
+% %
+% file = 'pink_noise_40Hz_T3mm_0.drv'; % load input drv
+% LTF_to_TXT_then_load( file , 'InputFolder', input_file_folder , 'OutputFolder', input_file_folder); % load input drv
+% file = 'pink_noise_40Hz_T3mm_0_P=1_I=D=0_scale1.5_0.acq';
+% scale = 1.5;
+% LTF_to_TXT_then_load( file , 'InputFolder', folder_58 , 'OutputFolder', folder_58);
+% 
+% n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
+% data7 = iddata(x_acq_T(1:nmin), scale*x_drv_T_0(1:nmin), Ts);data4.InputName  = data1.InputName;data4.OutputName = data1.OutputName;data4.TimeUnit   = data1.TimeUnit;
+% 
+% g_data5 = spa(data5);
+% n4sid_sys5 = n4sid(data5,nx,'Ts',Ts); n4sid_sys5.InputName  = data2.InputName; n4sid_sys5.OutputName = data2.OutputName;
+% g_data6 = spa(data6);
+% n4sid_sys6 = n4sid(data6,nx,'Ts',Ts); n4sid_sys6.InputName  = data2.InputName; n4sid_sys6.OutputName = data2.OutputName;
+% g_data7 = spa(data7);
+% n4sid_sys7 = n4sid(data7,nx,'Ts',Ts); n4sid_sys7.InputName  = data2.InputName; n4sid_sys7.OutputName = data2.OutputName;
+% 
+% % figure(6); compare(data5,n4sid_sys5,n4sid_sys6,n4sid_sys7) ; title('P=1 & I=D=0');
+% % figure(7); compare(data6,n4sid_sys5,n4sid_sys6,n4sid_sys7) ; title('P=1 & I=D=0');
+% % figure(8); compare(data7,n4sid_sys5,n4sid_sys6,n4sid_sys7) ; title('P=1 & I=D=0');
+% 
+% figure(fig1);
+% bodeplot(g_data5   ,opts1 , "y--")
+% bodeplot(g_data6   ,opts1 , "k--")
+% bodeplot(g_data7   ,opts1 , "r--")
+% bodeplot(n4sid_sys5,opts1 , "y-")
+% bodeplot(n4sid_sys6,opts1 , "k-")
+% bodeplot(n4sid_sys7,opts1 , "r-")
+% %legend(); grid on
 
 %
-file = 'pink_noise_40Hz_T3mm_0.drv'; % load input drv
-LTF_to_TXT_then_load( file , 'InputFolder', input_file_folder , 'OutputFolder', input_file_folder); % load input drv
-file = 'pink_noise_40Hz_T3mm_0_P=1_I=D=0_0.acq';
-scale = 1;
-LTF_to_TXT_then_load( file , 'InputFolder', folder_58 , 'OutputFolder', folder_58);
 
-n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
-data6 = iddata(x_acq_T(1:nmin), scale*x_drv_T_0(1:nmin), Ts);data4.InputName  = data1.InputName;data4.OutputName = data1.OutputName;data4.TimeUnit   = data1.TimeUnit;
-
-%
-file = 'pink_noise_40Hz_T3mm_0.drv'; % load input drv
-LTF_to_TXT_then_load( file , 'InputFolder', input_file_folder , 'OutputFolder', input_file_folder); % load input drv
-file = 'pink_noise_40Hz_T3mm_0_P=1_I=D=0_scale1.5_0.acq';
-scale = 1.5;
-LTF_to_TXT_then_load( file , 'InputFolder', folder_58 , 'OutputFolder', folder_58);
-
-n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
-data7 = iddata(x_acq_T(1:nmin), scale*x_drv_T_0(1:nmin), Ts);data4.InputName  = data1.InputName;data4.OutputName = data1.OutputName;data4.TimeUnit   = data1.TimeUnit;
-
-g_data5 = spa(data5);
-n4sid_sys5 = n4sid(data5,nx,'Ts',Ts); n4sid_sys5.InputName  = data2.InputName; n4sid_sys5.OutputName = data2.OutputName;
-g_data6 = spa(data6);
-n4sid_sys6 = n4sid(data6,nx,'Ts',Ts); n4sid_sys6.InputName  = data2.InputName; n4sid_sys6.OutputName = data2.OutputName;
-g_data7 = spa(data7);
-n4sid_sys7 = n4sid(data7,nx,'Ts',Ts); n4sid_sys7.InputName  = data2.InputName; n4sid_sys7.OutputName = data2.OutputName;
-
-% figure(6); compare(data5,n4sid_sys5,n4sid_sys6,n4sid_sys7) ; title('P=1 & I=D=0');
-% figure(7); compare(data6,n4sid_sys5,n4sid_sys6,n4sid_sys7) ; title('P=1 & I=D=0');
-% figure(8); compare(data7,n4sid_sys5,n4sid_sys6,n4sid_sys7) ; title('P=1 & I=D=0');
-
-figure(fig1);
-bodeplot(g_data5   ,opts1 , "y--")
-bodeplot(g_data6   ,opts1 , "k--")
-bodeplot(g_data7   ,opts1 , "r--")
-bodeplot(n4sid_sys5,opts1 , "y-")
-bodeplot(n4sid_sys6,opts1 , "k-")
-bodeplot(n4sid_sys7,opts1 , "r-")
-%legend(); grid on
-
-%%
-
-G_closed_sys5 = d2d(n4sid_sys5 , Ts_fpga);
-G_open_sys5= minreal( G_closed_sys5/((1-G_closed_sys5))); G_open_sys5.InputName =  'i_sv';
-
-G_closed_sys6 = d2d(n4sid_sys6 , Ts_fpga);
-G_open_sys6= minreal( G_closed_sys6/((1-G_closed_sys6))); G_open_sys6.InputName =  'i_sv';
-
-G_closed_sys7 = d2d(n4sid_sys7 , Ts_fpga);
-G_open_sys7= minreal( G_closed_sys7/((1-G_closed_sys7))); G_open_sys7.InputName =  'i_sv';
-
-figure(fig10);%ax10 = axes(fig10); hold(ax10, 'on');
-bodeplot(G_open_sys5,opts1);
-bodeplot(G_open_sys6,opts1);
-bodeplot(G_open_sys7,opts1);
+% G_closed_sys5 = d2d(n4sid_sys5 , Ts_fpga);
+% G_open_sys5= minreal( G_closed_sys5/((1-G_closed_sys5))); G_open_sys5.InputName =  'i_sv';
+% 
+% G_closed_sys6 = d2d(n4sid_sys6 , Ts_fpga);
+% G_open_sys6= minreal( G_closed_sys6/((1-G_closed_sys6))); G_open_sys6.InputName =  'i_sv';
+% 
+% G_closed_sys7 = d2d(n4sid_sys7 , Ts_fpga);
+% G_open_sys7= minreal( G_closed_sys7/((1-G_closed_sys7))); G_open_sys7.InputName =  'i_sv';
+% 
+% figure(fig10);%ax10 = axes(fig10); hold(ax10, 'on');
+% bodeplot(G_open_sys5,opts1);
+% bodeplot(G_open_sys6,opts1);
+% bodeplot(G_open_sys7,opts1);
 
 
 
