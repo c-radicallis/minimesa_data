@@ -16,98 +16,75 @@ LTF_to_TXT_then_load( file , 'InputFolder', input_file_folder , 'OutputFolder', 
 
 folder_2910 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\29-10-2025\';
 file = 'pink_noise_40Hz_T3mm_scl1_P6_I0_D0_Fmax_0.acq'; % load output acq
-scale = 1;
+%scale = 1;
 LTF_to_TXT_then_load_wSV( file , folder_2910 , 'OutputFolder', folder_2910);
 
-% n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
-% data1 = iddata(x_acq_T(1:nmin), scale*x_drv_T_0(1:nmin), Ts);data1.InputName  = 'x_drv_T_0';data1.OutputName = 'x_acq_T';data1.TimeUnit   = 'seconds';
+x_drv_T_0 = x_drv_T_0*1e3; % convert to mm
+x_acq_T = x_acq_T*1e3;
+sv2_acq = -sv2_acq; %output is inverted because the wiring is fliped
 
-%% Old data
-% Data 1
-input_file_folder ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\31-7-2025\tgt and noise drv\';
-file = 'pink_noise_40Hz_T3mm_0.drv'; % load input drv
-LTF_to_TXT_then_load( file , 'InputFolder', input_file_folder , 'OutputFolder', input_file_folder); % load input drv
+% [c_drv,lags_drv] = xcorr(x_drv_T_0,x_acq_T);
+% [c_sv,lags_sv] = xcorr(sv2_acq,x_acq_T,'normalized');
+% figure(91); stem(lags_drv,c_drv); figure(92); stem(lags_sv,c_sv);
 
-file = 'pink_noise_40Hz_T3mm_scl=1_0.acq'; % load output acq
-scale = 1;
-LTF_to_TXT_then_load( file , 'InputFolder', input_file_folder , 'OutputFolder', input_file_folder);% load output acq
+data11_openloop = iddata(x_acq_T, sv2_acq, Ts);data11_openloop.InputName  = 'sv2_acq';data11_openloop.OutputName = 'x_acq_T';data11_openloop.TimeUnit   = 'seconds';
 
 n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
-data1 = iddata(x_acq_T(1:nmin), scale*x_drv_T_0(1:nmin), Ts);data1.InputName  = 'x_drv_T_0';data1.OutputName = 'x_acq_T';data1.TimeUnit   = 'seconds';
+data11_closedloop =  iddata(x_acq_T(1:nmin), x_drv_T_0(1:nmin), Ts);data11_closedloop.InputName  = 'x_drv_T_0';data11_closedloop.OutputName = 'x_acq_T';data11_closedloop.TimeUnit   = 'seconds';
 
-% Data 2
-file = 'pink_noise_40Hz_T3mm_scl=1.2_0.acq'; % load output acq
-scale = 1.2;
-LTF_to_TXT_then_load( file , 'InputFolder', input_file_folder , 'OutputFolder', input_file_folder);
-
-n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
-data2 = iddata(x_acq_T(1:nmin), scale*x_drv_T_0(1:nmin), Ts);data2.InputName  = data1.InputName;data2.OutputName = data1.OutputName;data2.TimeUnit   = data1.TimeUnit;
-
-% Data 3 
-folder_18 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\1-8-2025\';
-file = 'Noise1to200Hz_convertable_0.drv'; % load input drv
-LTF_to_TXT_then_load( file , 'InputFolder',folder_18 , 'OutputFolder', folder_18); % load input drv
-
-folder_58 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\5-8-2025\';
-file = 'noise1to200hzLTF_PID_10_0.1_0.1_0.acq'; % load output acq
-scale = 1;
-LTF_to_TXT_then_load( file , 'InputFolder', folder_58 , 'OutputFolder', folder_58);
-
-n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
-data3 = iddata(x_acq_T(1:nmin), scale*x_drv_T_0(1:nmin), Ts);data3.InputName  = data1.InputName;data3.OutputName = data1.OutputName;data3.TimeUnit   = data1.TimeUnit;
-
-% Data 4
-file = 'Noise_convertable_0.drv'; % load input drv
-LTF_to_TXT_then_load( file , 'InputFolder',folder_18 , 'OutputFolder', folder_18); % load input drv
-
-file = 'noiseLTF_PID_10_0.1_0.1_run2_0.acq';
-scale = 1;
-LTF_to_TXT_then_load( file , 'InputFolder', folder_58 , 'OutputFolder', folder_58);
-
-n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
-data4 = iddata(x_acq_T(1:nmin), scale*x_drv_T_0(1:nmin), Ts);data4.InputName  = data1.InputName;data4.OutputName = data1.OutputName;data4.TimeUnit   = data1.TimeUnit;
-
-%
-data_all = [data1; data2; data3;data4];
+%% Open Loop
+g_data11_openloop = spa(data11_openloop, 1000);
 
 % Model training
-nx = 5 ;
+nx = 6 ;
+n4sid_data11_openloop = n4sid(data11_openloop,nx,'Ts',Ts); n4sid_data11_openloop.InputName  = data11_openloop.InputName;n4sid_data11_openloop.OutputName = data11_openloop.OutputName;
 
-g_data1 = spa(data1, 1000);
-n4sid_sys1 = n4sid(data1,nx,'Ts',Ts); n4sid_sys1.InputName  = data2.InputName;n4sid_sys1.OutputName = data2.OutputName;
-g_data2 = spa(data2, 1000);
-n4sid_sys2 = n4sid(data2,nx,'Ts',Ts); n4sid_sys2.InputName  = data2.InputName; n4sid_sys2.OutputName = data2.OutputName;
-g_data3 = spa(data3, 1000);
-n4sid_sys3 = n4sid(data3,nx,'Ts',Ts); n4sid_sys3.InputName  = data2.InputName;n4sid_sys3.OutputName = data2.OutputName;
-g_data4 = spa(data4, 1000);
-n4sid_sys4 = n4sid(data4,nx,'Ts',Ts); n4sid_sys4.InputName  = data2.InputName; n4sid_sys4.OutputName = data2.OutputName;
-g_data_all = spa(data_all , 1000);
-n4sid_sys_all = n4sid(data_all,nx,'Ts',Ts); n4sid_sys_all.InputName  = data2.InputName; n4sid_sys_all.OutputName = data2.OutputName;
+% Resampled to 1600 Hz
+Ts_fpga= 1/1600;
+fpga_n4sid_data11_openloop = d2d(n4sid_data11_openloop, Ts_fpga);
 
-%% Figures
-fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on');
-%bodeplot(g_data0   ,opts1, "*");
-% bodeplot(g_data1   ,opts1, "r--");
-% bodeplot(g_data2   ,opts1, "g--")
-% bodeplot(g_data3   ,opts1, "b--")
-% bodeplot(g_data4   ,opts1, "c--")
-h = bodeplot(g_data_all,opts1, "m--");
+% Figures Open Loop
+fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on'); title('Open loop');
+h = bodeplot(g_data11_openloop   ,opts1, "*");
+bodeplot(n4sid_data11_openloop ,opts1, "m--")
+bodeplot(fpga_n4sid_data11_openloop  ,opts1, "r--" )
+showConfidence(h,3); legend(); grid on
 
+    
+%% PIDF tuning
+% Ts_fpga= 1/1600;
+% fpga_n4sid_data11_openloop = d2d(n4sid_data11_openloop, Ts_fpga);
+
+tuner_opts = pidtuneOptions('DesignFocus','reference-tracking');
+ 
+% cutoff_frequency = 5; % Hz
+% PIDF  = pidtune(fpga_n4sid_data11_openloop,'PIDF',cutoff_frequency*2*pi,tuner_opts)
+% G_PIDF_5Hz = feedback(PIDF*fpga_n4sid_data11_openloop, 1);
+
+PIDF  = pidtune(fpga_n4sid_data11_openloop,'PIDF',tuner_opts)
+G_PIDF_tracking = feedback(PIDF*fpga_n4sid_data11_openloop, 1);
+
+G_PIDF_true_tune = feedback(6*fpga_n4sid_data11_openloop, 1);
+
+
+
+%% Closed Loop
+g_data11_closedloop = spa(data11_closedloop, 1000);
+
+% Model training
+nx = 20 ;
+n4sid_data11_closedloop = n4sid(data11_closedloop,nx,'Ts',Ts); n4sid_data11_closedloop.InputName  = data11_closedloop.InputName;n4sid_data11_closedloop.OutputName = data11_closedloop.OutputName;
+
+% Figures Closed Loop
+fig2 = figure(2);ax2 = axes(fig2); hold(ax2, 'on'); title('Closed loop');
+h = bodeplot(g_data11_closedloop   ,opts1, "*");
 showConfidence(h,3);
 
-% bodeplot(n4sid_sys1   ,opts1, "r-")
-% bodeplot(n4sid_sys2   ,opts1, "g-")
-% bodeplot(n4sid_sys3   ,opts1, "b-")
-% bodeplot(n4sid_sys4   ,opts1, "c-")
-bodeplot(n4sid_sys_all,opts1, "m-")
-
+bodeplot(n4sid_data11_closedloop ,opts1, "m-")
+bodeplot(G_PIDF_tracking , opts1 )
+bodeplot(G_PIDF_true_tune , opts1)
 legend(); grid on
 
-% figure(2); compare(data1,n4sid_sys1,n4sid_sys2,n4sid_sys3,n4sid_sys4) 
-% figure(3); compare(data2,n4sid_sys1,n4sid_sys2,n4sid_sys3,n4sid_sys4) 
-% figure(4); compare(data3,n4sid_sys1,n4sid_sys2,n4sid_sys3,n4sid_sys4) 
-% figure(5); compare(data4,n4sid_sys1,n4sid_sys2,n4sid_sys3,n4sid_sys4) 
-
-
-
-
+% figure(3), hold on;
+% plot(time_drv_0,x_drv_T_0)
+% plot(time_acq , x_acq_T)
