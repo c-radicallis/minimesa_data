@@ -6,6 +6,7 @@ addpath 'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma
 func_folder  =  'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\uniaxial_table_model\Adapting_Driver_Signal\';
 addpath(func_folder);
 Ts = 0.005;
+Ts_fpga= 1/5000;
 opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[0.7 40]};opts1.PhaseWrapping="on";%opts1.PhaseWrappingBranch=0;%opts1.Ylim={[-40 10]};
 
 % input file - pink noise 40hz
@@ -15,21 +16,12 @@ LTF_to_TXT_then_load( file , 'InputFolder', input_file_folder , 'OutputFolder', 
 
 %% New data
 % Data 11
-folder_2910 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\29-10-2025\';
-file = 'pink_noise_40Hz_T3mm_scl1_P6_I0_D0_Fmax_0.acq'; % load output acq
+folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
+file = 'pink_noise_40Hz_T3mm_0_P5.acq'; % load output acq
 %scale = 1;
-LTF_to_TXT_then_load_wSV( file , folder_2910 , 'OutputFolder', folder_2910);
+LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
 
 x_drv_T_0 = x_drv_T_0*1e3; % convert to mm
-
-% dd_x_acq_T = secondDerivativeTime(x_acq_T,Ts);
-% dd_x_acq_T_3 = secondDerivativeTime3(x_acq_T,Ts);
-% figure;hold on;
-% plot(time_acq,ddx_acq_T)
-% plot(time_acq,dd_x_acq_T)
-% plot(time_acq,dd_x_acq_T_3)
-% legend();grid on;
-
 x_acq_T = x_acq_T*1e3;
 sv2_acq = -sv2_acq; %output is inverted because the wiring is fliped
 
@@ -50,7 +42,6 @@ nx = 6 ;
 n4sid_data11_openloop = n4sid(data11_openloop,nx,'Ts',Ts); n4sid_data11_openloop.InputName  = data11_openloop.InputName;n4sid_data11_openloop.OutputName = data11_openloop.OutputName;
 
 % Resampled to 5000 Hz
-Ts_fpga= 1/5000;
 fpga_n4sid_data11_openloop = d2d(n4sid_data11_openloop, Ts_fpga);
 
 % PIDF tuning
@@ -71,10 +62,10 @@ G_PIDF_true_tune_data11 = feedback(6*fpga_n4sid_data11_openloop, 1);
 
 %% Data 12
 
-folder_2910 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\29-10-2025\';
+folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\29-10-2025\';
 file = 'pink_noise_40Hz_T3mm_scl1_P7.5_I0_D0_Fmax_0.acq'; % load output acq
 %scale = 1;
-LTF_to_TXT_then_load_wSV( file , folder_2910 , 'OutputFolder', folder_2910);
+LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
 
 x_drv_T_0 = x_drv_T_0*1e3; % convert to mm
 x_acq_T = x_acq_T*1e3;
@@ -97,7 +88,6 @@ nx = 6 ;
 n4sid_data12_openloop = n4sid(data12_openloop,nx,'Ts',Ts); n4sid_data12_openloop.InputName  = data12_openloop.InputName;n4sid_data12_openloop.OutputName = data12_openloop.OutputName;
 
 % Resampled to 1600 Hz
-Ts_fpga= 1/1600;
 fpga_n4sid_data12_openloop = d2d(n4sid_data12_openloop, Ts_fpga);
     
 % PIDF tuning
@@ -115,10 +105,10 @@ G_PIDF_true_tune_data12 = feedback(7.5*fpga_n4sid_data12_openloop, 1);
 
 %% Data 13
 
-folder_2910 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\29-10-2025\';
+folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\29-10-2025\';
 file = 'pink_noise_40Hz_T3mm_scl1_P6_I6_D0_Fmax_0.acq'; % load output acq
 %scale = 1;
-LTF_to_TXT_then_load_wSV( file , folder_2910 , 'OutputFolder', folder_2910);
+LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
 
 x_drv_T_0 = x_drv_T_0*1e3; % convert to mm
 x_acq_T = x_acq_T*1e3;
