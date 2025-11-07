@@ -2,7 +2,7 @@ LNEC Test File eXtractor
 
 File: 1.0_pinkNoise_PIDF_5Hz.acq
 
-Created in: 2025-10-17 17:06:54.960753
+Created in: 2025-11-05 14:34:59.974600
 
 Number of channels: 6
 

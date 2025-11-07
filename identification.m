@@ -119,11 +119,10 @@ n4sid_sys_PIDF_5hz_scl07 = n4sid(data_PIDF_5hz_scl07,nx,'Ts',Ts); n4sid_sys_PIDF
 
 % Figures
 fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on');
-%bodeplot(g_data0   ,opts1, "*");
-% bodeplot(g_data1   ,opts1, "r--");
-% bodeplot(g_data2   ,opts1, "g--")
-% bodeplot(g_data3   ,opts1, "b--")
-% bodeplot(g_data4   ,opts1, "c--")
+bodeplot(g_data1   ,opts1, "r--");
+bodeplot(g_data2   ,opts1, "g--")
+bodeplot(g_data3   ,opts1, "b--")
+bodeplot(g_data4   ,opts1, "c--")
 h = bodeplot(g_data_all,opts1, "m--");
 
 %bodeplot(G_PIDF_5Hz)
