@@ -9,13 +9,7 @@ Ts = 0.005;
 Ts_fpga= 1/5000;
 
 % bode plot options
-opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[0.7 40]};opts1.PhaseWrapping="on";%opts1.PhaseWrappingBranch=0;%opts1.Ylim={[-40 10]};
-
-% n4sid options optimized for closed-loop
-n4sidOpt = n4sidOptions;
-n4sidOpt.N4Weight = 'SSARX'; %allows unbiased estimates when using closed loop data
-n4sidOpt.Focus = 'simulation';
-n4sidOpt.InitialState = 'zero';
+opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[0.7 40]};opts1.PhaseWrapping="on";opts1.PhaseWrappingBranch=-360;%opts1.Ylim={[-40 10]};
 
 % input file - pink noise 40hz
 input_file_folder ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\31-7-2025\tgt and noise drv\';
@@ -23,38 +17,78 @@ file = 'pink_noise_40Hz_T3mm_0.drv'; % load input drv
 LTF_to_TXT_then_load( file , 'InputFolder', input_file_folder , 'OutputFolder', input_file_folder); % load input drv
 x_drv_T_0 = x_drv_T_0*1e3; % convert to mm
 
-%%  Data 11
+%  Data 11
 folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
 file = 'pink_noise_40Hz_T3mm_0_P5.acq'; % load output acq
 true_tune = pid(5,0,0,0.0019455 , Ts_fpga  );
-%scale = 1;
 LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
-
 x_acq_T = x_acq_T*1e3;
 sv2_acq = -sv2_acq; %output is inverted because the wiring is fliped
 
-% [c_drv,lags_drv] = xcorr(x_drv_T_0,x_acq_T);
-% [c_sv,lags_sv] = xcorr(sv2_acq,x_acq_T,'normalized');
-% figure(91); stem(lags_drv,c_drv); figure(92); stem(lags_sv,c_sv);
-
 data11_openloop = iddata(x_acq_T, sv2_acq, Ts);data11_openloop.InputName  = 'sv2_acq';data11_openloop.OutputName = 'x_acq_T';data11_openloop.TimeUnit   = 'seconds';
-
 n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
 data11_closedloop =  iddata(x_acq_T(1:nmin), x_drv_T_0(1:nmin), Ts);data11_closedloop.InputName  = 'x_drv_T_0';data11_closedloop.OutputName = 'x_acq_T';data11_closedloop.TimeUnit   = 'seconds';
 
+%
+spa_data11_openloop = spa(data11_openloop, 30);
+nx =10 ;
+tfest_opt = tfestOptions('InitialCondition','zero');
+tfest_data11_openloop = tfest(data11_openloop,nx,tfest_opt);
+tfest_spa_data11_openloop = tfest(spa_data11_openloop,nx,tfest_opt);
+
+% n4sid options optimized for closed-loop
+n4sidOpt = n4sidOptions;
+n4sidOpt.N4Weight = 'SSARX'; %allows unbiased estimates when using closed loop data
+n4sidOpt.Focus = 'simulation';
+n4sidOpt.InitialState = 'zero';
+n4sid_data11_openloop = n4sid(data11_openloop,nx,'Ts',Ts,n4sidOpt);
+n4sid_spa_data11_openloop = n4sid(spa_data11_openloop,nx,'Ts',Ts,n4sidOpt);
+
+%%
+fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on'); title('Open loop');
+bodeplot(spa_data11_openloop   ,opts1, "r*");
+bodeplot(n4sid_spa_data11_openloop , opts1 , "b-");
+bodeplot(tfest_spa_data11_openloop , opts1 , "m-");
+bodeplot(n4sid_data11_openloop , opts1 , "b--");
+bodeplot(tfest_data11_openloop, opts1 , "m--");
+
+
+%% --- assume u,y,Ts, and FRF H,f are available ---
+z = iddata(y, u, Ts);
+
+% 1) FRF limited to low freq
+fmax = 5; idx = f <= fmax;
+frd_low = idfrd(H(:,:,idx), f(idx), Ts);
+
+% 2) TF fit to FRF
+npol = 4; nz = 0;
+sys_tf = tfest(frd_low, npol, nz);
+sys_ss = ss(sys_tf);
+
+% 3) refine on time data (PEM with noise estimation)
+opt = ssestOptions('Display','on');
+opt.Focus = 'simulation';
+opt.DisturbanceModel = 'estimate';
+sys_refined = ssest(z, sys_ss, opt);
+
+% 4) diagnostics
+figure; compare(z, sys_refined);
+figure; bode(sys_refined);
+figure; resid(z, sys_refined);
+
+%    %    %         %   %      %    %
 % Open Loop
-g_data11_openloop = spa(data11_openloop, 30);
+% use the Signal Processing Toolbox to compute FRF (or use spa in System ID)
+[H,f] = tfestimate(u, y, window, noverlap, nfft, Fs);
+idfrd_obj = idfrd(H, f, Ts);
+sys = tfest(idfrd_obj, n);   % fit an n-th order TF to FRF
 
-% Model training
-nx = 6 ;
-n4sid_data11_openloop = n4sid(data11_openloop,nx,'Ts',Ts,n4sidOpt); n4sid_data11_openloop.InputName  = data11_openloop.InputName;n4sid_data11_openloop.OutputName = data11_openloop.OutputName;
 
-% Resampled to 5000 Hz
+
+%%
+% PIDF tuning % Resampled to 5000 Hz
 fpga_n4sid_data11_openloop = d2d(n4sid_data11_openloop, Ts_fpga);
-
-% PIDF tuning
-tuner_opts = pidtuneOptions('DesignFocus','reference-tracking');
- 
+% tuner_opts = pidtuneOptions('DesignFocus','reference-tracking');
 % cutoff_frequency = 5; % Hz
 % PIDF  = pidtune(fpga_n4sid_data11_openloop,'PIDF',cutoff_frequency*2*pi,tuner_opts)
 % G_PIDF_5Hz = feedback(PIDF*fpga_n4sid_data11_openloop, 1);
@@ -224,8 +258,7 @@ n4sid_data14_closedloop = n4sid(data14_closedloop,nx,'Ts',Ts,n4sidOpt);n4sid_dat
 
 %% Figures Open Loop
 fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on'); title('Open loop');
-
-h = bodeplot(g_data11_openloop   ,opts1, "r*");
+bodeplot(g_data11_openloop   ,opts1, "r*");
 bodeplot(g_data12_openloop   ,opts1, "m*");
 bodeplot(g_data13_openloop , opts1 , "b*");
 bodeplot(g_data14_openloop , opts1 , "g*");
