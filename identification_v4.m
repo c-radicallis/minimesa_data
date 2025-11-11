@@ -7,7 +7,7 @@ func_folder  =  'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Pl
 addpath(func_folder);
 Ts = 0.005;
 Ts_fpga= 1/5000;
-f_vector = logspace( log10(0.1*2*pi) , log10(50*2*pi) , 10);
+f_vector = logspace( log10(0.1*2*pi) , log10(40*2*pi) , 100);
 
 % bode plot options
 opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[0.7 40]};opts1.PhaseWrapping="on";opts1.PhaseWrappingBranch=-360;%opts1.Ylim={[-40 10]};
@@ -34,7 +34,6 @@ data11_closedloop =  iddata(x_acq_T(1:nmin), x_drv_T_0(1:nmin), Ts);data11_close
 spa_data11_openloop = spa(data11_openloop, 30, f_vector);
 nx =10 ;
 tfest_opt = tfestOptions('InitialCondition','zero');
-tfest_data11_openloop = tfest(data11_openloop,nx,tfest_opt);
 tfest_spa_data11_openloop = tfest(spa_data11_openloop,nx,tfest_opt);
 
 % n4sid options optimized for closed-loop
@@ -42,7 +41,6 @@ n4sidOpt = n4sidOptions;
 n4sidOpt.N4Weight = 'SSARX'; %allows unbiased estimates when using closed loop data
 n4sidOpt.Focus = 'simulation';
 n4sidOpt.InitialState = 'zero';
-n4sid_data11_openloop = n4sid(data11_openloop,nx,'Ts',Ts,n4sidOpt);
 n4sid_spa_data11_openloop = n4sid(spa_data11_openloop,nx,'Ts',Ts,n4sidOpt);
 
 %
@@ -50,8 +48,6 @@ fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on'); title('Open loop');
 bodeplot(spa_data11_openloop   ,opts1, "r*");
 bodeplot(n4sid_spa_data11_openloop , opts1 , "b-");
 bodeplot(tfest_spa_data11_openloop , opts1 , "m-");
-bodeplot(n4sid_data11_openloop , opts1 , "b--");
-bodeplot(tfest_data11_openloop, opts1 , "m--");
 
 
 %% --- assume u,y,Ts, and FRF H,f are available ---
