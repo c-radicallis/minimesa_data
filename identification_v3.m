@@ -246,11 +246,12 @@ bodeplot(n4sid_data14_openloop ,opts1, "g--")
 legend(); grid on
 
 %% Figures Closed Loop
-fig2 = figure(2);ax2 = axes(fig2); hold(ax2, 'on'); title('Closed loop');
-h = bodeplot(g_data11_closedloop   ,opts1, "r*");
-bodeplot(g_data12_closedloop   ,opts1, "m*")
-bodeplot(g_data13_closedloop   ,opts1, "b*")
-bodeplot(g_data14_closedloop   ,opts1, "g*")
+fig2 = figure(2);ax2 = axes(fig2); hold(ax2, 'on'); title('Closed loop'); 
+opts2=bodeoptions('cstprefs');opts2.FreqUnits = 'Hz';opts2.XLim={[0.7 40]};opts2.PhaseWrapping="on";opts2.Ylim={[-40 10]};
+bodeplot(g_data11_closedloop   ,opts2, "r*");
+bodeplot(g_data12_closedloop   ,opts2, "m*")
+bodeplot(g_data13_closedloop   ,opts2, "b*")
+bodeplot(g_data14_closedloop   ,opts2, "g*")
 % bodeplot(n4sid_data11_closedloop ,opts1)
 % %bodeplot(tfest_data11_closedloop,opts1)
 % bodeplot(G_PIDF_tracking_data11 , opts1 )
@@ -258,7 +259,7 @@ bodeplot(g_data14_closedloop   ,opts1, "g*")
 % bodeplot(n4sid_data12_closedloop ,opts1)
 % % bodeplot(G_PIDF_tracking_data12 , opts1 )
 % % bodeplot(G_PIDF_true_tune_data12 , opts1)
-legend(); grid on;
+legend(); grid on; ylim={[-40 10]};
 
 %
 fig11 = figure(11);ax11 = axes(fig11); hold(ax11, 'on'); title('Closed loop');
