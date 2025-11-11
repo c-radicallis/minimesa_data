@@ -7,7 +7,16 @@ func_folder  =  'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Pl
 addpath(func_folder);
 Ts = 0.005;
 Ts_fpga= 1/5000;
+
+% bode plot options
 opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[0.7 40]};opts1.PhaseWrapping="on";%opts1.PhaseWrappingBranch=0;%opts1.Ylim={[-40 10]};
+
+% n4sid options optimized for closed-loop
+n4sidOpt = n4sidOptions;
+n4sidOpt.N4Weight = 'SSARX'; %allows unbiased estimates when using closed loop data
+n4sidOpt.Focus = 'simulation';
+n4sidOpt.InitialState = 'zero';
+%n4sidOpt.Display = 'on';
 
 % input file - pink noise 40hz
 input_file_folder ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\31-7-2025\tgt and noise drv\';
@@ -15,8 +24,7 @@ file = 'pink_noise_40Hz_T3mm_0.drv'; % load input drv
 LTF_to_TXT_then_load( file , 'InputFolder', input_file_folder , 'OutputFolder', input_file_folder); % load input drv
 x_drv_T_0 = x_drv_T_0*1e3; % convert to mm
 
-%% New data
-% Data 11
+%%  Data 11
 folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
 file = 'pink_noise_40Hz_T3mm_0_P5.acq'; % load output acq
 true_tune = pid(5,0,0,0.0019455 , Ts_fpga  );
@@ -40,7 +48,7 @@ g_data11_openloop = spa(data11_openloop, 30);
 
 % Model training
 nx = 6 ;
-n4sid_data11_openloop = n4sid(data11_openloop,nx,'Ts',Ts); n4sid_data11_openloop.InputName  = data11_openloop.InputName;n4sid_data11_openloop.OutputName = data11_openloop.OutputName;
+n4sid_data11_openloop = n4sid(data11_openloop,nx,'Ts',Ts,n4sidOpt); n4sid_data11_openloop.InputName  = data11_openloop.InputName;n4sid_data11_openloop.OutputName = data11_openloop.OutputName;
 
 % Resampled to 5000 Hz
 fpga_n4sid_data11_openloop = d2d(n4sid_data11_openloop, Ts_fpga);
@@ -63,7 +71,7 @@ G_PIDF_true_tune_data11 = feedback(true_tune*fpga_n4sid_data11_openloop, 1);
 
 %% Data 12
 folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
-file = 'pink_noise_40Hz_T3mm_0_P5.acq'; % load output acq
+file = 'pink_noise_40Hz_T3mm_0_P7.acq'; % load output acq
 true_tune = pid(5,0,0,0.0019455 , Ts_fpga  );
 %scale = 1;
 LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
@@ -75,34 +83,76 @@ sv2_acq = -sv2_acq; %output is inverted because the wiring is fliped
 % [c_sv,lags_sv] = xcorr(sv2_acq,x_acq_T,'normalized');
 % figure(91); stem(lags_drv,c_drv); figure(92); stem(lags_sv,c_sv);
 
-data11_openloop = iddata(x_acq_T, sv2_acq, Ts);data11_openloop.InputName  = 'sv2_acq';data11_openloop.OutputName = 'x_acq_T';data11_openloop.TimeUnit   = 'seconds';
+data12_openloop = iddata(x_acq_T, sv2_acq, Ts);data12_openloop.InputName  = 'sv2_acq';data12_openloop.OutputName = 'x_acq_T';data12_openloop.TimeUnit   = 'seconds';
 
 n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
-data11_closedloop =  iddata(x_acq_T(1:nmin), x_drv_T_0(1:nmin), Ts);data11_closedloop.InputName  = 'x_drv_T_0';data11_closedloop.OutputName = 'x_acq_T';data11_closedloop.TimeUnit   = 'seconds';
+data12_closedloop =  iddata(x_acq_T(1:nmin), x_drv_T_0(1:nmin), Ts);data12_closedloop.InputName  = 'x_drv_T_0';data12_closedloop.OutputName = 'x_acq_T';data12_closedloop.TimeUnit   = 'seconds';
 
 % Open Loop
-g_data11_openloop = spa(data11_openloop, 30);
+g_data12_openloop = spa(data12_openloop, 30);
 
 % Model training
 nx = 6 ;
-n4sid_data11_openloop = n4sid(data11_openloop,nx,'Ts',Ts); n4sid_data11_openloop.InputName  = data11_openloop.InputName;n4sid_data11_openloop.OutputName = data11_openloop.OutputName;
+n4sid_data12_openloop = n4sid(data12_openloop,nx,'Ts',Ts,n4sidOpt); n4sid_data12_openloop.InputName  = data12_openloop.InputName;n4sid_data12_openloop.OutputName = data12_openloop.OutputName;
 
 % Resampled to 5000 Hz
-fpga_n4sid_data11_openloop = d2d(n4sid_data11_openloop, Ts_fpga);
+fpga_n4sid_data12_openloop = d2d(n4sid_data12_openloop, Ts_fpga);
 
 % PIDF tuning
 tuner_opts = pidtuneOptions('DesignFocus','reference-tracking');
  
 % cutoff_frequency = 5; % Hz
-% PIDF  = pidtune(fpga_n4sid_data11_openloop,'PIDF',cutoff_frequency*2*pi,tuner_opts)
-% G_PIDF_5Hz = feedback(PIDF*fpga_n4sid_data11_openloop, 1);
+% PIDF  = pidtune(fpga_n4sid_data12_openloop,'PIDF',cutoff_frequency*2*pi,tuner_opts)
+% G_PIDF_5Hz = feedback(PIDF*fpga_n4sid_data12_openloop, 1);
 
-% PIDF  = pidtune(fpga_n4sid_data11_openloop,'PIDF',tuner_opts)
-% G_PIDF_tracking_data11 = feedback(PIDF*fpga_n4sid_data11_openloop, 1);
+% PIDF  = pidtune(fpga_n4sid_data12_openloop,'PIDF',tuner_opts)
+% G_PIDF_tracking_data12 = feedback(PIDF*fpga_n4sid_data12_openloop, 1);
 
-G_PIDF_true_tune_data11 = feedback(true_tune*fpga_n4sid_data11_openloop, 1);
+G_PIDF_true_tune_data12 = feedback(true_tune*fpga_n4sid_data12_openloop, 1);
 
-% %% Data Laquila
+%% Data 13
+folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
+file = 'pink_noise_40Hz_T3mm_0_P10.acq'; % load output acq
+true_tune = pid(5,0,0,0.0019455 , Ts_fpga  );
+%scale = 1;
+LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
+
+x_acq_T = x_acq_T*1e3;
+sv2_acq = -sv2_acq; %output is inverted because the wiring is fliped
+
+% [c_drv,lags_drv] = xcorr(x_drv_T_0,x_acq_T);
+% [c_sv,lags_sv] = xcorr(sv2_acq,x_acq_T,'normalized');
+% figure(91); stem(lags_drv,c_drv); figure(92); stem(lags_sv,c_sv);
+
+data13_openloop = iddata(x_acq_T, sv2_acq, Ts);data13_openloop.InputName  = 'sv2_acq';data13_openloop.OutputName = 'x_acq_T';data13_openloop.TimeUnit   = 'seconds';
+
+n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
+data13_closedloop =  iddata(x_acq_T(1:nmin), x_drv_T_0(1:nmin), Ts);data13_closedloop.InputName  = 'x_drv_T_0';data13_closedloop.OutputName = 'x_acq_T';data13_closedloop.TimeUnit   = 'seconds';
+
+% Open Loop
+g_data13_openloop = spa(data13_openloop, 30);
+
+% Model training
+nx = 6 ;
+n4sid_data13_openloop = n4sid(data13_openloop,nx,'Ts',Ts,n4sidOpt); n4sid_data13_openloop.InputName  = data13_openloop.InputName;n4sid_data13_openloop.OutputName = data13_openloop.OutputName;
+
+% Resampled to 5000 Hz
+fpga_n4sid_data13_openloop = d2d(n4sid_data13_openloop, Ts_fpga);
+
+% PIDF tuning
+tuner_opts = pidtuneOptions('DesignFocus','reference-tracking');
+ 
+% cutoff_frequency = 5; % Hz
+% PIDF  = pidtune(fpga_n4sid_data13_openloop,'PIDF',cutoff_frequency*2*pi,tuner_opts)
+% G_PIDF_5Hz = feedback(PIDF*fpga_n4sid_data13_openloop, 1);
+
+% PIDF  = pidtune(fpga_n4sid_data13_openloop,'PIDF',tuner_opts)
+% G_PIDF_tracking_data13 = feedback(PIDF*fpga_n4sid_data13_openloop, 1);
+
+G_PIDF_true_tune_data13 = feedback(true_tune*fpga_n4sid_data13_openloop, 1);
+
+
+%% Data Laquila
 % % input file
 % input_file_folder ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\31-7-2025\tgt and noise drv\Targets\';
 % file = 'LAquilaReducedScale.tgt'; % load input drv
@@ -128,14 +178,14 @@ g_data13_closedloop = spa(data13_closedloop, 30);
 % Model training
 nx = 5;
 
-n4sid_data11_closedloop = n4sid(data11_closedloop,nx,'Ts',Ts);%,'N4weight','SSARX'); 
+n4sid_data11_closedloop = n4sid(data11_closedloop,nx,'Ts',Ts,n4sidOpt);
 n4sid_data11_closedloop.InputName  = data11_closedloop.InputName;n4sid_data11_closedloop.OutputName = data11_closedloop.OutputName;
 %tfest_data11_closedloop = tfest(data11_closedloop,nx);
 
-n4sid_data12_closedloop = n4sid(data12_closedloop,nx,'Ts',Ts);%,'N4weight','SSARX'); 
+n4sid_data12_closedloop = n4sid(data12_closedloop,nx,'Ts',Ts,n4sidOpt);
 n4sid_data12_closedloop.InputName  = data12_closedloop.InputName;n4sid_data12_closedloop.OutputName = data12_closedloop.OutputName;
 
-n4sid_data13_closedloop = n4sid(data13_closedloop,nx,'Ts',Ts);%,'N4weight','SSARX'); 
+n4sid_data13_closedloop = n4sid(data13_closedloop,nx,'Ts',Ts,n4sidOpt);
 n4sid_data13_closedloop.InputName  = data13_closedloop.InputName;n4sid_data13_closedloop.OutputName = data13_closedloop.OutputName;
 
 

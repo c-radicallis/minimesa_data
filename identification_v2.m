@@ -8,7 +8,15 @@ addpath(func_folder);
 Ts = 0.005;
 Ts_fpga= 1/5000;
 
+%bode plot options
 opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[0.7 40]};opts1.PhaseWrapping="on";%opts1.PhaseWrappingBranch=0;%opts1.Ylim={[-40 10]};
+
+% n4sid options optimized for closed-loop
+n4sidOpt = n4sidOptions;
+n4sidOpt.N4Weight = 'SSARX'; %allows unbiased estimates when using closed loop data
+n4sidOpt.Focus = 'simulation';
+n4sidOpt.InitialState = 'zero';
+n4sidOpt.Display = 'on';
 
 % input file - pink noise 40hz
 input_file_folder ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\31-7-2025\tgt and noise drv\';
@@ -177,7 +185,7 @@ g_data12_closedloop = spa(data12_closedloop, 30);
 g_data13_closedloop = spa(data13_closedloop, 30);
 
 %% Model training
-nx = 3;
+nx = 2;
 
 n4sid_data11_closedloop = n4sid(data11_closedloop,nx,'Ts',Ts,'N4weight','SSARX'); 
 n4sid_data11_closedloop.InputName  = data11_closedloop.InputName;n4sid_data11_closedloop.OutputName = data11_closedloop.OutputName;
