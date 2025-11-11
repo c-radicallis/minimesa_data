@@ -7,6 +7,7 @@ func_folder  =  'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Pl
 addpath(func_folder);
 Ts = 0.005;
 Ts_fpga= 1/5000;
+f_vector = logspace( log10(0.1*2*pi) , log10(50*2*pi) , 10);
 
 % bode plot options
 opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[0.7 40]};opts1.PhaseWrapping="on";opts1.PhaseWrappingBranch=-360;%opts1.Ylim={[-40 10]};
@@ -30,7 +31,7 @@ n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
 data11_closedloop =  iddata(x_acq_T(1:nmin), x_drv_T_0(1:nmin), Ts);data11_closedloop.InputName  = 'x_drv_T_0';data11_closedloop.OutputName = 'x_acq_T';data11_closedloop.TimeUnit   = 'seconds';
 
 %
-spa_data11_openloop = spa(data11_openloop, 30);
+spa_data11_openloop = spa(data11_openloop, 30, f_vector);
 nx =10 ;
 tfest_opt = tfestOptions('InitialCondition','zero');
 tfest_data11_openloop = tfest(data11_openloop,nx,tfest_opt);
@@ -44,7 +45,7 @@ n4sidOpt.InitialState = 'zero';
 n4sid_data11_openloop = n4sid(data11_openloop,nx,'Ts',Ts,n4sidOpt);
 n4sid_spa_data11_openloop = n4sid(spa_data11_openloop,nx,'Ts',Ts,n4sidOpt);
 
-%%
+%
 fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on'); title('Open loop');
 bodeplot(spa_data11_openloop   ,opts1, "r*");
 bodeplot(n4sid_spa_data11_openloop , opts1 , "b-");
