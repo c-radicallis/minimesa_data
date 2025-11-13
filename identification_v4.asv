@@ -44,45 +44,41 @@ n4sidOpt.InitialState = 'zero';
 n4sid_spa_data11_openloop = n4sid(spa_data11_openloop,nx,'Ts',Ts,n4sidOpt);
 
 %
+z = tf('z',Ts_fpga);
+Kc=10;
+Ti=0.1;
+Ki=Kc*Ts_fpga/Ti;
+Controller = Kc + Ki/(z-1)
+G_closed = d2d(sys4 , Ts_fpga)
+% G_open = G_closed/(Controller*(1-G_closed)) 
+G_open = minreal( G_closed/(Controller*(1-G_closed))) 
+G_open.InputName =  'i_sv';
+
+%
 fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on'); title('Open loop');
 bodeplot(spa_data11_openloop   ,opts1, "r*");
 bodeplot(n4sid_spa_data11_openloop , opts1 , "b-");
 bodeplot(tfest_spa_data11_openloop , opts1 , "m-");
 
-nx =8 ;
-tfest_opt = tfestOptions('InitialCondition','zero');
-tfest_spa_data11_openloop_2 = tfest(spa_data11_openloop,nx,tfest_opt);
 
-% n4sid options optimized for closed-loop
-n4sidOpt = n4sidOptions;
-n4sidOpt.N4Weight = 'SSARX'; %allows unbiased estimates when using closed loop data
-n4sidOpt.Focus = 'simulation';
-n4sidOpt.InitialState = 'zero';
-n4sid_spa_data11_openloop_2 = n4sid(spa_data11_openloop,nx,'Ts',Ts,n4sidOpt);
-
-bodeplot(n4sid_spa_data11_openloop_2 , opts1 , "b--");
-bodeplot(tfest_spa_data11_openloop_2 , opts1 , "m--");
 %%
-%
-% G_open_from_knownTune_n_CL = minreal( G_closed/(Controller*(1-G_closed))) 
+% PIDF tuning % Resampled to 5000 Hz
+fpga_n4sid_data11_openloop = d2d(n4sid_data11_openloop, Ts_fpga);
+% tuner_opts = pidtuneOptions('DesignFocus','reference-tracking');
+% cutoff_frequency = 5; % Hz
+% PIDF  = pidtune(fpga_n4sid_data11_openloop,'PIDF',cutoff_frequency*2*pi,tuner_opts)
+% G_PIDF_5Hz = feedback(PIDF*fpga_n4sid_data11_openloop, 1);
 
-% % PIDF tuning % Resampled to 5000 Hz
-% fpga_n4sid_data11_openloop = d2d(n4sid_data11_openloop, Ts_fpga);
-% % tuner_opts = pidtuneOptions('DesignFocus','reference-tracking');
-% % cutoff_frequency = 5; % Hz
-% % PIDF  = pidtune(fpga_n4sid_data11_openloop,'PIDF',cutoff_frequency*2*pi,tuner_opts)
-% % G_PIDF_5Hz = feedback(PIDF*fpga_n4sid_data11_openloop, 1);
-% 
-% % PIDF  = pidtune(fpga_n4sid_data11_openloop,'PIDF',tuner_opts)
-% % G_PIDF_tracking_data11 = feedback(PIDF*fpga_n4sid_data11_openloop, 1);
-% 
-% G_PIDF_true_tune_data11 = feedback(true_tune*fpga_n4sid_data11_openloop, 1);
-% 
-% % checking if the identification is valid (see Duarte Valerio slides)
-% % Y_est = sim(n4sid_data11_openloop, )
-% % [c_drv,lags_drv] = xcorr(x_drv_T_0,x_acq_T);
+% PIDF  = pidtune(fpga_n4sid_data11_openloop,'PIDF',tuner_opts)
+% G_PIDF_tracking_data11 = feedback(PIDF*fpga_n4sid_data11_openloop, 1);
 
-%% Data 12
+G_PIDF_true_tune_data11 = feedback(true_tune*fpga_n4sid_data11_openloop, 1);
+
+% checking if the identification is valid (see Duarte Valerio slides)
+% Y_est = sim(n4sid_data11_openloop, )
+% [c_drv,lags_drv] = xcorr(x_drv_T_0,x_acq_T);
+
+% %% Data 12
 % folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
 % file = 'pink_noise_40Hz_T3mm_0_P7.acq'; % load output acq
 % true_tune = pid(7,0,0,0.0019455 , Ts_fpga  );
