@@ -7,10 +7,21 @@ func_folder  =  'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Pl
 addpath(func_folder);
 Ts = 0.005;
 Ts_fpga= 1/5000;
+
+% spa settings
+win_size = 1/(0.1*Ts); %frequency resolution = 2*pi/(win_size*Ts) [rad/s] = 1/(win_size *Ts)[Hz]
 f_vector = logspace( log10(0.1*2*pi) , log10(40*2*pi) , 100);
 
+% tfest settings
 np =10 ; %number of poles for tfest
 tfest_opt = tfestOptions('InitialCondition','zero');
+
+%n4sid settings
+nx=10;
+n4sidOpt = n4sidOptions;
+n4sidOpt.N4Weight = 'SSARX'; %allows unbiased estimates when using closed loop data
+% n4sidOpt.Focus = 'simulation';
+% n4sidOpt.InitialState = 'zero';
 
 % bode plot options
 opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[0.7 100]};opts1.PhaseWrapping="on";opts1.PhaseWrappingBranch=-360;%opts1.Ylim={[-40 10]};
@@ -33,10 +44,15 @@ data11_openloop = iddata(x_acq_T, sv2_acq, Ts);data11_openloop.InputName  = 'sv2
 n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
 data11_closedloop =  iddata(x_acq_T(1:nmin), x_drv_T_0(1:nmin), Ts);data11_closedloop.InputName  = 'x_drv_T_0';data11_closedloop.OutputName = 'x_acq_T';data11_closedloop.TimeUnit   = 'seconds';
 %
-spa_data11_openloop = spa(data11_openloop, 30, f_vector);
+spa_data11_openloop = spa(data11_openloop, win_size, f_vector);
 tfest_spa_data11_openloop = tfest(spa_data11_openloop,np,'Ts',Ts,tfest_opt)
 
-%
+spa_data11_closedloop = spa(data11_closedloop, win_size, f_vector);
+tfest_spa_data11_closedloop = tfest(spa_data11_closedloop,np,'Ts',Ts,tfest_opt)
+n4sid_spa_data11_closedloop = n4sid(spa_data11_closedloop,nx,'Ts',Ts,n4sidOpt);
+spa30_data11_closedloop = spa(data11_closedloop,10, f_vector);
+
+%%
 % G_open_from_knownTune_n_CL = minreal( G_closed/(Controller*(1-G_closed))) 
 % 
 % % PIDF tuning % Resampled to 5000 Hz
@@ -67,8 +83,10 @@ data12_openloop = iddata(x_acq_T, sv2_acq, Ts);
 n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
 data12_closedloop =  iddata(x_acq_T(1:nmin), x_drv_T_0(1:nmin), Ts);
 %
-spa_data12_openloop = spa(data12_openloop, 30, f_vector);
+spa_data12_openloop = spa(data12_openloop, win_size, f_vector);
 tfest_spa_data12_openloop = tfest(spa_data12_openloop,np,'Ts',Ts,tfest_opt)
+spa_data12_closedloop = spa(data12_closedloop, win_size, f_vector);
+tfest_spa_data12_closedloop = tfest(spa_data12_closedloop,np,'Ts',Ts,tfest_opt)
 
 %% Data 13
 folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
@@ -82,8 +100,10 @@ data13_openloop = iddata(x_acq_T, sv2_acq, Ts);
 n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
 data13_closedloop =  iddata(x_acq_T(1:nmin), x_drv_T_0(1:nmin), Ts);
 %
-spa_data13_openloop = spa(data13_openloop, 30, f_vector);
+spa_data13_openloop = spa(data13_openloop, win_size, f_vector);
 tfest_spa_data13_openloop = tfest(spa_data13_openloop,np,'Ts',Ts,tfest_opt)
+spa_data13_closedloop = spa(data13_closedloop, win_size, f_vector);
+tfest_spa_data13_closedloop = tfest(spa_data13_closedloop,np,'Ts',Ts,tfest_opt)
 
 %% Data 14
 folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
@@ -97,8 +117,10 @@ data14_openloop = iddata(x_acq_T, sv2_acq, Ts);
 n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
 data14_closedloop =  iddata(x_acq_T(1:nmin), x_drv_T_0(1:nmin), Ts);
 %
-spa_data14_openloop = spa(data14_openloop, 30, f_vector);
+spa_data14_openloop = spa(data14_openloop, win_size, f_vector);
 tfest_spa_data14_openloop = tfest(spa_data14_openloop,np,'Ts',Ts,tfest_opt)
+spa_data14_closedloop = spa(data14_closedloop, win_size, f_vector);
+tfest_spa_data14_closedloop = tfest(spa_data14_closedloop,np,'Ts',Ts,tfest_opt)
 
 %% Data Laquila
 % % input file
@@ -119,10 +141,10 @@ tfest_spa_data14_openloop = tfest(spa_data14_openloop,np,'Ts',Ts,tfest_opt)
 % 
 
 % %% Closed Loop
-% g_data11_closedloop = spa(data11_closedloop, 30);
-% g_data12_closedloop = spa(data12_closedloop, 30);
-% g_data13_closedloop = spa(data13_closedloop, 30);
-% g_data14_closedloop = spa(data14_closedloop, 30);
+% g_data11_closedloop = spa(data11_closedloop, win_size);
+% g_data12_closedloop = spa(data12_closedloop, win_size);
+% g_data13_closedloop = spa(data13_closedloop, win_size);
+% g_data14_closedloop = spa(data14_closedloop, win_size);
 % 
 % % Model training
 % nx = 6;
@@ -132,7 +154,6 @@ tfest_spa_data14_openloop = tfest(spa_data14_openloop,np,'Ts',Ts,tfest_opt)
 % n4sid_data14_closedloop = n4sid(data14_closedloop,nx,'Ts',Ts,n4sidOpt);n4sid_data14_closedloop.InputName  = data14_closedloop.InputName;n4sid_data14_closedloop.OutputName = data14_closedloop.OutputName;
 
 %% Figures Open Loop
-
 fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on'); title('Open loop');
 bodeplot(spa_data11_openloop   ,opts1, "r*");
 bodeplot(tfest_spa_data11_openloop , opts1 , "r-");
@@ -145,21 +166,21 @@ bodeplot(tfest_spa_data14_openloop , opts1 , "g-");
 
 legend(); grid on
 
-% %% Figures Closed Loop
-% fig2 = figure(2);ax2 = axes(fig2); hold(ax2, 'on'); title('Closed loop'); 
-% opts2=bodeoptions('cstprefs');opts2.FreqUnits = 'Hz';opts2.XLim={[0.7 40]};opts2.PhaseWrapping="on";opts2.Ylim={[-40 10]};
-% bodeplot(g_data11_closedloop   ,opts2, "r*");
-% bodeplot(g_data12_closedloop   ,opts2, "m*")
-% bodeplot(g_data13_closedloop   ,opts2, "b*")
-% bodeplot(g_data14_closedloop   ,opts2, "g*")
-% % bodeplot(n4sid_data11_closedloop ,opts1)
-% % %bodeplot(tfest_data11_closedloop,opts1)
-% % bodeplot(G_PIDF_tracking_data11 , opts1 )
-% % bodeplot(G_PIDF_true_tune_data11 , opts1)
-% % bodeplot(n4sid_data12_closedloop ,opts1)
-% % % bodeplot(G_PIDF_tracking_data12 , opts1 )
-% % % bodeplot(G_PIDF_true_tune_data12 , opts1)
-% legend(); grid on; ylim={[-40 10]};
+%% Figures Closed Loop
+fig2 = figure(2);ax2 = axes(fig2); hold(ax2, 'on'); title('Closed loop'); 
+bodeplot(spa_data11_closedloop   ,opts1, "r*");
+bodeplot(spa30_data11_closedloop   ,opts1, "ro");
+bodeplot(tfest_spa_data11_closedloop , opts1 , "r-");
+bodeplot(n4sid_spa_data11_closedloop , opts1 , "r+-");
+bodeplot(spa_data12_closedloop   ,opts1, "m*");
+bodeplot(tfest_spa_data12_closedloop , opts1 , "m-");
+bodeplot(spa_data13_closedloop   ,opts1, "b*");
+bodeplot(tfest_spa_data13_closedloop , opts1 , "b-");
+bodeplot(spa_data14_closedloop   ,opts1, "g*");
+bodeplot(tfest_spa_data14_closedloop , opts1 , "g-");
+
+legend(); grid on
+
 % 
 % %
 % fig11 = figure(11);ax11 = axes(fig11); hold(ax11, 'on'); title('Closed loop');
