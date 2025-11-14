@@ -10,8 +10,7 @@ Ts_fpga= 1/5000;
 % spa settings
 freq_resolution = 0.1;
 win_size = 1/(freq_resolution*Ts); %frequency resolution = 2*pi/(win_size*Ts) [rad/s] = 1/(win_size *Ts)[Hz]
-f_vector_OL = logspace( log10(2*freq_resolution*2*pi) , log10(100*2*pi) , 20);
-f_vector_CL = logspace( log10(2*freq_resolution*2*pi) , log10(100*2*pi) , 50);
+f_vector = logspace( log10(2*freq_resolution*2*pi) , log10(100*2*pi) , 100);
 
 % tfest settings
 np_OL = 6; %number of poles for tfest
@@ -46,8 +45,8 @@ data11_openloop = iddata(x_acq_T, sv2_acq, Ts);data11_openloop.InputName  = 'sv2
 n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
 data11_closedloop =  iddata(x_acq_T(1:nmin), x_drv_T_0(1:nmin), Ts);data11_closedloop.InputName  = 'x_drv_T_0';data11_closedloop.OutputName = 'x_acq_T';data11_closedloop.TimeUnit   = 'seconds';
 %
-spa_data11_openloop = spa(data11_openloop, win_size, f_vector_OL);
-spa_data11_closedloop = spa(data11_closedloop, win_size, f_vector_CL);
+spa_data11_openloop = spa(data11_openloop, win_size, f_vector);
+spa_data11_closedloop = spa(data11_closedloop, win_size, f_vector);
 
 %tfest_data11_openloop = tfest(data11_openloop,np_OL,'Ts',Ts,tfest_opt);
 % n4sid_data11_openloop = n4sid(data11_openloop,nx,'Ts',Ts,n4sidOpt);
@@ -58,8 +57,6 @@ tfest_spa_data11_openloop = tfest(spa_data11_openloop,np_OL,'Ts',Ts,tfest_opt);
 % n4sid_spa_data11_openloop = n4sid(spa_data11_openloop,nx,'Ts',Ts,n4sidOpt);
 tfest_spa_data11_closedloop = tfest(spa_data11_closedloop,np_CL,'Ts',Ts,tfest_opt);
 % n4sid_spa_data11_closedloop = n4sid(spa_data11_closedloop,nx,'Ts',Ts,n4sidOpt);
-mbj=bj(edat,[4 4 2 2 0]);  % Estimate Box-Jenkins polynomial model using time-domain data
-
 
 fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on'); title('Open loop');
 h = bodeplot(spa_data11_openloop   ,opts1,"r.");
