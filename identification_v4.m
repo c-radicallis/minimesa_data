@@ -1,7 +1,5 @@
-% SISO System Identification Example Script
-% This script demonstrates how to perform SISO system identification
-% using input-output data2 in MATLAB with the System Identification Toolbox.
-clear;clc;close all;
+clear;clc;close all; setappdata(0, 'AutoStagger_LRDown_Last', []);   % ensure first figure starts at top-left
+set(0, 'DefaultFigureCreateFcn', @autoStagger_LRDown_relSize);
 addpath 'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\uniaxial_table_model'
 func_folder  =  'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\uniaxial_table_model\Adapting_Driver_Signal\';
 addpath(func_folder);
@@ -9,30 +7,31 @@ Ts = 0.005;
 Ts_fpga= 1/5000;
 
 % spa settings
-win_size = 1/(0.1*Ts); %frequency resolution = 2*pi/(win_size*Ts) [rad/s] = 1/(win_size *Ts)[Hz]
-f_vector = logspace( log10(0.1*2*pi) , log10(40*2*pi) , 100);
+freq_resolution = 0.1;
+win_size = 1/(freq_resolution*Ts); %frequency resolution = 2*pi/(win_size*Ts) [rad/s] = 1/(win_size *Ts)[Hz]
+f_vector = logspace( log10(2*freq_resolution*2*pi) , log10(50*2*pi) , 10);
 
 % tfest settings
-np =10 ; %number of poles for tfest
+np =3 ; %number of poles for tfest
 tfest_opt = tfestOptions('InitialCondition','zero');
 
 %n4sid settings
-nx=10;
+nx=5;
 n4sidOpt = n4sidOptions;
 n4sidOpt.N4Weight = 'SSARX'; %allows unbiased estimates when using closed loop data
-% n4sidOpt.Focus = 'simulation';
-% n4sidOpt.InitialState = 'zero';
+n4sidOpt.Focus = 'simulation';
+n4sidOpt.InitialState = 'zero';
 
 % bode plot options
-opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[0.7 100]};opts1.PhaseWrapping="on";opts1.PhaseWrappingBranch=-360;%opts1.Ylim={[-40 10]};
+opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[freq_resolution 100]};opts1.PhaseWrapping="on";opts1.PhaseWrappingBranch=-360;%opts1.Ylim={[-40 10]};
 
 % input file - pink noise 40hz
 input_file_folder ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\31-7-2025\tgt and noise drv\';
 file = 'pink_noise_40Hz_T3mm_0.drv'; % load input drv
 LTF_to_TXT_then_load( file , 'InputFolder', input_file_folder , 'OutputFolder', input_file_folder); % load input drv
-x_drv_T_0 = x_drv_T_0*1e3; % convert to mm
+x_drv_T_0 = x_drv_T_0*1e3; % convert t  o mm
 
-%%  Data 11
+%  Data 11
 folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
 file = 'pink_noise_40Hz_T3mm_0_P5.acq'; % load output acq
 true_tune = pid(5,0,0,0.0019455 , Ts_fpga  );
@@ -45,12 +44,98 @@ n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
 data11_closedloop =  iddata(x_acq_T(1:nmin), x_drv_T_0(1:nmin), Ts);data11_closedloop.InputName  = 'x_drv_T_0';data11_closedloop.OutputName = 'x_acq_T';data11_closedloop.TimeUnit   = 'seconds';
 %
 spa_data11_openloop = spa(data11_openloop, win_size, f_vector);
-tfest_spa_data11_openloop = tfest(spa_data11_openloop,np,'Ts',Ts,tfest_opt)
+spa_data11_closedloop = spa(data11_closedloop, win_size, f_vector);
+
+tfest_data11_openloop = tfest(data11_openloop,np,'Ts',Ts,tfest_opt);
+n4sid_data11_openloop = n4sid(data11_openloop,nx,'Ts',Ts,n4sidOpt);
+tfest_data11_closedloop = tfest(data11_closedloop,np,'Ts',Ts,tfest_opt);
+n4sid_data11_closedloop = n4sid(data11_closedloop,nx,'Ts',Ts,n4sidOpt);
+
+tfest_spa_data11_openloop = tfest(spa_data11_openloop,np,'Ts',Ts,tfest_opt);
+% n4sid_spa_data11_openloop = n4sid(spa_data11_openloop,nx,'Ts',Ts,n4sidOpt);
+tfest_spa_data11_closedloop = tfest(spa_data11_closedloop,np,'Ts',Ts,tfest_opt);
+% n4sid_spa_data11_closedloop = n4sid(spa_data11_closedloop,nx,'Ts',Ts,n4sidOpt);
+
+fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on'); title('Open loop');
+h = bodeplot(spa_data11_openloop   ,opts1,"r.");
+showConfidence(h,3)
+h = bodeplot(tfest_data11_openloop   ,opts1);
+showConfidence(h,3);
+h = bodeplot(n4sid_data11_openloop ,opts1);
+showConfidence(h,3)
+h = bodeplot(tfest_spa_data11_openloop   ,opts1);
+showConfidence(h,3);
+% h = bodeplot(n4sid_spa_data11_openloop ,opts1);
+% showConfidence(h,3)
+legend;
+
+fig2 = figure(2);ax2 = axes(fig2); hold(ax2, 'on'); title('Closed loop'); 
+h = bodeplot(spa_data11_closedloop   ,opts1,"r.");
+showConfidence(h)
+h = bodeplot(tfest_data11_closedloop   ,opts1);
+showConfidence(h);
+h = bodeplot(n4sid_data11_closedloop ,opts1);
+showConfidence(h)
+h = bodeplot(tfest_spa_data11_closedloop   ,opts1);
+showConfidence(h);
+% h = bodeplot(n4sid_spa_data11_closedloop ,opts1);
+% showConfidence(h)
+legend;
+%% Comparing frequency resolution (window size)
+spa_data11_openloop = spa(data11_openloop, win_size, f_vector);
+spa200_data11_openloop = spa(data11_openloop,200, f_vector);
+spa100_data11_openloop = spa(data11_openloop,100, f_vector);
+spa30_data11_openloop = spa(data11_openloop,30, f_vector);
+spa10_data11_openloop = spa(data11_openloop,10, f_vector);
+
+%tfest_spa_data11_openloop = tfest(data11_openloop,np,'Ts',Ts,tfest_opt);
+% n4sid_spa_data11_openloop = n4sid(data11_openloop,nx,'Ts',Ts,n4sidOpt);
 
 spa_data11_closedloop = spa(data11_closedloop, win_size, f_vector);
-tfest_spa_data11_closedloop = tfest(spa_data11_closedloop,np,'Ts',Ts,tfest_opt)
-n4sid_spa_data11_closedloop = n4sid(spa_data11_closedloop,nx,'Ts',Ts,n4sidOpt);
-spa30_data11_closedloop = spa(data11_closedloop,10, f_vector);
+spa200_data11_closedloop = spa(data11_closedloop,200, f_vector);
+spa100_data11_closedloop = spa(data11_closedloop,100, f_vector);
+spa30_data11_closedloop = spa(data11_closedloop,30, f_vector);
+spa10_data11_closedloop = spa(data11_closedloop,10, f_vector);
+
+%tfest_spa_data11_closedloop = tfest(data11_closedloop,np,'Ts',Ts,tfest_opt);
+% n4sid_spa_data11_closedloop = n4sid(data11_closedloop,nx,'Ts',Ts,n4sidOpt);
+
+fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on'); title('Open loop');
+h = bodeplot(spa_data11_openloop   ,opts1,"r.");
+showConfidence(h,3)
+h = bodeplot(spa200_data11_openloop,opts1,"c.");
+showConfidence(h,3)
+h = bodeplot(spa100_data11_openloop,opts1,"m.");
+showConfidence(h,3)
+h = bodeplot(spa30_data11_openloop ,opts1,"b.");
+showConfidence(h,3)
+h = bodeplot(spa10_data11_openloop ,opts1,"g.");
+showConfidence(h,3)
+% h = bodeplot(tfest_spa_data11_openloop ,opts1);
+% showConfidence(h,3)
+% h = bodeplot(n4sid_spa_data11_openloop ,opts1);
+% showConfidence(h,3)
+legend;
+
+fig2 = figure(2);ax2 = axes(fig2); hold(ax2, 'on'); title('Closed loop'); 
+h = bodeplot(spa_data11_closedloop   ,opts1,"r.");
+showConfidence(h)
+h = bodeplot(spa200_data11_closedloop,opts1,"c.");
+showConfidence(h)
+h = bodeplot(spa100_data11_closedloop,opts1,"m.");
+showConfidence(h)
+h = bodeplot(spa30_data11_closedloop ,opts1,"b.");
+showConfidence(h)
+h = bodeplot(spa10_data11_closedloop ,opts1,"g.");
+showConfidence(h)
+% h = bodeplot(tfest_spa_data11_closedloop ,opts1);
+% showConfidence(h)
+% h = bodeplot(n4sid_spa_data11_closedloop ,opts1);
+% showConfidence(h)
+legend;
+
+%% Estimate Box-Jenkins polynomial model using time-domain data
+% mbj=bj(edat,[4 4 2 2 0]);  
 
 %%
 % G_open_from_knownTune_n_CL = minreal( G_closed/(Controller*(1-G_closed))) 
