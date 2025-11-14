@@ -58,7 +58,7 @@ tfest_spa_data11_openloop = tfest(spa_data11_openloop,np_OL,'Ts',Ts,tfest_opt);
 % n4sid_spa_data11_openloop = n4sid(spa_data11_openloop,nx,'Ts',Ts,n4sidOpt);
 tfest_spa_data11_closedloop = tfest(spa_data11_closedloop,np_CL,'Ts',Ts,tfest_opt);
 % n4sid_spa_data11_closedloop = n4sid(spa_data11_closedloop,nx,'Ts',Ts,n4sidOpt);
-mbj=bj(edat,[4 4 2 2 0]);  % Estimate Box-Jenkins polynomial model using time-domain data
+%mbj=bj(edat,[4 4 2 2 0]);  % Estimate Box-Jenkins polynomial model using time-domain data
 
 
 fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on'); title('Open loop');
