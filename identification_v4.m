@@ -9,10 +9,10 @@ Ts_fpga= 1/5000;
 % spa settings
 freq_resolution = 0.1;
 win_size = 1/(freq_resolution*Ts); %frequency resolution = 2*pi/(win_size*Ts) [rad/s] = 1/(win_size *Ts)[Hz]
-f_vector = logspace( log10(2*freq_resolution*2*pi) , log10(50*2*pi) , 10);
+f_vector = logspace( log10(2*freq_resolution*2*pi) , log10(50*2*pi) , 40);
 
 % tfest settings
-np =3 ; %number of poles for tfest
+np =6 ; %number of poles for tfest
 tfest_opt = tfestOptions('InitialCondition','zero');
 
 %n4sid settings
@@ -47,9 +47,9 @@ spa_data11_openloop = spa(data11_openloop, win_size, f_vector);
 spa_data11_closedloop = spa(data11_closedloop, win_size, f_vector);
 
 tfest_data11_openloop = tfest(data11_openloop,np,'Ts',Ts,tfest_opt);
-n4sid_data11_openloop = n4sid(data11_openloop,nx,'Ts',Ts,n4sidOpt);
+% n4sid_data11_openloop = n4sid(data11_openloop,nx,'Ts',Ts,n4sidOpt);
 tfest_data11_closedloop = tfest(data11_closedloop,np,'Ts',Ts,tfest_opt);
-n4sid_data11_closedloop = n4sid(data11_closedloop,nx,'Ts',Ts,n4sidOpt);
+% n4sid_data11_closedloop = n4sid(data11_closedloop,nx,'Ts',Ts,n4sidOpt);
 
 tfest_spa_data11_openloop = tfest(spa_data11_openloop,np,'Ts',Ts,tfest_opt);
 % n4sid_spa_data11_openloop = n4sid(spa_data11_openloop,nx,'Ts',Ts,n4sidOpt);
@@ -61,8 +61,8 @@ h = bodeplot(spa_data11_openloop   ,opts1,"r.");
 showConfidence(h,3)
 h = bodeplot(tfest_data11_openloop   ,opts1);
 showConfidence(h,3);
-h = bodeplot(n4sid_data11_openloop ,opts1);
-showConfidence(h,3)
+% h = bodeplot(n4sid_data11_openloop ,opts1);
+% showConfidence(h,3)
 h = bodeplot(tfest_spa_data11_openloop   ,opts1);
 showConfidence(h,3);
 % h = bodeplot(n4sid_spa_data11_openloop ,opts1);
@@ -74,8 +74,8 @@ h = bodeplot(spa_data11_closedloop   ,opts1,"r.");
 showConfidence(h)
 h = bodeplot(tfest_data11_closedloop   ,opts1);
 showConfidence(h);
-h = bodeplot(n4sid_data11_closedloop ,opts1);
-showConfidence(h)
+% h = bodeplot(n4sid_data11_closedloop ,opts1);
+% showConfidence(h)
 h = bodeplot(tfest_spa_data11_closedloop   ,opts1);
 showConfidence(h);
 % h = bodeplot(n4sid_spa_data11_closedloop ,opts1);
