@@ -9,7 +9,7 @@ Ts_fpga= 1/5000;
 % spa settings
 freq_resolution = 0.1;
 win_size = 1/(freq_resolution*Ts); %frequency resolution = 2*pi/(win_size*Ts) [rad/s] = 1/(win_size *Ts)[Hz]
-f_vector_full= logspace( log10(2*freq_resolution*2*pi) , log10(100*2*pi) , 200);
+f_vector_full= logspace( log10(2*freq_resolution*2*pi) , log10(100*2*pi) , 100);
 f_vector_OL = logspace( log10(2*freq_resolution*2*pi) , log10(100*2*pi) , 20);
 f_vector_CL = logspace( log10(2*freq_resolution*2*pi) , log10(100*2*pi) , 20); %linspace( 2*2*freq_resolution*2*pi , 100*2*pi , 6 );
 
@@ -62,15 +62,17 @@ tfest_spa_data11_CL = tfest(spa_data11_CL,np_CL,'Ts',Ts,tfest_opt_CL)
 ssest_data11_CL =  ssest(spa_data11_CL_full,6,ssestOptions)
 %
 spa_OL_from_Tune_and_CL_spa =  spa_data11_CL_full/(d2d(true_tune_11,Ts)*(1-spa_data11_CL_full));%minreal() 
+tfest_spa_OL_from_Tune_and_CL_spa = tfest(spa_OL_from_Tune_and_CL_spa,np_OL,'Ts',Ts,tfest_opt_OL)
 spa_CL_from_Tune_and_OL_spa = feedback(d2d(true_tune_11,Ts)*spa_data11_OL_full, 1);
 CL_from_Tune_and_OL_tfest = feedback(true_tune_11*d2d(tfest_spa_data11_OL,Ts_fpga), 1);
 
 % Open Loop
 fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on'); title('Open loop');
 bodeplot(spa_data11_OL_full,"k.");
-bodeplot(spa_data11_OL_full   ,opts1,"r*");%showConfidence(h)
+bodeplot(spa_data11_OL   ,opts1,"r*");%showConfidence(h)
 bodeplot(tfest_spa_data11_OL   ,opts1,"b");%showConfidence(h);
 bodeplot(spa_OL_from_Tune_and_CL_spa   ,opts1,"g*");
+bodeplot(tfest_spa_OL_from_Tune_and_CL_spa   ,opts1,"g-");
 legend("Blackman-Tukey spectral analysis","subset of data to fit model","estimated TF","OL from tune and CL"); grid on;
 
 % Closed Loop
@@ -84,13 +86,17 @@ bodeplot(ssest_data11_CL,opts1,"y-");
 legend("Blackman-Tukey spectral analysis","subset of data to fit model","estimated TF","CL from tune and OL spa","CL from tune and OL tfest"); grid on;
 
 %
-Ymodel = lsim(tfest_spa_data11_OL,sv2_acq,time_acq); 
-E = Ymodel - x_acq_T;
-%figure; plot(time_acq(1:lags),E)
+Ymodel_tfest_spaOL = lsim(tfest_spa_data11_OL,sv2_acq,time_acq); 
+E = Ymodel_tfest_spaOL - x_acq_T;
 half=floor(length(time_acq)/2);
-figure(91); hold on; autocorr(E(1:half),NumLags=300);
+figure(91); autocorr(E(1:half),NumLags=300);
 % R_XE = xcorr(E,x_acq_T,'coeff'); %  max(E) = 8e+277
 % figure(92); plot( -time_acq(end):Ts:time_acq(end) , R_XE)
+
+Ymodel_tfest_spaOL = lsim(tfest_spa_OL_from_Tune_and_CL_spa,sv2_acq,time_acq); 
+E = Ymodel_tfest_spaOL - x_acq_T;
+half=floor(length(time_acq)/2);
+figure(92); autocorr(E(1:half),NumLags=100);
 
 %% Data 12
 folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
@@ -114,15 +120,19 @@ tfest_spa_data12_CL = tfest(spa_data12_CL,np_CL,'Ts',Ts,tfest_opt_CL)
 ssest_data12_CL =  ssest(spa_data12_CL_full,6,ssestOptions)
 %
 spa_OL_from_Tune_and_CL_spa =  spa_data12_CL_full/(d2d(true_tune_12,Ts)*(1-spa_data12_CL_full));%minreal() 
+tfest_spa_OL_from_Tune_and_CL_spa = tfest(spa_OL_from_Tune_and_CL_spa,np_OL,'Ts',Ts,tfest_opt_OL)
+CL_from_tune_and_tfest_spa_OL_from_Tune_and_CL_spa = feedback(true_tune_12*d2d(tfest_spa_OL_from_Tune_and_CL_spa,Ts_fpga), 1);
+
 spa_CL_from_Tune_and_OL_spa = feedback(d2d(true_tune_12,Ts)*spa_data12_OL_full, 1);
 CL_from_Tune_and_OL_tfest = feedback(true_tune_12*d2d(tfest_spa_data12_OL,Ts_fpga), 1);
 
 % Open Loop
 fig12 = figure(12);ax12 = axes(fig12); hold(ax12, 'on'); title('Open loop');
 bodeplot(spa_data12_OL_full,"k.");
-bodeplot(spa_data12_OL_full   ,opts1,"r*");%showConfidence(h)
+bodeplot(spa_data12_OL   ,opts1,"r*");%showConfidence(h)
 bodeplot(tfest_spa_data12_OL   ,opts1,"b");%showConfidence(h);
 bodeplot(spa_OL_from_Tune_and_CL_spa   ,opts1,"g*");
+bodeplot(tfest_spa_OL_from_Tune_and_CL_spa   ,opts1,"g-");
 legend("Blackman-Tukey spectral analysis","subset of data to fit model","estimated TF","OL from tune and CL"); grid on;
 
 % Closed Loop
@@ -132,17 +142,22 @@ bodeplot(spa_data12_CL   ,opts1,"r*");% showConfidence(h)
 bodeplot(tfest_spa_data12_CL   ,opts1,"b");% showConfidence(h);
 bodeplot(spa_CL_from_Tune_and_OL_spa   ,opts1,"g*"); 
 bodeplot(CL_from_Tune_and_OL_tfest   ,opts1,"g-");
-bodeplot(ssest_data12_CL,opts1,"y-");
+%bodeplot(ssest_data12_CL,opts1,"y-");
+bodeplot( CL_from_tune_and_tfest_spa_OL_from_Tune_and_CL_spa,opts1,"y-");
 legend("Blackman-Tukey spectral analysis","subset of data to fit model","estimated TF","CL from tune and OL spa","CL from tune and OL tfest"); grid on;
 
 %
-Ymodel = lsim(tfest_spa_data12_OL,sv2_acq,time_acq); 
-E = Ymodel - x_acq_T;
-%figure; plot(time_acq(1:lags),E)
+% Ymodel = lsim(tfest_spa_data12_OL,sv2_acq,time_acq); 
+% E = Ymodel - x_acq_T;
+% half=floor(length(time_acq)/2);
+% figure(92); hold on; autocorr(E(1:half),NumLags=300);
+% %figure; plot(time_acq(1:lags),E)
+% % R_XE = xcorr(E,x_acq_T,'coeff'); %  max(E) = 8e+277
+% % figure(92); plot( -time_acq(end):Ts:time_acq(end) , R_XE)
+Ymodel_tfest_spaOL = lsim(tfest_spa_OL_from_Tune_and_CL_spa,sv2_acq,time_acq); 
+E = Ymodel_tfest_spaOL - x_acq_T;
 half=floor(length(time_acq)/2);
-figure(92); hold on; autocorr(E(1:half),NumLags=300);
-% R_XE = xcorr(E,x_acq_T,'coeff'); %  max(E) = 8e+277
-% figure(92); plot( -time_acq(end):Ts:time_acq(end) , R_XE)
+figure(92); autocorr(E(1:half),NumLags=100);
 
 %% Data 13
 folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
@@ -172,7 +187,7 @@ CL_from_Tune_and_OL_tfest = feedback(true_tune_13*d2d(tfest_spa_data13_OL,Ts_fpg
 % Open Loop
 fig13 = figure(13);ax13 = axes(fig13); hold(ax13, 'on'); title('Open loop');
 bodeplot(spa_data13_OL_full,"k.");
-bodeplot(spa_data13_OL_full   ,opts1,"r*");%showConfidence(h)
+bodeplot(spa_data13_OL   ,opts1,"r*");%showConfidence(h)
 bodeplot(tfest_spa_data13_OL   ,opts1,"b");%showConfidence(h);
 bodeplot(spa_OL_from_Tune_and_CL_spa   ,opts1,"g*");
 legend("Blackman-Tukey spectral analysis","subset of data to fit model","estimated TF","OL from tune and CL"); grid on;
@@ -225,7 +240,7 @@ CL_from_Tune_and_OL_tfest = feedback(true_tune_14*d2d(tfest_spa_data14_OL,Ts_fpg
 % Open Loop
 fig14 = figure(14);ax14 = axes(fig14); hold(ax14, 'on'); title('Open loop');
 bodeplot(spa_data14_OL_full,"k.");
-bodeplot(spa_data14_OL_full   ,opts1,"r*");%showConfidence(h)
+bodeplot(spa_data14_OL   ,opts1,"r*");%showConfidence(h)
 bodeplot(tfest_spa_data14_OL   ,opts1,"b");%showConfidence(h);
 bodeplot(spa_OL_from_Tune_and_CL_spa   ,opts1,"g*");
 legend("Blackman-Tukey spectral analysis","subset of data to fit model","estimated TF","OL from tune and CL"); grid on;
