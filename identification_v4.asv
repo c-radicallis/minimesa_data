@@ -12,19 +12,13 @@ freq_resolution = 0.1;
 win_size = 1/(freq_resolution*Ts); %frequency resolution = 2*pi/(win_size*Ts) [rad/s] = 1/(win_size *Ts)[Hz]
 f_vector_full= logspace( log10(2*freq_resolution*2*pi) , log10(100*2*pi) , 100);
 f_vector_OL = logspace( log10(2*freq_resolution*2*pi) , log10(100*2*pi) , 20);
-f_vector_CL = logspace( log10(2*freq_resolution*2*pi) , log10(100*2*pi) , 10); %linspace( 2*2*freq_resolution*2*pi , 100*2*pi , 6 );
+f_vector_CL = logspace( log10(2*freq_resolution*2*pi) , log10(30*2*pi) , 20);
 
 % tfest settings
-tfest_opt_OL = tfestOptions('InitialCondition','zero');
-tfest_opt_CL = tfestOptions('InitialCondition','zero','EnforceStability',1);
 np_OL = 6; %number of poles for tf est
-
-%(30hz,-22.4dB) & (50.1Hz,-37.5dB)   (60.5Hz ,-41.9dB) & (100hz,-71.6dB)
-m_3050 = (-37.5+22.4)/(50-30)*100
-m_50100 = (-71.6+37.5)/(100-50)*100 % *100Hz/dec
+np_CL = 4; %(30hz,-22.4dB) & (  (60.5Hz ,-41.9dB) & (100hz,-71.6dB)
 m_30100=(-71.6+22.4)/(100-30)*100
-% ≈80 db/dec = 4 polos
-np_CL = 4; 
+tfest_opt = tfestOptions('InitialCondition','zero');
 
 %n4sid settings
 nx=5;
@@ -62,9 +56,9 @@ spa_data11_closedloop = spa(data11_closedloop, win_size, f_vector_CL);
 % tfest_data11_closedloop = tfest(data11_closedloop,np_CL,'Ts',Ts,tfest_opt);
 % n4sid_data11_closedloop = n4sid(data11_closedloop,nx,'Ts',Ts,n4sidOpt);
 
-tfest_spa_data11_openloop = tfest(spa_data11_openloop,np_OL,'Ts',Ts,tfest_opt_OL);
+tfest_spa_data11_openloop = tfest(spa_data11_openloop,np_OL,'Ts',Ts,tfest_opt);
 % n4sid_spa_data11_openloop = n4sid(spa_data11_openloop,nx,'Ts',Ts,n4sidOpt);
-tfest_spa_data11_closedloop = tfest(spa_data11_closedloop,np_CL,'Ts',Ts,tfest_opt_CL)
+tfest_spa_data11_closedloop = tfest(spa_data11_closedloop,np_CL,'Ts',Ts,tfest_opt)
 % n4sid_spa_data11_closedloop = n4sid(spa_data11_closedloop,nx,'Ts',Ts,n4sidOpt);
 %mbj=bj(edat,[4 4 2 2 0]);  % Estimate Box-Jenkins polynomial model using time-domain data
 
