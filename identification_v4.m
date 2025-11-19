@@ -10,12 +10,12 @@ Ts_fpga= 1/5000;
 % spa settings
 freq_resolution = 0.1;
 win_size = 1/(freq_resolution*Ts); %frequency resolution = 2*pi/(win_size*Ts) [rad/s] = 1/(win_size *Ts)[Hz]
-f_vector_OL = logspace( log10(2*freq_resolution*2*pi) , log10(100*2*pi) , 20);
-f_vector_CL = logspace( log10(2*freq_resolution*2*pi) , log10(100*2*pi) , 50);
+f_vector_OL = logspace( log10(2*freq_resolution*2*pi) , log10(40*2*pi) , 10);
+f_vector_CL = logspace( log10(2*freq_resolution*2*pi) , log10(40*2*pi) , 20);
 
 % tfest settings
-np_OL = 6; %number of poles for tfest
-np_CL = 6;
+np_OL = 4; %number of poles for tf est
+np_CL = 5;
 tfest_opt = tfestOptions('InitialCondition','zero');
 
 %n4sid settings
@@ -28,13 +28,13 @@ n4sidOpt.InitialState = 'zero';
 % bode plot options
 opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[freq_resolution 100]};opts1.PhaseWrapping="on";opts1.PhaseWrappingBranch=-360;%opts1.Ylim={[-40 10]};
 
-% input file - pink noise 40hz
+%% input file - pink noise 40hz
 input_file_folder ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\31-7-2025\tgt and noise drv\';
 file = 'pink_noise_40Hz_T3mm_0.drv'; % load input drv
 LTF_to_TXT_then_load( file , 'InputFolder', input_file_folder , 'OutputFolder', input_file_folder); % load input drv
 x_drv_T_0 = x_drv_T_0*1e3; % convert t  o mm
 
-%  Data 11
+%%  Data 11
 folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
 file = 'pink_noise_40Hz_T3mm_0_P5.acq'; % load output acq
 true_tune = pid(5,0,0,0.0019455 , Ts_fpga  );
@@ -56,36 +56,31 @@ spa_data11_closedloop = spa(data11_closedloop, win_size, f_vector_CL);
 
 tfest_spa_data11_openloop = tfest(spa_data11_openloop,np_OL,'Ts',Ts,tfest_opt);
 % n4sid_spa_data11_openloop = n4sid(spa_data11_openloop,nx,'Ts',Ts,n4sidOpt);
-tfest_spa_data11_closedloop = tfest(spa_data11_closedloop,np_CL,'Ts',Ts,tfest_opt);
-% n4sid_spa_data11_closedloop = n4sid(spa_data11_closedloop,nx,'Ts',Ts,n4sidOpt);
+tfest_spa_data11_closedloop = tfest(spa_data11_closedloop,np_CL,'Ts',Ts,tfest_opt)
+n4sid_spa_data11_closedloop = n4sid(spa_data11_closedloop,nx,'Ts',Ts,n4sidOpt);
 %mbj=bj(edat,[4 4 2 2 0]);  % Estimate Box-Jenkins polynomial model using time-domain data
 
 
 fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on'); title('Open loop');
 h = bodeplot(spa_data11_openloop   ,opts1,"r.");
 showConfidence(h)
-% h = bodeplot(tfest_data11_openloop   ,opts1,"g");
-% showConfidence(h,3);
+% h = bodeplot(tfest_data11_openloop   ,opts1,"g");% showConfidence(h,3);
 h = bodeplot(tfest_spa_data11_openloop   ,opts1,"b");
 showConfidence(h);
-% h = bodeplot(n4sid_data11_openloop ,opts1);
-% showConfidence(h,3)
-% h = bodeplot(n4sid_spa_data11_openloop ,opts1);
-% showConfidence(h,3)
+% h = bodeplot(n4sid_data11_openloop ,opts1);% showConfidence(h,3)
+% h = bodeplot(n4sid_spa_data11_openloop ,opts1);% showConfidence(h,3)
 legend;
 
 fig2 = figure(2);ax2 = axes(fig2); hold(ax2, 'on'); title('Closed loop'); 
-h = bodeplot(spa_data11_closedloop   ,opts1,"r.");
-showConfidence(h)
-% h = bodeplot(tfest_data11_closedloop   ,opts1,"g");
-% showConfidence(h);
-h = bodeplot(tfest_spa_data11_closedloop   ,opts1,"b");
-showConfidence(h);
-% h = bodeplot(n4sid_data11_closedloop ,opts1);
-% showConfidence(h)
-% h = bodeplot(n4sid_spa_data11_closedloop ,opts1);
-% showConfidence(h)
+h = bodeplot(spa_data11_closedloop   ,opts1,"r.");% showConfidence(h)
+% h = bodeplot(tfest_data11_closedloop   ,opts1,"g");% showConfidence(h);
+h = bodeplot(tfest_spa_data11_closedloop   ,opts1,"b");% showConfidence(h);
+% h = bodeplot(n4sid_data11_closedloop ,opts1);% showConfidence(h)
+h = bodeplot(n4sid_spa_data11_closedloop ,opts1);% showConfidence(h)
 legend;
+
+figure;pzmap(spa_data11_closedloop);
+
 %% Comparing frequency resolution (window size)
 spa_data11_openloop = spa(data11_openloop, win_size, f_vector);
 spa200_data11_openloop = spa(data11_openloop,200, f_vector);

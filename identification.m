@@ -6,7 +6,19 @@ addpath 'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma
 func_folder  =  'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\uniaxial_table_model\Adapting_Driver_Signal\';
 addpath(func_folder);
 Ts = 0.005;
-opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[0.7 40]};opts1.PhaseWrapping="on";%opts1.PhaseWrappingBranch=0;%opts1.Ylim={[-40 10]};
+opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[0.7 40]};opts1.PhaseWrapping="on";opts1.PhaseWrappingBranch=-360;%opts1.Ylim={[-40 10]};
+
+% spa settings
+freq_resolution = 0.1;
+win_size = 1/(freq_resolution*Ts); %frequency resolution = 2*pi/(win_size*Ts) [rad/s] = 1/(win_size *Ts)[Hz]
+f_vector_CL = logspace( log10(2*freq_resolution*2*pi) , log10(40*2*pi) , 40);
+
+%n4sid settings
+nx=5;
+n4sidOpt = n4sidOptions;
+n4sidOpt.N4Weight = 'SSARX'; %allows unbiased estimates when using closed loop data
+n4sidOpt.Focus = 'simulation';
+n4sidOpt.InitialState = 'zero';
 
 %% Data 1
 input_file_folder ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\31-7-2025\tgt and noise drv\';
@@ -97,38 +109,36 @@ data_PIDF_5hz_scl07 = iddata(x_acq_T(1:nmin), scale*x_drv_T_0(1:nmin), Ts);data_
 
 
 %% Model training
-nx = 5 ;
-
-%g_data0 = spa(data1, 10);
-g_data1 = spa(data1, 1000);
+%spa_data0 = spa(data1, 10);
+spa_data1 = spa(data1, win_size, f_vector_CL);
 n4sid_sys1 = n4sid(data1,nx,'Ts',Ts); n4sid_sys1.InputName  = data2.InputName;n4sid_sys1.OutputName = data2.OutputName;
-g_data2 = spa(data2, 1000);
+spa_data2 = spa(data2, win_size, f_vector_CL);
 n4sid_sys2 = n4sid(data2,nx,'Ts',Ts); n4sid_sys2.InputName  = data2.InputName; n4sid_sys2.OutputName = data2.OutputName;
-g_data3 = spa(data3, 1000);
+spa_data3 = spa(data3, win_size, f_vector_CL);
 n4sid_sys3 = n4sid(data3,nx,'Ts',Ts); n4sid_sys3.InputName  = data2.InputName;n4sid_sys3.OutputName = data2.OutputName;
-g_data4 = spa(data4, 1000);
+spa_data4 = spa(data4, win_size, f_vector_CL);
 n4sid_sys4 = n4sid(data4,nx,'Ts',Ts); n4sid_sys4.InputName  = data2.InputName; n4sid_sys4.OutputName = data2.OutputName;
-g_data_all = spa(data_all , 1000);
+spa_data_all = spa(data_all , win_size, f_vector_CL);
 n4sid_sys_all = n4sid(data_all,nx,'Ts',Ts); n4sid_sys_all.InputName  = data2.InputName; n4sid_sys_all.OutputName = data2.OutputName;
 
-g_data_PIDF_5hz_scl1 = spa(data_PIDF_5hz_scl1, 1000);
+spa_data_PIDF_5hz_scl1 = spa(data_PIDF_5hz_scl1, win_size, f_vector_CL);
 n4sid_sys_PIDF_5hz_scl1 = n4sid(data_PIDF_5hz_scl1,nx,'Ts',Ts); n4sid_sys_PIDF_5hz_scl1.InputName  = data2.InputName; n4sid_sys_PIDF_5hz_scl1.OutputName = data2.OutputName;
-g_data_PIDF_5hz_scl07 = spa(data_PIDF_5hz_scl07, 1000);
+spa_data_PIDF_5hz_scl07 = spa(data_PIDF_5hz_scl07, win_size, f_vector_CL);
 n4sid_sys_PIDF_5hz_scl07 = n4sid(data_PIDF_5hz_scl07,nx,'Ts',Ts); n4sid_sys_PIDF_5hz_scl07.InputName  = data2.InputName; n4sid_sys_PIDF_5hz_scl07.OutputName = data2.OutputName;
 
 
 % Figures
 fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on');
-bodeplot(g_data1   ,opts1, "r--");
-bodeplot(g_data2   ,opts1, "g--")
-bodeplot(g_data3   ,opts1, "b--")
-bodeplot(g_data4   ,opts1, "c--")
-h = bodeplot(g_data_all,opts1, "m--");
+bodeplot(spa_data1   ,opts1, "r*");
+bodeplot(spa_data2   ,opts1, "g*")
+bodeplot(spa_data3   ,opts1, "b*")
+bodeplot(spa_data4   ,opts1, "c*")
+h = bodeplot(spa_data_all,opts1, "m*");showConfidence(h);
 
 %bodeplot(G_PIDF_5Hz)
-bodeplot(g_data_PIDF_5hz_scl1,opts1, "m--")
-%bodeplot(g_data_PIDF_5hz_scl07,opts1, "r--")
-showConfidence(h,3);
+bodeplot(spa_data_PIDF_5hz_scl1,opts1, "y*");
+%bodeplot(spa_data_PIDF_5hz_scl07,opts1, "r--")
+
 
 % bodeplot(n4sid_sys1   ,opts1, "r-")
 % bodeplot(n4sid_sys2   ,opts1, "g-")
@@ -136,7 +146,7 @@ showConfidence(h,3);
 % bodeplot(n4sid_sys4   ,opts1, "c-")
 bodeplot(n4sid_sys_all,opts1, "m-")
 
-bodeplot(n4sid_sys_PIDF_5hz_scl1,opts1, "m-")
+bodeplot(n4sid_sys_PIDF_5hz_scl1,opts1, "y-")
 %bodeplot(n4sid_sys_PIDF_5hz_scl07,opts1, "r-")
 legend(); grid on
 
@@ -208,11 +218,11 @@ legend(); grid on
 % n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
 % data7 = iddata(x_acq_T(1:nmin), scale*x_drv_T_0(1:nmin), Ts);data4.InputName  = data1.InputName;data4.OutputName = data1.OutputName;data4.TimeUnit   = data1.TimeUnit;
 % 
-% g_data5 = spa(data5);
+% spa_data5 = spa(data5);
 % n4sid_sys5 = n4sid(data5,nx,'Ts',Ts); n4sid_sys5.InputName  = data2.InputName; n4sid_sys5.OutputName = data2.OutputName;
-% g_data6 = spa(data6);
+% spa_data6 = spa(data6);
 % n4sid_sys6 = n4sid(data6,nx,'Ts',Ts); n4sid_sys6.InputName  = data2.InputName; n4sid_sys6.OutputName = data2.OutputName;
-% g_data7 = spa(data7);
+% spa_data7 = spa(data7);
 % n4sid_sys7 = n4sid(data7,nx,'Ts',Ts); n4sid_sys7.InputName  = data2.InputName; n4sid_sys7.OutputName = data2.OutputName;
 % 
 % % figure(6); compare(data5,n4sid_sys5,n4sid_sys6,n4sid_sys7) ; title('P=1 & I=D=0');
@@ -220,9 +230,9 @@ legend(); grid on
 % % figure(8); compare(data7,n4sid_sys5,n4sid_sys6,n4sid_sys7) ; title('P=1 & I=D=0');
 % 
 % figure(fig1);
-% bodeplot(g_data5   ,opts1 , "y--")
-% bodeplot(g_data6   ,opts1 , "k--")
-% bodeplot(g_data7   ,opts1 , "r--")
+% bodeplot(spa_data5   ,opts1 , "y--")
+% bodeplot(spa_data6   ,opts1 , "k--")
+% bodeplot(spa_data7   ,opts1 , "r--")
 % bodeplot(n4sid_sys5,opts1 , "y-")
 % bodeplot(n4sid_sys6,opts1 , "k-")
 % bodeplot(n4sid_sys7,opts1 , "r-")
