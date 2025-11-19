@@ -68,7 +68,11 @@ spa_OL_from_Tune_and_CL_spa =  spa_data11_CL_full/(d2d(true_tune,Ts)*(1-spa_data
 spa_CL_from_Tune_and_OL_spa = feedback(d2d(true_tune,Ts)*spa_data11_OL_full, 1);
 CL_from_Tune_and_OL_tfest = feedback(true_tune*d2d(tfest_spa_data11_OL,Ts_fpga), 1);
 
-%
+%%
+Ymodel = lsim(spa_data11_OL_full,sv2_acq,time_acq); 
+
+
+%%
 % Open Loop
 fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on'); title('Open loop');
 bodeplot(spa_data11_OL_full,"k.");
@@ -87,14 +91,6 @@ bodeplot(CL_from_Tune_and_OL_tfest   ,opts1,"g-");
 bodeplot(ssest_data11_CL,opts1,"y-");
 legend("Blackman-Tukey spectral analysis","subset of data to fit model","estimated TF","CL from tune and OL spa","CL from tune and OL tfest"); grid on;
 
-%
-Ymodel = lsim(tfest_spa_data11_OL,sv2_acq,time_acq); 
-E = Ymodel - x_acq_T;
-%figure; plot(time_acq(1:lags),E)
-half=floor(length(time_acq)/2);
-figure(91); hold on; autocorr(E(1:half),NumLags=300);
-% R_XE = xcorr(E,x_acq_T,'coeff'); %  max(E) = 8e+277
-% figure(92); plot( -time_acq(end):Ts:time_acq(end) , R_XE)
 
 %% Data 12
 folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
