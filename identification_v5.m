@@ -28,6 +28,9 @@ np_CL = 4;
 %n4sid settings % SSARX allows unbiased estimates when using closed loop data
 nx=5;n4sidOpt = n4sidOptions;n4sidOpt.N4Weight = 'SSARX'; n4sidOpt.Focus = 'simulation';n4sidOpt.InitialState = 'zero';
 
+% ssest Options
+ssestOptions = ssestOptions('InitializeMethod','n4sid','EnforceStability',1);
+
 % bode plot options
 opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[freq_resolution 100]};opts1.PhaseWrapping="on";opts1.PhaseWrappingBranch=-360;%opts1.Ylim={[-40 10]};
 
@@ -56,7 +59,6 @@ spa_data11_CL = spa(data11_CL, win_size, f_vector_CL);
 
 tfest_spa_data11_OL = tfest(spa_data11_OL,np_OL,'Ts',Ts,tfest_opt_OL)
 tfest_spa_data11_CL = tfest(spa_data11_CL,np_CL,'Ts',Ts,tfest_opt_CL)
-ssestOptions = ssestOptions('InitializeMethod','n4sid','EnforceStability',1);
 ssest_data11_CL =  ssest(spa_data11_CL_full,6,ssestOptions)
 %
 spa_OL_from_Tune_and_CL_spa =  spa_data11_CL_full/(d2d(true_tune_11,Ts)*(1-spa_data11_CL_full));%minreal() 
@@ -109,7 +111,6 @@ spa_data12_CL = spa(data12_CL, win_size, f_vector_CL);
 
 tfest_spa_data12_OL = tfest(spa_data12_OL,np_OL,'Ts',Ts,tfest_opt_OL)
 tfest_spa_data12_CL = tfest(spa_data12_CL,np_CL,'Ts',Ts,tfest_opt_CL)
-ssestOptions = ssestOptions('InitializeMethod','n4sid','EnforceStability',1);
 ssest_data12_CL =  ssest(spa_data12_CL_full,6,ssestOptions)
 %
 spa_OL_from_Tune_and_CL_spa =  spa_data12_CL_full/(d2d(true_tune_12,Ts)*(1-spa_data12_CL_full));%minreal() 
@@ -162,7 +163,6 @@ spa_data13_CL = spa(data13_CL, win_size, f_vector_CL);
 
 tfest_spa_data13_OL = tfest(spa_data13_OL,np_OL,'Ts',Ts,tfest_opt_OL)
 tfest_spa_data13_CL = tfest(spa_data13_CL,np_CL,'Ts',Ts,tfest_opt_CL)
-ssestOptions = ssestOptions('InitializeMethod','n4sid','EnforceStability',1);
 ssest_data13_CL =  ssest(spa_data13_CL_full,6,ssestOptions)
 %
 spa_OL_from_Tune_and_CL_spa =  spa_data13_CL_full/(d2d(true_tune_13,Ts)*(1-spa_data13_CL_full));%minreal() 
@@ -215,7 +215,7 @@ spa_data14_CL = spa(data14_CL, win_size, f_vector_CL);
 
 tfest_spa_data14_OL = tfest(spa_data14_OL,np_OL,'Ts',Ts,tfest_opt_OL)
 tfest_spa_data14_CL = tfest(spa_data14_CL,np_CL,'Ts',Ts,tfest_opt_CL)
-ssestOptions = ssestOptions('InitializeMethod','n4sid','EnforceStability',1);
+
 ssest_data14_CL =  ssest(spa_data14_CL_full,6,ssestOptions)
 %
 spa_OL_from_Tune_and_CL_spa =  spa_data14_CL_full/(d2d(true_tune_14,Ts)*(1-spa_data14_CL_full));%minreal() 
@@ -248,51 +248,6 @@ half=floor(length(time_acq)/2);
 figure(94); hold on; autocorr(E(1:half),NumLags=300);
 % R_XE = xcorr(E,x_acq_T,'coeff'); %  max(E) = 8e+277
 % figure(92); plot( -time_acq(end):Ts:time_acq(end) , R_XE)
-
-%% Data 1234
-data1234_OL = [data11_OL; data12_OL; data13_OL;data14_OL];
-data1234_CL = [data11_CL; data12_CL; data13_CL;data14_CL];
-%
-spa_data1234_OL_full = spa(data1234_OL, win_size, f_vector_full);
-spa_data1234_OL = spa(data1234_OL, win_size, f_vector_OL);
-spa_data1234_CL_full = spa(data1234_CL, win_size, f_vector_full);
-spa_data1234_CL = spa(data1234_CL, win_size, f_vector_CL);
-
-tfest_spa_data1234_OL = tfest(spa_data1234_OL,np_OL,'Ts',Ts,tfest_opt_OL)
-tfest_spa_data1234_CL = tfest(spa_data1234_CL,np_CL,'Ts',Ts,tfest_opt_CL)
-ssestOptions = ssestOptions('InitializeMethod','n4sid','EnforceStability',1);
-ssest_data1234_CL =  ssest(spa_data1234_CL_full,6,ssestOptions)
-%
-spa_OL_from_Tune_and_CL_spa =  spa_data1234_CL_full/(d2d(true_tune_1234,Ts)*(1-spa_data1234_CL_full));%minreal() 
-spa_CL_from_Tune_and_OL_spa = feedback(d2d(true_tune_1234,Ts)*spa_data1234_OL_full, 1);
-CL_from_Tune_and_OL_tfest = feedback(true_tune_1234*d2d(tfest_spa_data1234_OL,Ts_fpga), 1);
-
-% Open Loop
-fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on'); title('Open loop');
-bodeplot(spa_data1234_OL_full,"k.");
-bodeplot(spa_data1234_OL_full   ,opts1,"r*");%showConfidence(h)
-bodeplot(tfest_spa_data1234_OL   ,opts1,"b");%showConfidence(h);
-bodeplot(spa_OL_from_Tune_and_CL_spa   ,opts1,"g*");
-legend("Blackman-Tukey spectral analysis","subset of data to fit model","estimated TF","OL from tune and CL"); grid on;
-
-% Closed Loop
-fig2 = figure(2);ax2 = axes(fig2); hold(ax2, 'on'); title('Closed loop'); 
-bodeplot(spa_data1234_CL_full,"k.");
-bodeplot(spa_data1234_CL   ,opts1,"r*");% showConfidence(h)
-bodeplot(tfest_spa_data1234_CL   ,opts1,"b");% showConfidence(h);
-bodeplot(spa_CL_from_Tune_and_OL_spa   ,opts1,"g*"); 
-bodeplot(CL_from_Tune_and_OL_tfest   ,opts1,"g-");
-bodeplot(ssest_data1234_CL,opts1,"y-");
-legend("Blackman-Tukey spectral analysis","subset of data to fit model","estimated TF","CL from tune and OL spa","CL from tune and OL tfest"); grid on;
-
-% %
-% Ymodel = lsim(tfest_spa_data1234_OL,sv2_acq_1234,time_acq_1234); 
-% E = Ymodel - x_acq_T;
-% %figure; plot(time_acq(1:lags),E)
-% half=floor(length(time_acq)/2);
-% figure(91); hold on; autocorr(E(1:half),NumLags=300);
-% % R_XE = xcorr(E,x_acq_T,'coeff'); %  max(E) = 8e+277
-% % figure(92); plot( -time_acq(end):Ts:time_acq(end) , R_XE)
 
 
 %% Data Laquila
@@ -327,33 +282,33 @@ legend("Blackman-Tukey spectral analysis","subset of data to fit model","estimat
 % n4sid_data14_CL = n4sid(data14_CL,nx,'Ts',Ts,n4sidOpt);n4sid_data14_CL.InputName  = data14_CL.InputName;n4sid_data14_CL.OutputName = data14_CL.OutputName;
 
 
-%% Figures Open Loop
-fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on'); title('Open loop');
-bodeplot(spa_data11_OL   ,opts1, "r*");
-bodeplot(tfest_spa_data11_OL , opts1 , "r-");
-bodeplot(spa_data12_OL   ,opts1, "m*");
-bodeplot(tfest_spa_data12_OL , opts1 , "m-");
-bodeplot(spa_data13_OL   ,opts1, "b*");
-bodeplot(tfest_spa_data13_OL , opts1 , "b-");
-bodeplot(spa_data14_OL   ,opts1, "g*");
-bodeplot(tfest_spa_data14_OL , opts1 , "g-");
-
-legend(); grid on
-
-%% Figures Closed Loop
-fig2 = figure(2);ax2 = axes(fig2); hold(ax2, 'on'); title('Closed loop'); 
-bodeplot(spa_data11_CL   ,opts1, "r*");
-bodeplot(spa30_data11_CL   ,opts1, "ro");
-bodeplot(tfest_spa_data11_CL , opts1 , "r-");
-bodeplot(n4sid_spa_data11_CL , opts1 , "r+-");
-bodeplot(spa_data12_CL   ,opts1, "m*");
-bodeplot(tfest_spa_data12_CL , opts1 , "m-");
-bodeplot(spa_data13_CL   ,opts1, "b*");
-bodeplot(tfest_spa_data13_CL , opts1 , "b-");
-bodeplot(spa_data14_CL   ,opts1, "g*");
-bodeplot(tfest_spa_data14_CL , opts1 , "g-");
-
-legend(); grid on
+% %% Figures Open Loop
+% fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on'); title('Open loop');
+% bodeplot(spa_data11_OL   ,opts1, "r*");
+% bodeplot(tfest_spa_data11_OL , opts1 , "r-");
+% bodeplot(spa_data12_OL   ,opts1, "m*");
+% bodeplot(tfest_spa_data12_OL , opts1 , "m-");
+% bodeplot(spa_data13_OL   ,opts1, "b*");
+% bodeplot(tfest_spa_data13_OL , opts1 , "b-");
+% bodeplot(spa_data14_OL   ,opts1, "g*");
+% bodeplot(tfest_spa_data14_OL , opts1 , "g-");
+% 
+% legend(); grid on
+% 
+% %% Figures Closed Loop
+% fig2 = figure(2);ax2 = axes(fig2); hold(ax2, 'on'); title('Closed loop'); 
+% bodeplot(spa_data11_CL   ,opts1, "r*");
+% bodeplot(spa30_data11_CL   ,opts1, "ro");
+% bodeplot(tfest_spa_data11_CL , opts1 , "r-");
+% bodeplot(n4sid_spa_data11_CL , opts1 , "r+-");
+% bodeplot(spa_data12_CL   ,opts1, "m*");
+% bodeplot(tfest_spa_data12_CL , opts1 , "m-");
+% bodeplot(spa_data13_CL   ,opts1, "b*");
+% bodeplot(tfest_spa_data13_CL , opts1 , "b-");
+% bodeplot(spa_data14_CL   ,opts1, "g*");
+% bodeplot(tfest_spa_data14_CL , opts1 , "g-");
+% 
+% legend(); grid on
 
 % 
 % %
