@@ -1,4 +1,4 @@
-function loadTXT(filename)
+function loadTXT_wSV(filename)
 % loadTXT  Load an LNEC .tgt, .drv or .acq text file into MATLAB workspace,
 %          creating appropriately named variables in the base workspace.
 %          Ignores columns of zeros or containing NaNs.

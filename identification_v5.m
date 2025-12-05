@@ -15,7 +15,7 @@ f_vector_CL = logspace( log10(2*freq_resolution*2*pi) , log10(100*2*pi) , 20); %
 
 % tfest settings
 tfest_opt_OL = tfestOptions('InitialCondition','zero');
-np_OL = 6; %number of poles for tf est
+np_OL = 4; %number of poles for tf est
 
 tfest_opt_CL = tfestOptions('InitialCondition','zero','EnforceStability',1);
 %(30hz,-22.4dB) & (50.1Hz,-37.5dB)   (60.5Hz ,-41.9dB) & (100hz,-71.6dB)
@@ -39,6 +39,14 @@ input_file_folder ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de
 file = 'pink_noise_40Hz_T3mm_0.drv'; % load input drv
 LTF_to_TXT_then_load( file , 'InputFolder', input_file_folder , 'OutputFolder', input_file_folder); % load input drv
 x_drv_T_0 = x_drv_T_0*1e3; % convert t  o mm
+clear x_drv_L_0  x_drv_V_0
+
+% Control channel AI2 Displacement - 16 bit signed integer to mm conversion
+a = 0.000485;
+b = -0.2;
+bits2mm = @(bits) a*bits+b;
+mm2bits = @(mm) (mm-b)/a;
+clear a b
 
 %%  Data 11
 folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
@@ -46,12 +54,12 @@ file = 'pink_noise_40Hz_T3mm_0_P5.acq'; % load output acq
 true_tune_11 = pid(5,0,0,0.0019455 , Ts_fpga  );
 LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
 x_acq_T = x_acq_T*1e3;
-sv2_acq = -sv2_acq; %output is inverted because the wiring is fliped
+sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
 
 data11_OL = iddata(x_acq_T, sv2_acq, Ts);data11_OL.InputName  = 'sv2_acq';data11_OL.OutputName = 'x_acq_T';data11_OL.TimeUnit   = 'seconds';
 n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
 data11_CL =  iddata(x_acq_T(1:nmin), x_drv_T_0(1:nmin), Ts);data11_CL.InputName  = 'x_drv_T_0';data11_CL.OutputName = 'x_acq_T';data11_CL.TimeUnit   = 'seconds';
-%
+%%
 spa_data11_OL_full = spa(data11_OL, win_size, f_vector_full);
 spa_data11_OL = spa(data11_OL, win_size, f_vector_OL);
 spa_data11_CL_full = spa(data11_CL, win_size, f_vector_full);
@@ -59,20 +67,20 @@ spa_data11_CL = spa(data11_CL, win_size, f_vector_CL);
 
 tfest_spa_data11_OL = tfest(spa_data11_OL,np_OL,'Ts',Ts,tfest_opt_OL)
 tfest_spa_data11_CL = tfest(spa_data11_CL,np_CL,'Ts',Ts,tfest_opt_CL)
-ssest_data11_CL =  ssest(spa_data11_CL_full,6,ssestOptions)
+%ssest_data11_CL =  ssest(spa_data11_CL_full,6,ssestOptions)
 %
 spa_OL_from_Tune_and_CL_spa =  spa_data11_CL_full/(d2d(true_tune_11,Ts)*(1-spa_data11_CL_full));%minreal() 
 tfest_spa_OL_from_Tune_and_CL_spa = tfest(spa_OL_from_Tune_and_CL_spa,np_OL,'Ts',Ts,tfest_opt_OL)
 spa_CL_from_Tune_and_OL_spa = feedback(d2d(true_tune_11,Ts)*spa_data11_OL_full, 1);
-CL_from_Tune_and_OL_tfest = feedback(true_tune_11*d2d(tfest_spa_data11_OL,Ts_fpga), 1);
-
+CL_from_Tune_and_OL_tfest = feedback(1e3*true_tune_11*d2d(tfest_spa_data11_OL,Ts_fpga), 1);%10^(60/20)*
+%%
 % Open Loop
 fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on'); title('Open loop');
 bodeplot(spa_data11_OL_full,"k.");
 bodeplot(spa_data11_OL   ,opts1,"r*");%showConfidence(h)
 bodeplot(tfest_spa_data11_OL   ,opts1,"b");%showConfidence(h);
 bodeplot(spa_OL_from_Tune_and_CL_spa   ,opts1,"g*");
-bodeplot(tfest_spa_OL_from_Tune_and_CL_spa   ,opts1,"g-");
+%bodeplot(tfest_spa_OL_from_Tune_and_CL_spa   ,opts1,"g-");
 legend("Blackman-Tukey spectral analysis","subset of data to fit model","estimated TF","OL from tune and CL"); grid on;
 
 % Closed Loop
@@ -82,21 +90,22 @@ bodeplot(spa_data11_CL   ,opts1,"r*");% showConfidence(h)
 bodeplot(tfest_spa_data11_CL   ,opts1,"b");% showConfidence(h);
 bodeplot(spa_CL_from_Tune_and_OL_spa   ,opts1,"g*"); 
 bodeplot(CL_from_Tune_and_OL_tfest   ,opts1,"g-");
-bodeplot(ssest_data11_CL,opts1,"y-");
+%bodeplot(ssest_data11_CL,opts1,"y-");
 legend("Blackman-Tukey spectral analysis","subset of data to fit model","estimated TF","CL from tune and OL spa","CL from tune and OL tfest"); grid on;
 
-%
+%%
 Ymodel_tfest_spaOL = lsim(tfest_spa_data11_OL,sv2_acq,time_acq); 
 E = Ymodel_tfest_spaOL - x_acq_T;
 half=floor(length(time_acq)/2);
-figure(91); autocorr(E(1:half),NumLags=300);
-% R_XE = xcorr(E,x_acq_T,'coeff'); %  max(E) = 8e+277
-% figure(92); plot( -time_acq(end):Ts:time_acq(end) , R_XE)
+figure(911); autocorr(E(1:half),NumLags=100);
+ fim=1e4; 
+R_XE = xcorr(E(1:fim),sv2_acq(1:fim),'coeff'); %  max(E) = 8e+277
+figure(912);plot( -time_acq(fim):Ts:time_acq(fim) , R_XE); title('Correlation of model error(E) and input(sv2_acq)');
 
-Ymodel_tfest_spaOL = lsim(tfest_spa_OL_from_Tune_and_CL_spa,sv2_acq,time_acq); 
-E = Ymodel_tfest_spaOL - x_acq_T;
-half=floor(length(time_acq)/2);
-figure(92); autocorr(E(1:half),NumLags=100);
+% Ymodel_tfest_spaOL = lsim(tfest_spa_OL_from_Tune_and_CL_spa,sv2_acq,time_acq); 
+% E = Ymodel_tfest_spaOL - x_acq_T;
+% half=floor(length(time_acq)/2);
+% figure(913); autocorr(E(1:half),NumLags=100);
 
 %% Data 12
 folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
@@ -104,7 +113,7 @@ file = 'pink_noise_40Hz_T3mm_0_P7.acq'; % load output acq
 true_tune_12 = pid(7,0,0,0.0019455 , Ts_fpga  );
 LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
 x_acq_T = x_acq_T*1e3;
-sv2_acq = -sv2_acq; %output is inverted because the wiring is fliped
+sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
 
 data12_OL = iddata(x_acq_T, sv2_acq, Ts);
 n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
@@ -165,7 +174,7 @@ file = 'pink_noise_40Hz_T3mm_0_P10.acq'; % load output acq
 true_tune_13 = pid(10,0,0,0.0019455 , Ts_fpga  );
 LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
 x_acq_T = x_acq_T*1e3;
-sv2_acq = -sv2_acq; %output is inverted because the wiring is fliped
+sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
 
 data13_OL = iddata(x_acq_T, sv2_acq, Ts);
 n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
@@ -217,11 +226,15 @@ file = 'pink_noise_40Hz_T3mm_0_P15.acq'; % load output acq
 true_tune_14 = pid(15,0,0,0.0019455 , Ts_fpga  );
 LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
 x_acq_T = x_acq_T*1e3;
-sv2_acq = -sv2_acq; %output is inverted because the wiring is fliped
+sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
+
+np_OL = 4; %number of poles for tf est
 
 data14_OL = iddata(x_acq_T, sv2_acq, Ts);
 n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
 data14_CL =  iddata(x_acq_T(1:nmin), x_drv_T_0(1:nmin), Ts);
+
+f_vector_OL = logspace( log10(2*freq_resolution*2*pi) , log10(100*2*pi) , 8);
 %
 spa_data14_OL_full = spa(data14_OL, win_size, f_vector_full);
 spa_data14_OL = spa(data14_OL, win_size, f_vector_OL);
@@ -283,7 +296,7 @@ figure(94); hold on; autocorr(E(1:half),NumLags=300);
 % data1_CL =  iddata(x_acq_T(1:nmin), x_drv_T_0(1:nmin), Ts);data13_CL.InputName  = 'x_drv_T_0';data13_CL.OutputName = 'x_acq_T';data13_CL.TimeUnit   = 'seconds';
 % 
 
-% %% Closed Loop
+%%% Closed Loop
 % g_data11_CL = spa(data11_CL, win_size);
 % g_data12_CL = spa(data12_CL, win_size);
 % g_data13_CL = spa(data13_CL, win_size);
@@ -297,9 +310,10 @@ figure(94); hold on; autocorr(E(1:half),NumLags=300);
 % n4sid_data14_CL = n4sid(data14_CL,nx,'Ts',Ts,n4sidOpt);n4sid_data14_CL.InputName  = data14_CL.InputName;n4sid_data14_CL.OutputName = data14_CL.OutputName;
 
 
-% %% Figures Open Loop
-% fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on'); title('Open loop');
-% bodeplot(spa_data11_OL   ,opts1, "r*");
+%% Figures Open Loop
+fig1 = figure(1);ax1 = axes(fig1); hold(ax1, 'on'); title('Open loop');
+bodeplot(spa_data11_OL_full   ,opts1, "r*");
+bodeplot(spa_data14_OL_full   ,opts1, "m*");
 % bodeplot(tfest_spa_data11_OL , opts1 , "r-");
 % bodeplot(spa_data12_OL   ,opts1, "m*");
 % bodeplot(tfest_spa_data12_OL , opts1 , "m-");
@@ -309,11 +323,11 @@ figure(94); hold on; autocorr(E(1:half),NumLags=300);
 % bodeplot(tfest_spa_data14_OL , opts1 , "g-");
 % 
 % legend(); grid on
-% 
-% %% Figures Closed Loop
-% fig2 = figure(2);ax2 = axes(fig2); hold(ax2, 'on'); title('Closed loop'); 
-% bodeplot(spa_data11_CL   ,opts1, "r*");
-% bodeplot(spa30_data11_CL   ,opts1, "ro");
+
+%  % Figures Closed Loop
+fig2 = figure(2);ax2 = axes(fig2); hold(ax2, 'on'); title('Closed loop'); 
+bodeplot(spa_data11_CL_full   ,opts1, "r*");
+bodeplot(spa_data14_CL_full   ,opts1, "m*");
 % bodeplot(tfest_spa_data11_CL , opts1 , "r-");
 % bodeplot(n4sid_spa_data11_CL , opts1 , "r+-");
 % bodeplot(spa_data12_CL   ,opts1, "m*");

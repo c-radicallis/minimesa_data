@@ -1,0 +1,5 @@
+A simple closed-loop method that often gives good results is the two-stage method from Schrama and myself (1992), see e.g. https://publications.pvandenhof.nl/discsysid/ManuscrSysid_Febr2020.pdf.
+ It has not yet been implemented in the new toolbox, but can very simply be applied using the standard toolbox.
+  You first estimate a model from r to u; then use that estimated model to simulate the input \hat u, and in a second step use \hat u and y to estimate a model of the plant. 
+  This could be done by applying the OE command twice, and a simulation step in between.
+The simplest method in the new toolbox that I would advise is the Mulstistep method for single module identification.
