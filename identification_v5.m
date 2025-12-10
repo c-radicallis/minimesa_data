@@ -70,7 +70,7 @@ tfest_spa_data11_CL = tfest(spa_data11_CL,np_CL,'Ts',Ts,tfest_opt_CL)
 %ssest_data11_CL =  ssest(spa_data11_CL_full,6,ssestOptions)
 %
 spa_OL_from_Tune_and_CL_spa =  spa_data11_CL_full/(d2d(true_tune_11,Ts)*(1-spa_data11_CL_full));%minreal() 
-tfest_spa_OL_from_Tune_and_CL_spa = tfest(spa_OL_from_Tune_and_CL_spa,np_OL,'Ts',Ts,tfest_opt_OL)
+tfest_spa_OL_from_Tune_and_CL_spa = tfest(spa_OL_from_Tune_and_CL_spa,np_OL,'Ts',Ts,tfest_opt_OL);
 spa_CL_from_Tune_and_OL_spa = feedback(d2d(true_tune_11,Ts)*spa_data11_OL_full, 1);
 CL_from_Tune_and_OL_tfest = feedback(1e3*true_tune_11*d2d(tfest_spa_data11_OL,Ts_fpga), 1);%10^(60/20)*
 %
@@ -162,10 +162,10 @@ legend("Blackman-Tukey spectral analysis","subset of data to fit model","estimat
 % %figure; plot(time_acq(1:lags),E)
 % % R_XE = xcorr(E,x_acq_T,'coeff'); %  max(E) = 8e+277
 % % figure(92); plot( -time_acq(end):Ts:time_acq(end) , R_XE)
-Ymodel_tfest_spaOL = lsim(tfest_spa_OL_from_Tune_and_CL_spa,sv2_acq,time_acq); 
-E = Ymodel_tfest_spaOL - x_acq_T;
-half=floor(length(time_acq)/2);
-figure(92); autocorr(E(1:half),NumLags=100);
+% Ymodel_tfest_spaOL = lsim(tfest_spa_OL_from_Tune_and_CL_spa,sv2_acq,time_acq); 
+% E = Ymodel_tfest_spaOL - x_acq_T;
+% half=floor(length(time_acq)/2);
+% figure(92); autocorr(E(1:half),NumLags=100);
 
 %% Data 13
 folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
