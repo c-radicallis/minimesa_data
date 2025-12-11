@@ -85,7 +85,7 @@ legend("Blackman-Tukey spectral analysis","subset of data to fit model","estimat
 
 % Closed Loop
 fig211 = figure(211);ax211 = axes(fig211); hold(ax211, 'on'); title('Closed loop'); 
-bodeplot(spa_data11_CL_full,"k.");
+bodeplot(spa_data11_CL_full, opts1,"k.");
 bodeplot(spa_data11_CL   ,opts1,"r*");% showConfidence(h)
 bodeplot(tfest_spa_data11_CL   ,opts1,"b");% showConfidence(h);
 bodeplot(spa_CL_from_Tune_and_OL_spa   ,opts1,"g*"); 
