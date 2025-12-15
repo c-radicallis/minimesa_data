@@ -1,12 +1,13 @@
 % Example 10.7.5 - two stage closed loop identification method 
-clear;clc;close all; setappdata(0, 'AutoStagger_LRDown_Last', []);   % ensure first figure starts at top-left
+clear;clc; setappdata(0, 'AutoStagger_LRDown_Last', []);   % ensure first figure starts at top-left
 set(0, 'DefaultFigureCreateFcn', @autoStagger_LRDown_relSize);
+%close all;
 
 % bode plot options
 opts1=bodeoptions('cstprefs');opts1.MagLowerLimMode = 'manual'; opts1.MagLowerLim=-25;opts1.XLim={[0.05 4]};opts1.PhaseWrapping="on";%opts1.PhaseWrappingBranch=-360;
 opts2=bodeoptions('cstprefs');opts2.MagLowerLimMode = 'manual';opts2.MagLowerLim=-20;opts2.XLim={[0.05 4]};opts2.PhaseWrapping="on"; %opts2.PhaseWrappingBranch=-360;
 
- z=tf('z');
+z=tf('z');
 t = [0:1:2048-1]';
 e = 1*wgn(2048 , 1 , 0.1 );
 r1 = 0*wgn(2048 , 1 , 0.1 );

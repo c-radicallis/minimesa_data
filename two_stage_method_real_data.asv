@@ -131,7 +131,7 @@ G_est = tfest(u_r_est(1:nmin) , x_acq_T , 4 , 'Ts' , Ts)
 G_est_to_CL = feedback(10*G_est, 1);
 G_direct = tfest( sv2_acq , x_acq_T , 4 , 'Ts' , Ts)
 G_direct_to_CL = feedback(10*G_direct, 1);
-G_CL = tfest(x_drv_T_0(1:nmin) , x_acq_T , 4 , 'Ts' , Ts)
+G_CL = tfest(x_drv_T_0 , x_acq_T , 4 , 'Ts' , Ts)
 G_indirect = G_CL/(10*(1-G_CL))
 
 figure;hold on;
