@@ -21,15 +21,33 @@ sineSweep_folder ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de 
 file = 'sineSweep_ddx=1200_f=1e-5to40.ltf'; % load input drv
 LTF_to_TXT_then_load( file , 'InputFolder', sineSweep_folder , 'OutputFolder', sineSweep_folder); % load input drv
 x_drv_T_0 = x_drv_T_0*1e3; % convert t  o mm
-clear x_drv_L_0  x_drv_V_0
 
-%%  Data sine sweep
+%%  Data sine  - P15
 file = 'sineSweep_ddx=1200_f=1e-5to40_P15.acq'; % load output acq
 LTF_to_TXT_then_load_wSV( file , sineSweep_folder , 'OutputFolder', sineSweep_folder );
 nmin = min(numel(time_drv_0), numel(time_acq));
 x_acq_T = x_acq_T*1e3;
 sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
 
+%%
+[t_drv_aligned,t_acq_aligned] = alignTimeVectorEnds(time_drv_0, time_acq);
+
+figure;hold on; grid on;legend on;
+plot(t_drv_aligned,x_drv_T_0)
+plot(t_acq_aligned , x_acq_T)
+plot(t_acq_aligned , sv2_acq )
+%plot(t_acq_aligned , bits2mm(mm2bits(x_drv_T_0(:end))-mm2bits(x_acq_T)*15) )
+
+%%  Data sine  - P7
+file = 'sineSweep_ddx=1200_f=1e-5to40_P7.acq'; % load output acq
+LTF_to_TXT_then_load_wSV( file , sineSweep_folder , 'OutputFolder', sineSweep_folder );
+nmin = min(numel(time_drv_0), numel(time_acq));
+x_acq_T = x_acq_T*1e3;
+sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
+
+figure;hold on; grid on;legend on;
+plot(time_drv_0,x_drv_T_0 , time_acq,x_acq_T)
+%%
 % step1
 S_est = polyest(x_drv_T_0,sv2_acq ,  [[0 15 0 0 0] 0],'Ts',Ts)%tfest(r,u,9)%armax(r,u , [9*[1 1 1] 1],opt)%oe(r ,u , [ 8 8 1 ] )%
 figure; hold on;
@@ -229,4 +247,30 @@ bodeplot( G_direct , 'b--' , opts1);
 bodeplot( G_indirect , 'r--' , opts1);
 legend; grid on;
 
+%% %%% 
+function [t1_adj, t2_adj] = alignTimeVectorEnds(t1, t2)
+    % Ensure column vectors
+    t1 = t1(:);
+    t2 = t2(:);
+
+    % Signal durations
+    T1 = t1(end);
+    T2 = t2(end);
+
+    if T1 > T2
+        % t2 is shorter → shift it forward
+        shift = T1 - T2;
+        t2_adj = t2 + shift;
+        t1_adj = t1;
+    elseif T2 > T1
+        % t1 is shorter → shift it forward
+        shift = T2 - T1;
+        t1_adj = t1 + shift;
+        t2_adj = t2;
+    else
+        % Same duration → no change
+        t1_adj = t1;
+        t2_adj = t2;
+    end
+end
 
