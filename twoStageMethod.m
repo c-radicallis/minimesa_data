@@ -9,6 +9,12 @@ tfest_opt_CL = tfestOptions('EnforceStability',1);
 
 % step1
 S_est = polyest(x_drv_T_0_cut,sv2_acq ,  [[0 fir_np 0 0 0] 0],'Ts',Ts)
+% nl = idSaturation('LinearInterval',[min(sv2_acq),max(sv2_acq)]);
+% nl = saturation
+% model = idnlarx([0 fir_np 0], nl);
+% data = iddata(sv2_acq, x_drv_T_0_cut, Ts);
+% S_est = nlarx(y, u, Ts, model);
+
 figure; hold on;
 bodeplot(S_est,'g', opts1);
 legend; grid on;
