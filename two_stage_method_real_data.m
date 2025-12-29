@@ -9,6 +9,8 @@ Ts_fpga= 1/5000;
 % bode plot options
 opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[1 100]};opts1.PhaseWrapping="on";opts1.PhaseWrappingBranch=-360;%opts1.Ylim={[-40 10]};
 
+tfest_opt_CL = tfestOptions('InitialCondition','auto','EnforceStability',1);
+
 % Control channel AI2 Displacement - 16 bit signed integer to mm conversion
 a = 0.000485;
 b = -0.2;
@@ -22,24 +24,16 @@ file = 'sineSweep_ddx=1200_f=1e-5to40.ltf'; % load input drv
 LTF_to_TXT_then_load( file , 'InputFolder', sineSweep_folder , 'OutputFolder', sineSweep_folder); % load input drv
 x_drv_T_0 = x_drv_T_0*1e3; % convert to mm
 
-%%  Data sine  - P15
-file = 'sineSweep_ddx=1200_f=1e-5to40_P15.acq'; % load output acq
-LTF_to_TXT_then_load_wSV( file , sineSweep_folder , 'OutputFolder', sineSweep_folder );
-x_acq_T = x_acq_T*1e3;
-sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
-[~,time_acq_aligned] = alignTimeVectorEnds(time_drv_0, time_acq);
-
-
 
 %%  Data sine  - P7
 file = 'sineSweep_ddx=1200_f=1e-5to40_P7.acq'; % load output acq
 LTF_to_TXT_then_load_wSV( file , sineSweep_folder , 'OutputFolder', sineSweep_folder );
 x_acq_T = x_acq_T*1e3;
 sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
-[~,time_acq_aligned] = alignTimeVectorEnds(time_drv_0, time_acq);
+[x_drv_T_0_cut , time_acq_aligned] = alignTimeVectorEnds(time_drv_0 , x_drv_T_0, time_acq , Ts);
 
 % step1
-S_est = polyest(x_drv_T_0,sv2_acq ,  [[0 15 0 0 0] 0],'Ts',Ts)%tfest(r,u,9)%armax(r,u , [9*[1 1 1] 1],opt)%oe(r ,u , [ 8 8 1 ] )%
+S_est = polyest(x_drv_T_0_cut,sv2_acq ,  [[0 15 0 0 0] 0],'Ts',Ts)%tfest(r,u,9)%armax(r,u , [9*[1 1 1] 1],opt)%oe(r ,u , [ 8 8 1 ] )%
 figure; hold on;
 %bodeplot(S0,'r', opts1);
 bodeplot(S_est,'g', opts1);
@@ -51,15 +45,17 @@ u_r_est = lsim(S_est , x_drv_T_0 , time_drv_0);
 figure, hold on;
 plot(time_acq_aligned , sv2_acq , 'DisplayName', 'sv2_acq');
 plot(time_drv_0,u_r_est ,'g--', 'DisplayName', 'u_r^{est}');
+% u_r_est_cut = lsim(S_est , x_drv_T_0_cut , time_acq_aligned);
+% plot(time_acq_aligned,u_r_est_cut ,'r--', 'DisplayName', 'u_r^{est}');
 legend; grid on;
 
 % step 3
-G_est = tfest(u_r_est , x_acq_T , 4 , 'Ts' , Ts)
-G_est_to_CL = feedback(15*G_est, 1);
+G_est = tfest(u_r_est(end - length(time_acq) + 1 : end) , x_acq_T , 4 , 'Ts' , Ts)
+G_est_to_CL = feedback(7*G_est, 1);
 G_direct = tfest( sv2_acq , x_acq_T , 4 , 'Ts' , Ts)
-G_direct_to_CL = feedback(15*G_direct, 1);
-G_CL = tfest(x_drv_T_0 , x_acq_T , 4 , 'Ts' , Ts)
-G_indirect = G_CL/(15*(1-G_CL))
+G_direct_to_CL = feedback(7*G_direct, 1);
+G_CL = tfest(x_drv_T_0_cut , x_acq_T , 4 , 'Ts' , Ts,tfest_opt_CL)
+G_indirect = G_CL/(7*(1-G_CL))
 
 figure;hold on;
 bodeplot(G_CL,'y', opts1);
@@ -69,6 +65,13 @@ bodeplot(G_est , 'g--', opts1);
 bodeplot( G_direct , 'b--' , opts1);
 bodeplot( G_indirect , 'r--' , opts1);
 legend; grid on;
+
+%%  Data sine  - P15
+file = 'sineSweep_ddx=1200_f=1e-5to40_P15.acq'; % load output acq
+LTF_to_TXT_then_load_wSV( file , sineSweep_folder , 'OutputFolder', sineSweep_folder );
+x_acq_T = x_acq_T*1e3;
+sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
+[x_drv_T_0_cut , time_acq_aligned] = alignTimeVectorEnds(time_drv_0 , x_drv_T_0, time_acq , Ts);
 
 %% input file - pink noise 40hz
 input_file_folder ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\31-7-2025\tgt and noise drv\';
