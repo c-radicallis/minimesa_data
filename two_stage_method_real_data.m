@@ -29,12 +29,7 @@ x_acq_T = x_acq_T*1e3;
 sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
 [~,time_acq_aligned] = alignTimeVectorEnds(time_drv_0, time_acq);
 
-figure;hold on; grid on;legend on;
-yyaxis left
-plot(time_drv_0,x_drv_T_0,'g','DisplayName', 'drv')
-plot(time_acq_aligned , x_acq_T ,'r-','DisplayName', 'P=15')
-yyaxis right
-plot(time_acq_aligned , sv2_acq ,'r--','DisplayName', 'P=15' )
+
 
 %%  Data sine  - P7
 file = 'sineSweep_ddx=1200_f=1e-5to40_P7.acq'; % load output acq
@@ -43,12 +38,6 @@ x_acq_T = x_acq_T*1e3;
 sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
 [~,time_acq_aligned] = alignTimeVectorEnds(time_drv_0, time_acq);
 
-yyaxis left
-plot(time_acq_aligned , x_acq_T,'b-', 'DisplayName', 'P=7')
-yyaxis right
-plot(time_acq_aligned , sv2_acq,'b--' ,'DisplayName', 'P=7')
-
-%%
 % step1
 S_est = polyest(x_drv_T_0,sv2_acq ,  [[0 15 0 0 0] 0],'Ts',Ts)%tfest(r,u,9)%armax(r,u , [9*[1 1 1] 1],opt)%oe(r ,u , [ 8 8 1 ] )%
 figure; hold on;
@@ -60,7 +49,7 @@ legend; grid on;
 u_r_est = lsim(S_est , x_drv_T_0 , time_drv_0);
 
 figure, hold on;
-plot(time_acq , sv2_acq , 'DisplayName', 'sv2_acq');
+plot(time_acq_aligned , sv2_acq , 'DisplayName', 'sv2_acq');
 plot(time_drv_0,u_r_est ,'g--', 'DisplayName', 'u_r^{est}');
 legend; grid on;
 
@@ -247,30 +236,6 @@ bodeplot( G_direct , 'b--' , opts1);
 bodeplot( G_indirect , 'r--' , opts1);
 legend; grid on;
 
-%% %%% 
-function [t1_adj, t2_adj] = alignTimeVectorEnds(t1, t2)
-    % Ensure column vectors
-    t1 = t1(:);
-    t2 = t2(:);
 
-    % Signal durations
-    T1 = t1(end);
-    T2 = t2(end);
 
-    if T1 > T2
-        % t2 is shorter → shift it forward
-        shift = T1 - T2;
-        t2_adj = t2 + shift;
-        t1_adj = t1;
-    elseif T2 > T1
-        % t1 is shorter → shift it forward
-        shift = T2 - T1;
-        t1_adj = t1 + shift;
-        t2_adj = t2;
-    else
-        % Same duration → no change
-        t1_adj = t1;
-        t2_adj = t2;
-    end
-end
 
