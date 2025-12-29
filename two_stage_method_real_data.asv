@@ -20,7 +20,7 @@ clear a b
 sineSweep_folder ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\sineSweep\ddx=1200\';
 file = 'sineSweep_ddx=1200_f=1e-5to40.ltf'; % load input drv
 LTF_to_TXT_then_load( file , 'InputFolder', sineSweep_folder , 'OutputFolder', sineSweep_folder); % load input drv
-x_drv_T_0 = x_drv_T_0*1e3; % convert to mm
+x_drv_T_0 = x_drv_T_0*1e3; % convert t  o mm
 
 %%  Data sine  - P15
 file = 'sineSweep_ddx=1200_f=1e-5to40_P15.acq'; % load output acq
@@ -31,10 +31,10 @@ sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
 
 figure;hold on; grid on;legend on;
 yyaxis left
-plot(time_drv_0,x_drv_T_0,'g','DisplayName', 'drv')
-plot(time_acq_aligned , x_acq_T ,'r-','DisplayName', 'P=15')
+plot(time_drv_0,x_drv_T_0)
+plot(time_acq_aligned , x_acq_T)
 yyaxis right
-plot(time_acq_aligned , sv2_acq ,'r--','DisplayName', 'P=15' )
+plot(time_acq_aligned , sv2_acq )
 
 %%  Data sine  - P7
 file = 'sineSweep_ddx=1200_f=1e-5to40_P7.acq'; % load output acq
@@ -43,10 +43,12 @@ x_acq_T = x_acq_T*1e3;
 sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
 [~,time_acq_aligned] = alignTimeVectorEnds(time_drv_0, time_acq);
 
+figure;hold on; grid on;legend on;
 yyaxis left
-plot(time_acq_aligned , x_acq_T,'b-', 'DisplayName', 'P=7')
+plot(time_drv_0,x_drv_T_0)
+plot(time_acq_aligned , x_acq_T)
 yyaxis right
-plot(time_acq_aligned , sv2_acq,'b--' ,'DisplayName', 'P=7')
+plot(time_acq_aligned , sv2_acq ,'DisplayName', 'P=7')
 
 %%
 % step1
