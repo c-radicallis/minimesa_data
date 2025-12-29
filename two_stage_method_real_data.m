@@ -16,7 +16,7 @@ bits2mm = @(bits) a*bits+b;
 mm2bits = @(mm) (mm-b)/a;
 clear a b
 
-fir_np=10;
+fir_np=40;
 np_CL=4;
 np_OL=4;
 
@@ -40,7 +40,6 @@ file = 'sineSweep_ddx=1200_f=1e-5to40_P15.acq'; % load output acq
 LTF_to_TXT_then_load_wSV( file , sineSweep_folder , 'OutputFolder', sineSweep_folder );
 x_acq_T = x_acq_T*1e3;
 sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
-[x_drv_T_0_cut , time_acq_aligned] = alignTimeVectorEnds(time_drv_0 , x_drv_T_0, time_acq , Ts);
 Kp=15
 results_P15_sineSweep = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
 
@@ -48,48 +47,17 @@ results_P15_sineSweep = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, 
 input_file_folder ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\31-7-2025\tgt and noise drv\';
 file = 'pink_noise_40Hz_T3mm_0.drv'; % load input drv
 LTF_to_TXT_then_load( file , 'InputFolder', input_file_folder , 'OutputFolder', input_file_folder); % load input drv
-x_drv_T_0 = x_drv_T_0*1e3; % convert t  o mm
+x_drv_T_0 = x_drv_T_0*1e3; % convert to mm
 clear x_drv_L_0  x_drv_V_0
 
 %%  data_P5
-% folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
-% file = 'pink_noise_40Hz_T3mm_0_P5.acq'; % load output acq
-% LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
-% 
-% x_acq_T = x_acq_T*1e3;
-% sv2_acq = bits2mm( -sv2_acq ); %output is inverted because the wiring is fliped
-% 
-% % step1  
-% S_est = polyest(x_drv_T_0(1:nmin),sv2_acq ,  [[0 15 0 0 0] 0],'Ts',Ts)%tfest(r,u,9)%armax(r,u , [9*[1 1 1] 1],opt)%oe(r ,u , [ 8 8 1 ] )%
-% figure; hold on;
-% 
-% bodeplot(S_est,'g', opts1);
-% legend; grid on;
-% 
-% % step 2
-% u_r_est = lsim(S_est , x_drv_T_0 , time_drv_0);
-% 
-% figure, hold on;
-% plot(time_acq , sv2_acq , 'DisplayName', 'sv2_acq');
-% plot(time_drv_0,u_r_est ,'g--', 'DisplayName', 'u_r^{est}');
-% legend; grid on;
-% 
-% % step 3
-% G_est = tfest(u_r_est(1:nmin) , x_acq_T , 4 , 'Ts' , Ts)
-% G_est_to_CL = feedback(5*G_est, 1);
-% G_direct = tfest( sv2_acq , x_acq_T , 4 , 'Ts' , Ts)
-% G_direct_to_CL = feedback(5*G_direct, 1);
-% G_CL = tfest(x_drv_T_0(1:nmin) , x_acq_T , 4 , 'Ts' , Ts)
-% G_indirect = G_CL/(5*(1-G_CL))
-% 
-% figure;hold on;
-% bodeplot(G_CL,'y', opts1);
-% bodeplot(G_est_to_CL , 'g', opts1);
-% bodeplot( G_direct_to_CL , 'b' , opts1);
-% bodeplot(G_est , 'g--', opts1);
-% bodeplot( G_direct , 'b--' , opts1);
-% bodeplot( G_indirect , 'r--' , opts1);
-% legend; grid on;
+folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
+file = 'pink_noise_40Hz_T3mm_0_P5.acq'; % load output acq
+LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
+x_acq_T = x_acq_T*1e3;
+sv2_acq = bits2mm( -sv2_acq ); %output is inverted because the wiring is fliped
+Kp=5
+results_P5_pink = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
 
 %%  data_P7
 folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
@@ -97,119 +65,24 @@ file = 'pink_noise_40Hz_T3mm_0_P7.acq'; % load output acq
 LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
 x_acq_T = x_acq_T*1e3;
 sv2_acq = bits2mm( -sv2_acq ); %output is inverted because the wiring is fliped
+Kp=7
+results_P7_pink = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
 
-% step1
-S_est = polyest(x_drv_T_0,sv2_acq ,  [[0 15 0 0 0] 0],'Ts',Ts)%tfest(r,u,9)%armax(r,u , [9*[1 1 1] 1],opt)%oe(r ,u , [ 8 8 1 ] )%
-figure; hold on;
-
-bodeplot(S_est,'g', opts1);
-legend; grid on;
-
-% step 2
-u_r_est = lsim(S_est , x_drv_T_0 , time_drv_0);
-
-figure, hold on;
-plot(time_acq , sv2_acq , 'DisplayName', 'sv2_acq');
-plot(time_drv_0,u_r_est ,'g--', 'DisplayName', 'u_r^{est}');
-legend; grid on;
-
-% step 3
-G_est = tfest(u_r_est , x_acq_T , 4 , 'Ts' , Ts)
-G_est_to_CL = feedback(7*G_est, 1);
-G_direct = tfest( sv2_acq , x_acq_T , 4 , 'Ts' , Ts)
-G_direct_to_CL = feedback(7*G_direct, 1);
-G_CL = tfest(x_drv_T_0 , x_acq_T , 4 , 'Ts' , Ts)
-G_indirect = G_CL/(7*(1-G_CL))
-
-figure;hold on;
-bodeplot(G_CL,'y', opts1);
-bodeplot(G_est_to_CL , 'g', opts1);
-bodeplot( G_direct_to_CL , 'b' , opts1);
-bodeplot(G_est , 'g--', opts1);
-bodeplot( G_direct , 'b--' , opts1);
-bodeplot( G_indirect , 'r--' , opts1);
-legend; grid on;
 
 %%  Data P10
 folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
 file = 'pink_noise_40Hz_T3mm_0_P10.acq'; % load output acq
 LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
-
 x_acq_T = x_acq_T*1e3;
 sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
-
-% step1
-S_est = polyest(x_drv_T_0(1:nmin),sv2_acq ,  [[0 15 0 0 0] 0],'Ts',Ts)%tfest(r,u,9)%armax(r,u , [9*[1 1 1] 1],opt)%oe(r ,u , [ 8 8 1 ] )%
-figure; hold on;
-
-bodeplot(S_est,'g', opts1);
-legend; grid on;
-
-% step 2
-u_r_est = lsim(S_est , x_drv_T_0 , time_drv_0);
-
-figure, hold on;
-plot(time_acq , sv2_acq , 'DisplayName', 'sv2_acq');
-plot(time_drv_0,u_r_est ,'g--', 'DisplayName', 'u_r^{est}');
-legend; grid on;
-
-% step 3
-G_est = tfest(u_r_est(1:nmin) , x_acq_T , 4 , 'Ts' , Ts)
-G_est_to_CL = feedback(10*G_est, 1);
-G_direct = tfest( sv2_acq , x_acq_T , 4 , 'Ts' , Ts)
-G_direct_to_CL = feedback(10*G_direct, 1);
-G_CL = tfest(x_drv_T_0(1:nmin) , x_acq_T , 4 , 'Ts' , Ts)
-G_indirect = G_CL/(10*(1-G_CL))
-
-figure;hold on;
-bodeplot(G_CL,'y', opts1);
-bodeplot(G_est_to_CL , 'g', opts1);
-bodeplot( G_direct_to_CL , 'b' , opts1);
-bodeplot(G_est , 'g--', opts1);
-bodeplot( G_direct , 'b--' , opts1);
-bodeplot( G_indirect , 'r--' , opts1);
-legend; grid on;
+Kp=10
+results_P10_pink = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
 
 %%  Data P15
 folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
 file = 'pink_noise_40Hz_T3mm_0_P15.acq'; % load output acq
 LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
-
 x_acq_T = x_acq_T*1e3;
 sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
-
-% step1
-S_est = polyest(x_drv_T_0,sv2_acq ,  [[0 15 0 0 0] 0],'Ts',Ts)%tfest(r,u,9)%armax(r,u , [9*[1 1 1] 1],opt)%oe(r ,u , [ 8 8 1 ] )%
-figure; hold on;
-
-bodeplot(S_est,'g', opts1);
-legend; grid on;
-
-% step 2
-u_r_est = lsim(S_est , x_drv_T_0 , time_drv_0);
-
-figure, hold on;
-plot(time_acq , sv2_acq , 'DisplayName', 'sv2_acq');
-plot(time_drv_0,u_r_est ,'g--', 'DisplayName', 'u_r^{est}');
-legend; grid on;
-
-% step 3
-G_est = tfest(u_r_est , x_acq_T , 4 , 'Ts' , Ts)
-G_est_to_CL = feedback(15*G_est, 1);
-G_direct = tfest( sv2_acq , x_acq_T , 4 , 'Ts' , Ts)
-G_direct_to_CL = feedback(15*G_direct, 1);
-G_CL = tfest(x_drv_T_0 , x_acq_T , 4 , 'Ts' , Ts)
-G_indirect = G_CL/(15*(1-G_CL))
-
-figure;hold on;
-bodeplot(G_CL,'y', opts1);
-bodeplot(G_est_to_CL , 'g', opts1);
-bodeplot( G_direct_to_CL , 'b' , opts1);
-bodeplot(G_est , 'g--', opts1);
-bodeplot( G_direct , 'b--' , opts1);
-bodeplot( G_indirect , 'r--' , opts1);
-legend; grid on;
-
-
-
-
+Kp=15
+results_P15_pink = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);

@@ -8,7 +8,7 @@ tfest_opt_CL = tfestOptions('EnforceStability',1);
 [x_drv_T_0_cut , time_acq_aligned] = alignTimeVectorEnds(time_drv_0 , x_drv_T_0, time_acq , Ts);
 
 % step1
-S_est = polyest(x_drv_T_0_cut,sv2_acq ,  [[0 fir_np 0 0 0] 0],'Ts',Ts)%tfest(r,u,9)%armax(r,u , [9*[1 1 1] 1],opt)%oe(r ,u , [ 8 8 1 ] )%
+S_est = polyest(x_drv_T_0_cut,sv2_acq ,  [[0 fir_np 0 0 0] 0],'Ts',Ts)
 figure; hold on;
 bodeplot(S_est,'g', opts1);
 legend; grid on;
@@ -42,7 +42,7 @@ legend; grid on;
 
 % Pack results
 results.S_est = S_est;
-results.u_r_est = u_r_est;
+% results.u_r_est = u_r_est;
 results.G_est = G_est;
 results.G_est_to_CL = G_est_to_CL;
 results.G_direct = G_direct;
