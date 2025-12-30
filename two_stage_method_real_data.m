@@ -33,6 +33,7 @@ LTF_to_TXT_then_load_wSV( file , sineSweep_folder , 'OutputFolder', sineSweep_fo
 x_acq_T = x_acq_T*1e3;
 sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
 Kp=7
+
 results_P7_sineSweep = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
 
 %%  Data sine  - P15
