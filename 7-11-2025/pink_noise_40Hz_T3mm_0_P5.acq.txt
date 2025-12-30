@@ -2,7 +2,7 @@ LNEC Test File eXtractor
 
 File: pink_noise_40Hz_T3mm_0_P5.acq
 
-Created in: 2025-12-29 18:18:54.266548
+Created in: 2025-12-30 18:41:17.670402
 
 Number of channels: 7
 

@@ -23,7 +23,8 @@ data_detrended = detrend(data , T);
 % OL_data_detrended_sloped = detrend(OL_data , T_sloped);
 % plot(OL_data,OL_data_detrended, OL_data_detrended_sloped)
 S_est = polyest(data_detrended,  [[0 fir_np 0 0 0] 0],'Ts',Ts)
-sat = idSaturation('LinearInterval',[-16.0920,15.6920])
+sat = idSaturation('LinearInterval',[-16.0920,15.6920]);
+sat.Free =[0 0]
 S_est_nonLin = nlhw(data_detrended, S_est, [], sat)
 
 figure; hold on;
