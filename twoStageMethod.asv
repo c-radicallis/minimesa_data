@@ -7,9 +7,17 @@ tfest_opt_CL = tfestOptions('EnforceStability',1);
 
 [x_drv_T_0_cut , time_acq_aligned] = alignTimeVectorEnds(time_drv_0 , x_drv_T_0, time_acq , Ts);
 
-% step1 % Estimate HW model
+% step1
+%S_est = polyest(x_drv_T_0_cut,sv2_acq ,  [[0 fir_np 0 0 0] 0],'Ts',Ts)
+% nl = idSaturation('LinearInterval',[min(sv2_acq),max(sv2_acq)]);
+% nl = saturation
+% model = idnlarx([0 fir_np 0], nl);
+% drv_to_sv = iddata(sv2_acq, x_drv_T_0_cut, Ts);
+% S_est = nlarx(y, u, Ts, model);
+
+% Estimate HW model
 drv_to_sv = iddata( sv2_acq , x_drv_T_0_cut,Ts);
-drv_to_sv_detrended = detrend(drv_to_sv);
+drv_to_sv_detrended = detrend(drv_to_sv );
 % T_sloped = getTrend(OL_data,1);
 % OL_data_detrended_sloped = detrend(OL_data , T_sloped);
 % plot(OL_data,OL_data_detrended, OL_data_detrended_sloped)
@@ -68,8 +76,6 @@ results.OL_direct = OL_direct;
 results.CL_from_OL_direct = CL_from_OL_direct;
 results.CL = CL;
 results.OL_indirect = OL_indirect;
-results.OL_est = OL_est_nonLin;
-results.CL_from_OL_est = CL_from_OL_est_nonLin;
 
 
 end
