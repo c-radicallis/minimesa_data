@@ -87,6 +87,46 @@ sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
 Kp=15
 results_P15_pink = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
 
+%% Let's compare open loop tranfers fucntions
+opts1.MagLowerLim = -40;
+opts1.XLim={[0.5 40]};
+
+figure; hold on; opts1.Title.String='OL_direct';
+bodeplot(results_P7_sineSweep.OL_direct, opts1);
+bodeplot(results_P15_sineSweep.OL_direct, opts1);
+bodeplot(results_P5_pink.OL_direct, opts1);
+bodeplot(results_P7_pink.OL_direct, opts1);
+bodeplot(results_P10_pink.OL_direct, opts1);
+bodeplot(results_P15_pink.OL_direct, opts1);
+legend(); grid on;
+
+figure; hold on; opts1.Title.String='OL_indirect';
+bodeplot(results_P7_sineSweep.OL_indirect, opts1);
+bodeplot(results_P15_sineSweep.OL_indirect, opts1);
+bodeplot(results_P5_pink.OL_indirect, opts1);
+bodeplot(results_P7_pink.OL_indirect, opts1);
+bodeplot(results_P10_pink.OL_indirect, opts1);
+bodeplot(results_P15_pink.OL_indirect, opts1);
+legend(); grid on;
+
+figure; hold on; opts1.Title.String='OL_{est}_{nonLin}';
+bodeplot(results_P7_sineSweep.OL_est_nonLin, opts1);
+bodeplot(results_P15_sineSweep.OL_est_nonLin, opts1);
+bodeplot(results_P5_pink.OL_est_nonLin, opts1);
+bodeplot(results_P7_pink.OL_est_nonLin, opts1);
+bodeplot(results_P10_pink.OL_est_nonLin, opts1);
+bodeplot(results_P15_pink.OL_est_nonLin, opts1);
+legend(); grid on;
+
+
 %% Sine sweep models seems to over fit for high frequency
 
-%lets look at the identified transfer functions
+%lets compare the transfer fucntions obtained from sine sweep and pink
+%noise
+% figure; hold on;
+% bodeplot(results_P7_sineSweep.CL,'g', opts1);
+% bodeplot(results_P7_sineSweep.OL_est,'g', opts1);
+% bodeplot(results_P7_pink.CL,'r', opts1);
+% legend(); grid on;
+
+

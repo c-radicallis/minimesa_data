@@ -1,11 +1,29 @@
 function results = twoStageMethod(...
-    Kp , fir_np, np_CL , np_OL,  Ts , opts1,  sv2_acq,  ...
-    x_drv_T_0, time_drv_0, time_acq, ...
-    x_acq_T)
+    Kp , fir_np, np_CL , np_OL,...
+    Ts , opts1,  ...
+    sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T,...
+    n_splits)
 
 tfest_opt_CL = tfestOptions('EnforceStability',1);
 
 [x_drv_T_0_cut , time_acq_aligned] = alignTimeVectorEnds(time_drv_0 , x_drv_T_0, time_acq , Ts);
+
+%this is not working properly because of the shifting of acq signals
+%because of the missing data dut to late start acquisition
+% if nargin < 12   % cut not provided
+%     n_splits = 1;
+% end
+% if n_splits > 1
+%     split_length = floor(length(sv2_acq)/n_splits);
+%     sv2_acq   = sv2_acq(1:split_length);
+%     x_acq_T   = x_acq_T(1:split_length);
+%     time_acq  = time_acq(1:split_length);
+%     x_drv_T_0 = x_drv_T_0(1:split_length);
+%     x_drv_T_0_cut    = x_drv_T_0_cut(1:split_length);
+%     time_drv_0       = time_drv_0(1:split_length);
+%     time_acq_aligned = time_acq_aligned(1:split_length);
+% end
+
 
 % step1 % Estimate HW model
 drv_to_sv = iddata( sv2_acq , x_drv_T_0_cut,Ts);
@@ -30,7 +48,8 @@ figure, hold on;
 plot(time_acq_aligned , sv2_acq , 'DisplayName', 'sv2_acq');
 plot(time_drv_0,u_r_est ,'g', 'DisplayName', 'u_r^{est}');
 plot(time_drv_0,u_r_est_nonLin ,'r', 'DisplayName', 'u_r^{est_nonLin}');
-% u_r_est_cut = lsim(S_est , x_drv_T_0_cut , time_acq_aligned);
+% u_r_est_cut_nonLin = sim(S_est_nonLin , iddata([],x_drv_T_0_cut ,Ts, 'Tstart',time_acq_aligned(1)));
+% plot(time_acq_aligned,u_r_est_cut_nonLin.OutputData ,'r', 'DisplayName', 'u_r^{est_cut_nonLin}');
 % plot(time_acq_aligned,u_r_est_cut ,'r--', 'DisplayName', 'u_r^{est}');
 legend; grid on;
 
@@ -68,8 +87,8 @@ results.OL_direct = OL_direct;
 results.CL_from_OL_direct = CL_from_OL_direct;
 results.CL = CL;
 results.OL_indirect = OL_indirect;
-results.OL_est = OL_est_nonLin;
-results.CL_from_OL_est = CL_from_OL_est_nonLin;
+results.OL_est_nonLin = OL_est_nonLin;
+results.CL_from_OL_est_nonLin = CL_from_OL_est_nonLin;
 
 
 end
