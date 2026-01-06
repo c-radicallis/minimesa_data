@@ -42,7 +42,7 @@ S_est_nonLin = nlhw(drv_to_sv_detrended, S_est, [], sat)
 % legend('S_est' , 'S_est_nonLin'); grid on;
 
 % step 2
-u_r_est = lsim(S_est , x_drv_T_0 , time_drv_0);
+% u_r_est = lsim(S_est , x_drv_T_0 , time_drv_0);
 u_r_est_nonLin = sim(S_est_nonLin , x_drv_T_0 );
 % figure, hold on;
 % plot(time_acq_aligned , sv2_acq , 'DisplayName', 'sv2_acq');
@@ -54,8 +54,8 @@ u_r_est_nonLin = sim(S_est_nonLin , x_drv_T_0 );
 % legend; grid on;
 
 % step 3
-OL_est = tfest(u_r_est(end - length(time_acq) + 1 : end) , x_acq_T , np_OL , 'Ts' , Ts)
-CL_from_OL_est = feedback(Kp*OL_est, 1);
+% OL_est = tfest(u_r_est(end - length(time_acq) + 1 : end) , x_acq_T , np_OL , 'Ts' , Ts)
+% CL_from_OL_est = feedback(Kp*OL_est, 1);
 
 OL_est_nonLin = tfest(u_r_est_nonLin(end - length(time_acq) + 1 : end) , x_acq_T , np_OL , 'Ts' , Ts)
 CL_from_OL_est_nonLin= feedback(Kp*OL_est_nonLin, 1);
@@ -78,7 +78,7 @@ legend; grid on;
 
 %RESIDUALS
 figure;
-resid(iddata(x_acq_T,sv2_acq,Ts),OL_est_nonLin);%,OL_direct,OL_indirect
+resid(iddata(x_acq_T,sv2_acq,Ts),OL_direct,OL_indirect,OL_est_nonLin);%,OL_direct,OL_indirect
 legend; grid on;
 % %RESIDUALS (BUT MANUALLY)(JUST MAKING SURE)
 % x_OL_est_nonLin = lsim(OL_est_nonLin , sv2_acq,time_acq_aligned);
