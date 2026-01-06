@@ -76,17 +76,9 @@ bodeplot(CL_from_OL_est_nonLin , 'r-', opts1);
 bodeplot(OL_est_nonLin , 'r--', opts1);
 legend; grid on;
 
-%RESIDUALS
-figure;
+figure;%hold on;
 resid(iddata(x_acq_T,sv2_acq,Ts),OL_est_nonLin);%,OL_direct,OL_indirect
 legend; grid on;
-% %RESIDUALS (BUT MANUALLY)(JUST MAKING SURE)
-% x_OL_est_nonLin = lsim(OL_est_nonLin , sv2_acq,time_acq_aligned);
-% E =  x_OL_est_nonLin - x_acq_T;
-% figure; autocorr(E);
-% R_XE = xcorr(E,sv2_acq, 'coeff');
-% figure, plot(-time_acq_aligned(end) : Ts : time_acq_aligned(end), R_XE)
-% title('Correlation coefficient of noise and input')
 
 % Pack results
 results.S_est = S_est;
