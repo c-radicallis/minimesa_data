@@ -65,20 +65,23 @@ CL_from_OL_direct = feedback(Kp*OL_direct, 1);
 CL = tfest(x_drv_T_0_cut , x_acq_T , np_CL , 'Ts' , Ts,tfest_opt_CL)
 OL_indirect = CL/(Kp*(1-CL))
 
-figure;hold on;
-bodeplot(CL,'y', opts1);
-%bodeplot(CL_from_OL_est , 'g', opts1);
-bodeplot( CL_from_OL_direct , 'b' , opts1);
-%bodeplot(OL_est , 'g--', opts1);
-bodeplot( OL_direct , 'b--' , opts1);
-bodeplot( OL_indirect , 'm--' , opts1);
-bodeplot(CL_from_OL_est_nonLin , 'r-', opts1);
-bodeplot(OL_est_nonLin , 'r--', opts1);
-legend; grid on;
+% figure;hold on;
+% bodeplot(CL,'y', opts1);
+% %bodeplot(CL_from_OL_est , 'g', opts1);
+% bodeplot( CL_from_OL_direct , 'b' , opts1);
+% %bodeplot(OL_est , 'g--', opts1);
+% bodeplot( OL_direct , 'b--' , opts1);
+% bodeplot( OL_indirect , 'm--' , opts1);
+% bodeplot(CL_from_OL_est_nonLin , 'r-', opts1);
+% bodeplot(OL_est_nonLin , 'r--', opts1);
+% legend; grid on;
 
 %RESIDUALS
+% figure;
+% resid(iddata(x_acq_T,sv2_acq,Ts),OL_direct,OL_indirect,OL_est_nonLin);%,OL_direct,OL_indirect
+% legend; grid on;
 figure;
-resid(iddata(x_acq_T,sv2_acq,Ts),OL_direct,OL_indirect,OL_est_nonLin);%,OL_direct,OL_indirect
+resid(iddata(x_drv_T_0_cut,x_acq_T,Ts),CL,CL_from_OL_direct,CL_from_OL_est_nonLin);%,OL_direct,OL_indirect
 legend; grid on;
 % %RESIDUALS (BUT MANUALLY)(JUST MAKING SURE)
 % x_OL_est_nonLin = lsim(OL_est_nonLin , sv2_acq,time_acq_aligned);
