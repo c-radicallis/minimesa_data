@@ -58,7 +58,7 @@ u_r_est_nonLin = sim(S_est_nonLin , x_drv_T_0 );
 % CL_from_OL_est = feedback(Kp*OL_est, 1);
 
 OL_est_nonLin = tfest(u_r_est_nonLin(end - length(time_acq) + 1 : end) , x_acq_T , np_OL , 'Ts' , Ts,'Feedthrough',true)
-CL_from_OL_est_nonLin= feedback(Kp*OL_est_nonLin, 1);
+CL_from_OL_est_nonLin= feedback(Kp*OL_est_nonLin, 1)
 
 OL_direct = tfest( sv2_acq , x_acq_T , np_OL , 'Ts' , Ts,'Feedthrough',true)
 CL_from_OL_direct = feedback(Kp*OL_direct, 1);

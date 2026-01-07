@@ -110,7 +110,7 @@ Kp=15
 results_P15_pink = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
 
 %% Let's compare open loop tranfers fucntions
-close all;
+%close all;
 opts1.MagLowerLim = -40; opts1.MagLowerLimMode='manual';
 opts1.XLim={[0.5 40]};
 
