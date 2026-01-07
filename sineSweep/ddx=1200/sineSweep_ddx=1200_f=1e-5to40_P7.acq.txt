@@ -2,7 +2,7 @@ LNEC Test File eXtractor
 
 File: sineSweep_ddx=1200_f=1e-5to40_P7.acq
 
-Created in: 2026-01-06 15:44:26.565361
+Created in: 2026-01-07 15:10:39.719128
 
 Number of channels: 7
 

@@ -77,12 +77,13 @@ OL_indirect = CL/(Kp*(1-CL))
 % legend; grid on;
 
 %RESIDUALS
-% figure;
-% resid(iddata(x_acq_T,sv2_acq,Ts),OL_direct,OL_indirect,OL_est_nonLin);%,OL_direct,OL_indirect
-% legend; grid on;
+opt_resid = residOptions('MaxLag',20);
 figure;
-resid(iddata(x_drv_T_0_cut,x_acq_T,Ts),CL,CL_from_OL_direct,CL_from_OL_est_nonLin);%,OL_direct,OL_indirect
+resid(iddata(x_acq_T,sv2_acq,Ts),OL_direct,OL_indirect,OL_est_nonLin,opt_resid);%,OL_direct,OL_indirect
 legend; grid on;
+% figure;
+% resid(iddata(x_drv_T_0_cut,x_acq_T,Ts),CL,CL_from_OL_direct,CL_from_OL_est_nonLin);%,OL_direct,OL_indirect
+% legend; grid on;
 % %RESIDUALS (BUT MANUALLY)(JUST MAKING SURE)
 % x_OL_est_nonLin = lsim(OL_est_nonLin , sv2_acq,time_acq_aligned);
 % E =  x_OL_est_nonLin - x_acq_T;
