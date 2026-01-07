@@ -57,12 +57,12 @@ u_r_est_nonLin = sim(S_est_nonLin , x_drv_T_0 );
 % OL_est = tfest(u_r_est(end - length(time_acq) + 1 : end) , x_acq_T , np_OL , 'Ts' , Ts)
 % CL_from_OL_est = feedback(Kp*OL_est, 1);
 
-OL_est_nonLin = tfest(u_r_est_nonLin(end - length(time_acq) + 1 : end) , x_acq_T , np_OL , 'Ts' , Ts)
+OL_est_nonLin = tfest(u_r_est_nonLin(end - length(time_acq) + 1 : end) , x_acq_T , np_OL , 'Ts' , Ts,'Feedthrough',true)
 CL_from_OL_est_nonLin= feedback(Kp*OL_est_nonLin, 1);
 
-OL_direct = tfest( sv2_acq , x_acq_T , np_OL , 'Ts' , Ts)
+OL_direct = tfest( sv2_acq , x_acq_T , np_OL , 'Ts' , Ts,'Feedthrough',true)
 CL_from_OL_direct = feedback(Kp*OL_direct, 1);
-CL = tfest(x_drv_T_0_cut , x_acq_T , np_CL , 'Ts' , Ts,tfest_opt_CL)
+CL = tfest(x_drv_T_0_cut , x_acq_T , np_CL , 'Ts' , Ts,'Feedthrough',true,tfest_opt_CL)
 OL_indirect = CL/(Kp*(1-CL))
 
 % figure;hold on;

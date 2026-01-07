@@ -2,7 +2,7 @@ LNEC Test File eXtractor
 
 File: sineSweep_A=4_f=10e-4to40_CosTaper5percent_0.drv
 
-Created in: 2026-01-07 15:55:09.286268
+Created in: 2026-01-07 17:28:33.599396
 
 Number of channels: 3
 
