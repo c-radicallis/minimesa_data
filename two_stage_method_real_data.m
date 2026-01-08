@@ -21,26 +21,26 @@ np_CL=4;
 np_OL=4;
 
 %% input file - sine sweep - A = 4
-sineSweep_folder ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\sineSweep\A=4_drv\';
-file = 'sineSweep_A=4_f=10e-4to40_CosTaper5percent_0.drv'; 
-LTF_to_TXT_then_load( file , 'InputFolder', sineSweep_folder , 'OutputFolder', sineSweep_folder); % load input drv
-x_drv_T_0 = x_drv_T_0*1e3; % convert to mm
-
-%  Data sine  - P5
-file = 'sineSweep_A=4_f=10e-4to40_CosTaper5percent_P5.acq';
-LTF_to_TXT_then_load_wSV( file , sineSweep_folder , 'OutputFolder', sineSweep_folder );
-x_acq_T = x_acq_T*1e3;
-sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
-Kp=5
-results_P15_sineSweep = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
-
-%  Data sine  - P7
-file = 'sineSweep_A=4_f=10e-4to40_CosTaper5percent_P7.acq';
-LTF_to_TXT_then_load_wSV( file , sineSweep_folder , 'OutputFolder', sineSweep_folder );
-x_acq_T = x_acq_T*1e3;
-sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
-Kp=7
-results_P7_sineSweep = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
+% sineSweep_folder ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\sineSweep\A=4_drv\';
+% file = 'sineSweep_A=4_f=10e-4to40_CosTaper5percent_0.drv'; 
+% LTF_to_TXT_then_load( file , 'InputFolder', sineSweep_folder , 'OutputFolder', sineSweep_folder); % load input drv
+% x_drv_T_0 = x_drv_T_0*1e3; % convert to mm
+% 
+% %  Data sine  - P5
+% file = 'sineSweep_A=4_f=10e-4to40_CosTaper5percent_P5.acq';
+% LTF_to_TXT_then_load_wSV( file , sineSweep_folder , 'OutputFolder', sineSweep_folder );
+% x_acq_T = x_acq_T*1e3;
+% sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
+% Kp=5
+% results_P15_sineSweep = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
+% 
+% %  Data sine  - P7
+% file = 'sineSweep_A=4_f=10e-4to40_CosTaper5percent_P7.acq';
+% LTF_to_TXT_then_load_wSV( file , sineSweep_folder , 'OutputFolder', sineSweep_folder );
+% x_acq_T = x_acq_T*1e3;
+% sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
+% Kp=7
+% results_P7_sineSweep = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
 
 %% input file - sine sweep - ddx=1200
 % sineSweep_folder ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\sineSweep\ddx=1200\';

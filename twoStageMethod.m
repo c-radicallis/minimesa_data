@@ -36,22 +36,25 @@ sat = idSaturation('LinearInterval',[-16.0920,15.6920]);
 sat.Free =[0 0];
 S_est_nonLin = nlhw(drv_to_sv_detrended, S_est, [], sat)
 
-% figure; hold on;
-% bodeplot(S_est,'g', opts1);
-% bodeplot(S_est_nonLin.LinearModel,'r', opts1);
-% legend('S_est' , 'S_est_nonLin'); grid on;
+figure; hold on;
+bodeplot(S_est,'g', opts1);
+bodeplot(S_est_nonLin.LinearModel,'r', opts1);
+legend('S_est' , 'S_est_nonLin'); grid on;
 
 % step 2
 % u_r_est = lsim(S_est , x_drv_T_0 , time_drv_0);
 u_r_est_nonLin = sim(S_est_nonLin , x_drv_T_0 );
-% figure, hold on;
-% plot(time_acq_aligned , sv2_acq , 'DisplayName', 'sv2_acq');
+
+figure, hold on;
+plot(time_acq_aligned , sv2_acq , 'DisplayName', 'sv2_acq');
+plot(time_drv_0,u_r_est_nonLin ,'r', 'DisplayName', 'u_r^{est_nonLin}');
+legend; grid on;
+
 % plot(time_drv_0,u_r_est ,'g', 'DisplayName', 'u_r^{est}');
-% plot(time_drv_0,u_r_est_nonLin ,'r', 'DisplayName', 'u_r^{est_nonLin}');
 % u_r_est_cut_nonLin = sim(S_est_nonLin , iddata([],x_drv_T_0_cut ,Ts, 'Tstart',time_acq_aligned(1)));
 % plot(time_acq_aligned,u_r_est_cut_nonLin.OutputData ,'r', 'DisplayName', 'u_r^{est_cut_nonLin}');
 % plot(time_acq_aligned,u_r_est_cut ,'r--', 'DisplayName', 'u_r^{est}');
-% legend; grid on;
+
 
 % step 3
 % OL_est = tfest(u_r_est(end - length(time_acq) + 1 : end) , x_acq_T , np_OL , 'Ts' , Ts)
