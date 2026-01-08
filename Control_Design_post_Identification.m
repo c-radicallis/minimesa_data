@@ -7,7 +7,7 @@
 % func_folder  =  'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\uniaxial_table_model\Adapting_Driver_Signal\';
 % addpath(func_folder);
 % Ts = 0.005;
-opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[1 50]}; opts1.PhaseMatching='on'; opts1.Grid='on';
+opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[6 50]}; opts1.PhaseMatching='on'; opts1.Grid='on';
 clc;
 close all;
 
@@ -41,16 +41,16 @@ G_open=OL_est_nonLin;
 G_closed = results_P15_pink.CL_from_OL_est_nonLin;
 
 tuner_opts = pidtuneOptions('DesignFocus','reference-tracking');
-cutoff_frequency = 5; % Hz
 
-PIDF  = pidtune(G_open,'PIDF',cutoff_frequency*2*pi,tuner_opts)
-G_PIDF_5Hz = feedback(PIDF*G_open, 1);
 cutoff_frequency = 10; % Hz
 PIDF  = pidtune(G_open,'PIDF',cutoff_frequency*2*pi,tuner_opts)
 G_PIDF_10Hz = feedback(PIDF*G_open, 1);
 cutoff_frequency = 15; % Hz
 PIDF   = pidtune(G_open,'PIDF',cutoff_frequency*2*pi,tuner_opts)
 G_PIDF_15Hz = feedback(PIDF*G_open, 1);
+cutoff_frequency = 20; % Hz
+PIDF  = pidtune(G_open,'PIDF',cutoff_frequency*2*pi,tuner_opts)
+G_PIDF_20Hz = feedback(PIDF*G_open, 1);
 
 %%
 % obs = vpa(obsv(G_open));
@@ -73,7 +73,7 @@ integrator = tf(1,[1 0], Ts);%_fpga); % The integrator integrates the tracking e
 integrator.InputName = {'e'};    % error: e = r - y
 integrator.OutputName = {'xi'};  % integrated error
 
-Q = diag([0*ones(1,n_states),1e1]);%1e3*diag([zeros(1,n_states),1]);%blkdiag(eye(nx), eye(ny));
+Q = diag([0*ones(1,n_states),1e5]);%1e3*diag([zeros(1,n_states),1]);%blkdiag(eye(nx), eye(ny));
 R = eye(size(G_open.B,2));
 K_lqi = lqi(G_open, Q, R)% Design the LQI controller for the original system
 
@@ -88,11 +88,10 @@ Optimal_closed_loop = minreal(connect(plant_aug,  controller , integrator, sumbl
 
 %
 fig9 = figure(9);ax9 = axes(fig9); hold(ax9, 'on');
-% bodeplot(sys4,opts1);
 bodeplot(G_closed,opts1);
-bodeplot(G_PIDF_5Hz,opts1);    
 bodeplot(G_PIDF_10Hz,opts1);    
 bodeplot(G_PIDF_15Hz,opts1); 
+bodeplot(G_PIDF_20Hz,opts1);    
 bodeplot(Optimal_closed_loop,opts1);
 legend();
 
@@ -108,7 +107,7 @@ legend();
 % ddx_cl = secondDerivativeTime(x_cl , Ts);
 % [picos_ddx_cl , picos_x_cl] = ResponseSpectrum( t_vector , x_cl , ddx_cl, f_vector , 1);
 % 
-% x_PIDF_5Hz = lsim(d2d(G_PIDF_5Hz,Ts) ,  x_ref , t_vector,'zoh');
+% x_PIDF_5Hz = lsim(d2d(G_PIDF_20Hz,Ts) ,  x_ref , t_vector,'zoh');
 % ddx_PIDF_5Hz = secondDerivativeTime(x_PIDF_5Hz , Ts);
 % [picos_ddx_PIDF_5Hz , picos_x_PIDF_5Hz] = ResponseSpectrum( t_vector , x_PIDF_5Hz , ddx_PIDF_5Hz, f_vector , 1);
 % 
