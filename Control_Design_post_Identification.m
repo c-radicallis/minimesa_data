@@ -63,13 +63,13 @@ G_open = ss(OL_est_nonLin);
 n_states=size(G_open.A,1);
 G_open.StateName  = arrayfun(@(k) sprintf('x%d',k), 1:n_states, 'UniformOutput', false);
 
-plant_aug = ss(G_open.A, G_open.B,[eye(n_states);G_open.C],0 , Ts_fpga);
+plant_aug = ss(G_open.A, G_open.B,[eye(n_states);G_open.C],0 , Ts);%_fpga);
 plant_aug.InputName = {'i_sv'};   % plant input: control signal
 plant_aug.OutputName = [G_open.StateName ; {'y_xT'}];  % plant output
 
 sumblk1 = sumblk('e = x_ref - y_xT'); % Compute the error signal: e = r - y
 
-integrator = tf(1,[1 0], Ts_fpga); % The integrator integrates the tracking error.
+integrator = tf(1,[1 0], Ts);%_fpga); % The integrator integrates the tracking error.
 integrator.InputName = {'e'};    % error: e = r - y
 integrator.OutputName = {'xi'};  % integrated error
 
