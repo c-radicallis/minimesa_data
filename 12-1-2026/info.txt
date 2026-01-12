@@ -1,0 +1,19 @@
+tune for OL from 2-stage non linear model from Kp=15 pink noise data
+
+w_c = 10Hz
+Kp = 6.75
+Ki = 68
+Kd = .0712891
+Tf = 0.00161743
+
+w_c = 15Hz
+Kp = 8.75
+Ki = 139
+Kd = 0.125977
+Tf = 0.00109863
+
+w_c = 20Hz
+Kp = 8.562500
+Ki = 75
+Kd = 0.18457
+Tf = 0.000167847
