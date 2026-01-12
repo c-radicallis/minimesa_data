@@ -8,7 +8,7 @@ opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[6 50]}; opts1.
 
 OL_direct = results_P15_pink.OL_direct;
 OL_indirect = results_P15_pink.OL_indirect;
-OL_est_nonLin = results_P15_pink.OL_est_nonLin;
+OL_est_nonLin = ss(results_P15_pink.OL_est_nonLin);
 CL_from_OL_direct = results_P15_pink.CL_from_OL_direct;
 CL = results_P15_pink.CL;
 CL_from_OL_est_nonLin = results_P15_pink.CL_from_OL_est_nonLin;
@@ -33,11 +33,9 @@ OL_indirect =minreal(results_P15_pink.OL_indirect)
 
 %%
 G_open=d2d(OL_est_nonLin,Ts_fpga,'tustin');
-G_open_minreal=minreal(tf(G_open),1e-1)
 G_closed = d2d(results_P15_pink.CL_from_OL_est_nonLin,Ts_fpga,'tustin');
 
-figure;hold on;pzmap(G_open,G_open_minreal);legend; %OL_est_nonLin,
-figure;hold on;bodeplot(OL_est_nonLin,G_open,G_open_minreal,opts1);legend;
+figure;hold on;bodeplot(OL_est_nonLin,G_open,opts1);legend;
 
 tuner_opts = pidtuneOptions('DesignFocus','reference-tracking');
 
@@ -56,8 +54,6 @@ G_PIDF_20Hz = feedback(PIDF*G_open, 1);
 % r_obsv = rank(obs)
 % ctrlb = vpa(ctrb(G_open));
 % r_ctrlb = rank(ctrlb)
-
-G_open = ss(G_open);
 
 n_states=size(G_open.A,1);
 G_open.StateName  = arrayfun(@(k) sprintf('x%d',k), 1:n_states, 'UniformOutput', false);
