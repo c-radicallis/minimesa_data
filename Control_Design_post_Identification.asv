@@ -6,12 +6,12 @@ opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[6 50]}; opts1.
 %clc;
 %close all;
 
-OL_direct = results_P15_pink.OL_direct;
-OL_indirect = results_P15_pink.OL_indirect;
-OL_est_nonLin = results_P15_pink.OL_est_nonLin;
-CL_from_OL_direct = results_P15_pink.CL_from_OL_direct;
-CL = results_P15_pink.CL;
-CL_from_OL_est_nonLin = results_P15_pink.CL_from_OL_est_nonLin;
+OL_direct = results_P15_pink.OL_direct
+OL_indirect = results_P15_pink.OL_indirect
+OL_est_nonLin = results_P15_pink.OL_est_nonLin
+CL_from_OL_direct = results_P15_pink.CL_from_OL_direct
+CL = results_P15_pink.CL
+CL_from_OL_est_nonLin = results_P15_pink.CL_from_OL_est_nonLin
 
 % n=0;
 % while n<2
@@ -33,10 +33,10 @@ OL_indirect =minreal(results_P15_pink.OL_indirect)
 
 %%
 G_open=d2d(OL_est_nonLin,Ts_fpga,'tustin');
-G_open_minreal=minreal(tf(G_open),1e-1)
+G_open_minreal=minreal(G_open)
 G_closed = d2d(results_P15_pink.CL_from_OL_est_nonLin,Ts_fpga,'tustin');
 
-figure;hold on;pzmap(G_open,G_open_minreal);legend; %OL_est_nonLin,
+figure;hold on;pzmap(OL_est_nonLin,G_open,G_open_minreal);legend;
 figure;hold on;bodeplot(OL_est_nonLin,G_open,G_open_minreal,opts1);legend;
 
 tuner_opts = pidtuneOptions('DesignFocus','reference-tracking');
