@@ -1,5 +1,5 @@
 function results = twoStageMethod(...
-    Kp , fir_np, np_CL , np_OL,...
+    controller , fir_np, np_CL , np_OL,...
     Ts , opts1,  ...
     sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T,...
     n_splits)
@@ -58,17 +58,17 @@ legend; grid on;
 
 % step 3
 % OL_est = tfest(u_r_est(end - length(time_acq) + 1 : end) , x_acq_T , np_OL , 'Ts' , Ts)
-% CL_from_OL_est = feedback(Kp*OL_est, 1);
+% CL_from_OL_est = feedback(controller*OL_est, 1);
 
 u_r_est_to_x_acq = iddata( x_acq_T , u_r_est_nonLin(end - length(time_acq) + 1 : end) ,Ts);
 u_r_est_to_x_acq_detrended = detrend(u_r_est_to_x_acq);
 OL_est_nonLin = tfest( u_r_est_to_x_acq_detrended , np_OL , 'Ts' , Ts,'Feedthrough',true)
-CL_from_OL_est_nonLin= feedback(Kp*OL_est_nonLin, 1)
+CL_from_OL_est_nonLin= feedback(controller*OL_est_nonLin, 1)
 
 OL_direct = tfest( sv2_acq , x_acq_T , np_OL , 'Ts' , Ts,'Feedthrough',true)
-CL_from_OL_direct = feedback(Kp*OL_direct, 1);
+CL_from_OL_direct = feedback(controller*OL_direct, 1);
 CL = tfest(x_drv_T_0_cut , x_acq_T , np_CL , 'Ts' , Ts,'Feedthrough',true,tfest_opt_CL)
-OL_indirect = CL/(Kp*(1-CL))
+OL_indirect = CL/(controller*(1-CL))
 
 % figure;hold on;
 % bodeplot(CL,'y', opts1);

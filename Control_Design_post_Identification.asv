@@ -87,20 +87,11 @@ Optimal_CL = connect(plant_aug,  controller , integrator, sumblk1, 'x_ref','y_xT
 %bodeplot(G_closed,opts1);
 figure;hold on;
 bodeplot(G_PIDF_10Hz,opts1);    
-bodeplot(results_wc10_pink.CL_from_OL_est_nonLin,opts1);    
-bodeplot(results_wc10_pink.CL_from_OL_direct,opts1);    
-bodeplot(results_wc10_pink.CL,opts1);   
+bodeplot(results,opts1);    
 % bodeplot(G_PIDF_15Hz,opts1); 
 % bodeplot(G_PIDF_20Hz,opts1);    
 % bodeplot(Optimal_CL,opts1);
 % legend;
-
-%%
-figure;hold on;
-bodeplot(G_PIDF_20Hz,opts1);    
-bodeplot(results_wc20_pink.CL_from_OL_est_nonLin,opts1);    
-bodeplot(results_wc20_pink.CL_from_OL_direct,opts1);    
-bodeplot(results_wc20_pink.CL,opts1);  
 
 
 %% Finding Response Spectre of Ground
