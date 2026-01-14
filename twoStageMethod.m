@@ -36,19 +36,19 @@ sat = idSaturation('LinearInterval',[-16.0920,15.6920]);
 sat.Free =[0 0];
 S_est_nonLin = nlhw(drv_to_sv_detrended, S_est, [], sat)
 
-figure; hold on;
-bodeplot(S_est,'g', opts1);
-bodeplot(S_est_nonLin.LinearModel,'r', opts1);
-legend('S_est' , 'S_est_nonLin'); grid on;
+% figure; hold on;
+% bodeplot(S_est,'g', opts1);
+% bodeplot(S_est_nonLin.LinearModel,'r', opts1);
+% legend('S_est' , 'S_est_nonLin'); grid on;
 
 % step 2
 % u_r_est = lsim(S_est , x_drv_T_0 , time_drv_0);
 u_r_est_nonLin = sim(S_est_nonLin , x_drv_T_0 );
 
-figure, hold on;
-plot(time_acq_aligned , sv2_acq , 'DisplayName', 'sv2_acq');
-plot(time_drv_0,u_r_est_nonLin ,'r', 'DisplayName', 'u_r^{est_nonLin}');
-legend; grid on;
+% figure, hold on;
+% plot(time_acq_aligned , sv2_acq , 'DisplayName', 'sv2_acq');
+% plot(time_drv_0,u_r_est_nonLin ,'r', 'DisplayName', 'u_r^{est_nonLin}');
+% legend; grid on;
 
 % plot(time_drv_0,u_r_est ,'g', 'DisplayName', 'u_r^{est}');
 % u_r_est_cut_nonLin = sim(S_est_nonLin , iddata([],x_drv_T_0_cut ,Ts, 'Tstart',time_acq_aligned(1)));
@@ -62,12 +62,17 @@ legend; grid on;
 
 u_r_est_to_x_acq = iddata( x_acq_T , u_r_est_nonLin(end - length(time_acq) + 1 : end) ,Ts);
 u_r_est_to_x_acq_detrended = detrend(u_r_est_to_x_acq);
-OL_est_nonLin = tfest( u_r_est_to_x_acq_detrended , np_OL , 'Ts' , Ts,'Feedthrough',true)
+OL_est_nonLin = tfest( u_r_est_to_x_acq_detrended , np_OL ,'Ts',Ts,'Feedthrough',true)
 CL_from_OL_est_nonLin= feedback(controller*OL_est_nonLin, 1)
 
-OL_direct = tfest( sv2_acq , x_acq_T , np_OL , 'Ts' , Ts,'Feedthrough',true)
+sv_to_acq = iddata(  x_acq_T ,sv2_acq ,Ts);
+sv_to_acq_detrended = detrend(sv_to_acq);
+OL_direct = tfest( sv_to_acq_detrended , np_OL , 'Ts',Ts,  'Feedthrough',true)
 CL_from_OL_direct = feedback(controller*OL_direct, 1);
-CL = tfest(x_drv_T_0_cut , x_acq_T , np_CL , 'Ts' , Ts,'Feedthrough',true,tfest_opt_CL)
+
+drv_to_acq = iddata(  x_acq_T ,x_drv_T_0_cut ,Ts);
+drv_to_acq_detrended = detrend(drv_to_acq);
+CL = tfest(drv_to_acq_detrended , np_CL ,'Ts',Ts, 'Feedthrough',true,tfest_opt_CL)
 OL_indirect = CL/(controller*(1-CL))
 
 % figure;hold on;
@@ -82,9 +87,9 @@ OL_indirect = CL/(controller*(1-CL))
 % legend; grid on;
 
 %RESIDUALS
-opt_resid = residOptions('MaxLag',20);
+opt_resid = residOptions('MaxLag',25);
 figure;
-resid(iddata(x_acq_T,sv2_acq,Ts),OL_direct,OL_indirect,OL_est_nonLin,opt_resid);%,OL_direct,OL_indirect
+resid(sv_to_acq_detrended,OL_direct,OL_indirect,OL_est_nonLin,opt_resid);%,OL_direct,OL_indirect
 legend; grid on;
 % figure;
 % resid(iddata(x_drv_T_0_cut,x_acq_T,Ts),CL,CL_from_OL_direct,CL_from_OL_est_nonLin);%,OL_direct,OL_indirect

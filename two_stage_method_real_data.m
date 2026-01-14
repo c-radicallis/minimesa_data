@@ -81,24 +81,24 @@ clear x_drv_L_0  x_drv_V_0
 % Kp=5
 % results_P5_pink = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
 % 
-% %%  data_P7
-% folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
-% file = 'pink_noise_40Hz_T3mm_0_P7.acq'; % load output acq
-% LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
-% x_acq_T = x_acq_T*1e3;
-% sv2_acq = bits2mm( -sv2_acq ); %output is inverted because the wiring is fliped
-% Kp=7
-% results_P7_pink = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
-% 
-% 
-% %%  Data P10
-% folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
-% file = 'pink_noise_40Hz_T3mm_0_P10.acq'; % load output acq
-% LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
-% x_acq_T = x_acq_T*1e3;
-% sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
-% Kp=10
-% results_P10_pink = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
+%%  data_P7
+folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
+file = 'pink_noise_40Hz_T3mm_0_P7.acq'; % load output acq
+LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
+x_acq_T = x_acq_T*1e3;
+sv2_acq = bits2mm( -sv2_acq ); %output is inverted because the wiring is fliped
+Kp=7
+results_P7_pink = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
+
+
+%%  Data P10
+folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
+file = 'pink_noise_40Hz_T3mm_0_P10.acq'; % load output acq
+LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
+x_acq_T = x_acq_T*1e3;
+sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
+Kp=10
+results_P10_pink = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
 
 %%  Data P15
 folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
@@ -162,8 +162,8 @@ figure; hold on; opts1.Title.String='OL_{direct}';
 % bodeplot(results_P7_sineSweep.OL_direct, opts1);
 % bodeplot(results_P15_sineSweep.OL_direct, opts1);
 % bodeplot(results_P5_pink.OL_direct, opts1);
-% bodeplot(results_P7_pink.OL_direct, opts1);
-% bodeplot(results_P10_pink.OL_direct, opts1);
+bodeplot(results_P7_pink.OL_direct, opts1);
+bodeplot(results_P10_pink.OL_direct, opts1);
 bodeplot(results_P15_pink.OL_direct, opts1);
 bodeplot(results_wc10_pink.OL_direct, opts1);
 bodeplot(results_wc15_pink.OL_direct, opts1);
@@ -174,8 +174,8 @@ figure; hold on; opts1.Title.String='OL_{indirect}';
 % bodeplot(results_P7_sineSweep.OL_indirect, opts1);
 % bodeplot(results_P15_sineSweep.OL_indirect, opts1);
 % bodeplot(results_P5_pink.OL_indirect, opts1);
-% bodeplot(results_P7_pink.OL_indirect, opts1);
-% bodeplot(results_P10_pink.OL_indirect, opts1);
+bodeplot(results_P7_pink.OL_indirect, opts1);
+bodeplot(results_P10_pink.OL_indirect, opts1);
 bodeplot(results_P15_pink.OL_indirect, opts1);
 bodeplot(results_wc10_pink.OL_indirect, opts1);
 bodeplot(results_wc15_pink.OL_indirect, opts1);
@@ -186,8 +186,8 @@ figure; hold on; opts1.Title.String='OL_{est nonLin}';
 % bodeplot(results_P7_sineSweep.OL_est_nonLin, opts1);
 % bodeplot(results_P15_sineSweep.OL_est_nonLin, opts1);
 % bodeplot(results_P5_pink.OL_est_nonLin, opts1);
-% bodeplot(results_P7_pink.OL_est_nonLin, opts1);
-% bodeplot(results_P10_pink.OL_est_nonLin, opts1);
+bodeplot(results_P7_pink.OL_est_nonLin, opts1);
+bodeplot(results_P10_pink.OL_est_nonLin, opts1);
 bodeplot(results_P15_pink.OL_est_nonLin, opts1);
 bodeplot(results_wc10_pink.OL_est_nonLin, opts1);
 bodeplot(results_wc15_pink.OL_est_nonLin, opts1);
@@ -202,8 +202,8 @@ figure; hold on; opts1.Title.String='CL from OL_{direct}';
 % bodeplot(results_P7_sineSweep.CL_from_OL_direct, opts1);
 % bodeplot(results_P15_sineSweep.CL_from_OL_direct, opts1);
 % bodeplot(results_P5_pink.CL_from_OL_direct, opts1);
-% bodeplot(results_P7_pink.CL_from_OL_direct, opts1);
-% bodeplot(results_P10_pink.CL_from_OL_direct, opts1);
+bodeplot(results_P7_pink.CL_from_OL_direct, opts1);
+bodeplot(results_P10_pink.CL_from_OL_direct, opts1);
 bodeplot(results_P15_pink.CL_from_OL_direct, opts1);
 bodeplot(results_wc10_pink.CL_from_OL_direct, opts1);
 bodeplot(results_wc15_pink.CL_from_OL_direct, opts1);
@@ -214,8 +214,8 @@ figure; hold on; opts1.Title.String='CL';
 % bodeplot(results_P7_sineSweep.CL, opts1);
 % bodeplot(results_P15_sineSweep.CL, opts1);
 % bodeplot(results_P5_pink.CL, opts1);
-% bodeplot(results_P7_pink.CL, opts1);
-% bodeplot(results_P10_pink.CL, opts1);
+bodeplot(results_P7_pink.CL, opts1);
+bodeplot(results_P10_pink.CL, opts1);
 bodeplot(results_P15_pink.CL, opts1);
 bodeplot(results_wc10_pink.CL, opts1);
 bodeplot(results_wc15_pink.CL, opts1);
@@ -226,8 +226,8 @@ figure; hold on; opts1.Title.String='CL from OL_{est nonLin}';
 % bodeplot(results_P7_sineSweep.CL_from_OL_est_nonLin, opts1);
 % bodeplot(results_P15_sineSweep.CL_from_OL_est_nonLin, opts1);
 % bodeplot(results_P5_pink.CL_from_OL_est_nonLin, opts1);
-% bodeplot(results_P7_pink.CL_from_OL_est_nonLin, opts1);
-% bodeplot(results_P10_pink.CL_from_OL_est_nonLin, opts1);
+bodeplot(results_P7_pink.CL_from_OL_est_nonLin, opts1);
+bodeplot(results_P10_pink.CL_from_OL_est_nonLin, opts1);
 bodeplot(results_P15_pink.CL_from_OL_est_nonLin, opts1);
 bodeplot(results_wc10_pink.CL_from_OL_est_nonLin, opts1);
 bodeplot(results_wc15_pink.CL_from_OL_est_nonLin, opts1);
