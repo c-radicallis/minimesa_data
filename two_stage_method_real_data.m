@@ -120,7 +120,23 @@ Kp = 6.75;
 Ki = 68;
 Kd = .0712891;
 Tf = 0.00161743;
-results_wc10_pink = twoStageMethod(d2d(pid(Kp,Ki,Kd,Tf,Ts_fpga),Ts) , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
+controller_at_200 = d2d(pid(Kp,Ki,Kd,Tf,Ts_fpga),Ts)
+results_wc10_pink = twoStageMethod( controller_at_200 , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
+
+%%  Data wc_15Hz
+folder_1201 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\12-1-2026\pink_noise';
+file = 'wc_15Hz_0.acq'; % load output acq
+LTF_to_TXT_then_load_wSV( file , folder_1201 , 'OutputFolder', folder_1201);
+x_acq_T = x_acq_T*1e3;
+sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
+% w_c = 15Hz
+Kp = 8.75
+Ki = 139
+Kd = 0.125977
+Tf = 0.00109863
+controller_at_200 = d2d(pid(Kp,Ki,Kd,Tf,Ts_fpga),Ts)
+results_wc15_pink = twoStageMethod(controller_at_200 , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
+
 
 %%  Data wc_20Hz
 folder_1201 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\12-1-2026\pink_noise';
@@ -133,7 +149,8 @@ Kp = 8.562500;
 Ki = 75;
 Kd = 0.18457;
 Tf = 0.000167847;
-results_wc20_pink = twoStageMethod(d2d(pid(Kp,Ki,Kd,Tf,Ts_fpga),Ts) , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
+controller_at_200 = d2d(pid(Kp,Ki,Kd,Tf,Ts_fpga),Ts)
+results_wc20_pink = twoStageMethod(controller_at_200 , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
 
 
 %% Let's compare open loop tranfers fucntions
@@ -188,6 +205,9 @@ figure; hold on; opts1.Title.String='CL from OL_{direct}';
 % bodeplot(results_P7_pink.CL_from_OL_direct, opts1);
 % bodeplot(results_P10_pink.CL_from_OL_direct, opts1);
 bodeplot(results_P15_pink.CL_from_OL_direct, opts1);
+bodeplot(results_wc10_pink.CL_from_OL_direct, opts1);
+bodeplot(results_wc15_pink.CL_from_OL_direct, opts1);
+bodeplot(results_wc20_pink.CL_from_OL_direct, opts1);
 legend(); grid on;
 
 figure; hold on; opts1.Title.String='CL';
@@ -197,6 +217,9 @@ figure; hold on; opts1.Title.String='CL';
 % bodeplot(results_P7_pink.CL, opts1);
 % bodeplot(results_P10_pink.CL, opts1);
 bodeplot(results_P15_pink.CL, opts1);
+bodeplot(results_wc10_pink.CL, opts1);
+bodeplot(results_wc15_pink.CL, opts1);
+bodeplot(results_wc20_pink.CL, opts1);
 legend(); grid on;
 
 figure; hold on; opts1.Title.String='CL from OL_{est nonLin}';
@@ -206,6 +229,9 @@ figure; hold on; opts1.Title.String='CL from OL_{est nonLin}';
 % bodeplot(results_P7_pink.CL_from_OL_est_nonLin, opts1);
 % bodeplot(results_P10_pink.CL_from_OL_est_nonLin, opts1);
 bodeplot(results_P15_pink.CL_from_OL_est_nonLin, opts1);
+bodeplot(results_wc10_pink.CL_from_OL_est_nonLin, opts1);
+bodeplot(results_wc15_pink.CL_from_OL_est_nonLin, opts1);
+bodeplot(results_wc20_pink.CL_from_OL_est_nonLin, opts1);
 legend(); grid on;
 
 
