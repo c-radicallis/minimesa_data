@@ -86,11 +86,12 @@ OL_indirect = CL/(controller*(1-CL))
 % bodeplot(OL_est_nonLin , 'r--', opts1);
 % legend; grid on;
 
-%RESIDUALS
-opt_resid = residOptions('MaxLag',25);
-figure;
-resid(sv_to_acq_detrended,OL_direct,OL_indirect,OL_est_nonLin,opt_resid);%,OL_direct,OL_indirect
-legend; grid on;
+% %RESIDUALS
+% opt_resid = residOptions('MaxLag',25);
+% figure;
+% resid(sv_to_acq_detrended,OL_direct,OL_indirect,OL_est_nonLin,opt_resid);%,OL_direct,OL_indirect
+% legend; grid on;
+
 % figure;
 % resid(iddata(x_drv_T_0_cut,x_acq_T,Ts),CL,CL_from_OL_direct,CL_from_OL_est_nonLin);%,OL_direct,OL_indirect
 % legend; grid on;

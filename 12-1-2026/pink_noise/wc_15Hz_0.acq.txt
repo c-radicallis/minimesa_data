@@ -2,7 +2,7 @@ LNEC Test File eXtractor
 
 File: wc_15Hz_0.acq
 
-Created in: 2026-01-14 15:30:54.116902
+Created in: 2026-01-22 10:47:52.530342
 
 Number of channels: 7
 
