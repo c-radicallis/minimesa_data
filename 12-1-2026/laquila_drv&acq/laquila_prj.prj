@@ -1,23 +1,23 @@
 <?xml version='1.0' standalone='yes' ?>
 <LVData>
-<Version>18.0.1f4</Version>
+<Version>18.0f2</Version>
 <Cluster>
 <Name>Files</Name>
 <NumElts>3</NumElts>
 <Path>
 <Name>Project Filename</Name>
-<Val>C:\minimesa_data\12-1-2026\laquila_scl0.18\laquila_prj.prj</Val>
+<Val>C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\12-1-2026\laquila_drv&amp;acq\laquila_prj.prj</Val>
 </Path>
 <Cluster>
 <Name>FRF Files</Name>
 <NumElts>2</NumElts>
 <Path>
 <Name>Caracterization Stimulus Signal</Name>
-<Val>C:\minimesa_data\31-7-2025\tgt and noise drv\pink_noise_40Hz_T3mm_0.drv</Val>
+<Val>C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\31-7-2025\tgt and noise drv\pink_noise_40Hz_T3mm_0.drv</Val>
 </Path>
 <Path>
 <Name>Caracterization Response Signal</Name>
-<Val>C:\minimesa_data\7-11-2025\pink_noise_40Hz_T3mm_0_P15.acq</Val>
+<Val>C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\pink_noise_40Hz_T3mm_0_P15.acq</Val>
 </Path>
 </Cluster>
 <Cluster>
@@ -25,7 +25,7 @@
 <NumElts>1</NumElts>
 <Path>
 <Name>Target File</Name>
-<Val>C:\minimesa_data\31-7-2025\tgt and noise drv\Targets\LAquilaReducedScale.tgt</Val>
+<Val>C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\31-7-2025\tgt and noise drv\Targets\LAquilaReducedScale.tgt</Val>
 </Path>
 </Cluster>
 </Cluster>
@@ -184,7 +184,7 @@
 </DBL>
 <DBL>
 <Name>Max. Freq. Compensation</Name>
-<Val>40.00000000000000</Val>
+<Val>25.00000000000000</Val>
 </DBL>
 <DBL>
 <Name>Correction Factor</Name>
@@ -192,7 +192,7 @@
 </DBL>
 <Boolean>
 <Name>Enable</Name>
-<Val>1</Val>
+<Val>0</Val>
 </Boolean>
 </Cluster>
 <Cluster>
