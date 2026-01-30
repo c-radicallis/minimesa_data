@@ -1,17 +1,23 @@
-% Example 10.7.5 - two stage closed loop identification method 
+% Example 10.7.5 - two stage closed loop identification method
+% from Van den Hof lecture notes
 clear;clc; setappdata(0, 'AutoStagger_LRDown_Last', []);   % ensure first figure starts at top-left
 set(0, 'DefaultFigureCreateFcn', @autoStagger_LRDown_relSize);
 close all;
 
 % bode plot options
-opts1=bodeoptions('cstprefs');opts1.MagLowerLimMode = 'manual'; opts1.MagLowerLim=-25;opts1.XLim={[0.05 4]};opts1.PhaseWrapping="on";%opts1.PhaseWrappingBranch=-360;
-opts2=bodeoptions('cstprefs');opts2.MagLowerLimMode = 'manual';opts2.MagLowerLim=-20;opts2.XLim={[0.05 4]};opts2.PhaseWrapping="on"; %opts2.PhaseWrappingBranch=-360;
+opts2=bodeoptions('cstprefs');opts2.MagLowerLimMode = 'manual';opts2.MagLowerLim=-15;opts2.XLim={[0.09 4]};opts2.PhaseWrapping="on"; %opts2.PhaseWrappingBranch=-360;
 
-%%
 z=tf('z');
 Ts=1;
+
+freq_resolution = 0.01;
+win_size_001 = 200%1/(freq_resolution*Ts); 
+
+freq_resolution = 0.1;
+win_size_01 = 1/(freq_resolution*Ts); 
+%%
 t = [0:Ts:2048-1]';
-e = 0.1*wgn(2048 , 1 , 0.1 );
+e_vector = [0.1  , 0.5 , 1].*wgn(2048 , 1 , 0.1 );
 r1 = 0*wgn(2048 , 1 , 0.1 );
 r2 = 1*wgn(2048 , 1 , 0.1 );
 
@@ -20,20 +26,22 @@ nz=2;
 G0 = 1/(1-1.6*z^-1+0.89*z^-2)
 H0 = (1 - 1.56*z^-1 + 1.045*z^-2 -0.3338*z^-3)/(1 - 2.35*z^-1 + 2.09*z^-2 -0.6675*z^-3)
 
-for i = [0.01, 0.1 , 0.5 , 1 ,1.5  ] %1.9  %2-stage stops working when S0 is close to instable
+% Loop for different controllers commened out 
+%for i = [0.01, 0.1 , 0.5 , 1 ,1.5  ] %1.9  %2-stage stops working when S0 is close to instable
+%C=i*(z^-1 - 0.8*z^-2)
 
-C=i*(z^-1 - 0.8*z^-2)
+C = z^-1 - 0.8*z^-2
 S0 = 1/(1+G0*C)
 
 r = r1 + lsim( C , r2 , t );
+u_r =  lsim(S0 , r ,t);
+
+for e = e_vector
 %v=lsim(H0 , e, t);
 y=lsim(G0*S0 , r , t)+lsim(S0*H0 , e , t);
 u = r - lsim(C , y ,t);
-u_r =  lsim(S0 , r ,t);
 
-% figure;hold on;
-% plot(t,v , t,r , t,y);
-% legend;
+% figure;hold on;plot(t,v , t,r , t,y);legend;
 
 %% step1
 S_est = polyest(r,u ,  [[0 15 0 0 0] 0],'Ts',Ts);%tfest(r,u,9)%armax(r,u , [9*[1 1 1] 1],opt)%oe(r ,u , [ 8 8 1 ] )%
@@ -46,18 +54,25 @@ S_est = polyest(r,u ,  [[0 15 0 0 0] 0],'Ts',Ts);%tfest(r,u,9)%armax(r,u , [9*[1
 %% step 2
 u_r_est = lsim(S_est , r , t);
 
-figure, hold on;
+figure;hold on;
 plot(t,u , 'DisplayName', 'u');
 plot(t,u_r , '-' , 'DisplayName', 'u_r');
 plot(t,u_r_est ,'g--', 'DisplayName', 'u_r^{est}');
+xlim([0 40]);
+xlabel('Time');
+ylabel('Signal')
 legend; grid on;
 
 %% step 3
+G_spa_100 = spa(iddata(y,u,Ts), win_size_001)
+G_spa_10 = spa(iddata(y,u,Ts), win_size_01)
 G_est = tfest(u_r_est , y , np,nz ,'Ts',Ts,'Feedthrough',true)
 G_direct = tfest( u , y , np,nz,'Ts',Ts,'Feedthrough',true)
 
 figure;hold on;
 bodeplot(G0,'r', opts2);
+bodeplot(G_spa_100 , 'm.', opts2);
+bodeplot(G_spa_10 , 'y.', opts2);
 bodeplot( G_direct , 'b-.' , opts2);
 bodeplot(G_est , 'g--', opts2);
 legend; grid on;
@@ -68,4 +83,4 @@ figure;
 resid(iddata(y,u,Ts),G0,'r',G_direct,'b-.',G_est,'g--')%,opt_resid);%,OL_direct,OL_indirect
 legend; grid on;
 
-end
+end 
