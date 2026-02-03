@@ -17,25 +17,24 @@ win_size_large = 2048/2%1/(freq_resolution*Ts);
 % win_size_small = 1/(freq_resolution*Ts); 
 %%
 t = [0:Ts:2048-1]';
+e_vector = [0.1  , 1].*wgn(2048 , 1 , 0.1 );
+r1 = 0*wgn(2048 , 1 , 0.1 );
+r2 = 1*wgn(2048 , 1 , 0.1 );
 
 np=2;
 nz=2;
 G0 = 1/(1-1.6*z^-1+0.89*z^-2)
 H0 = (1 - 1.56*z^-1 + 1.045*z^-2 -0.3338*z^-3)/(1 - 2.35*z^-1 + 2.09*z^-2 -0.6675*z^-3)
 
-Loop for different
-for i = [0.1,1 ] %1.9  %2-stage stops working when S0 is close to instable
+
+for i = [1.5 , 0.5 ] %2-stage stops working when S0 is close to instable
     C=i*(z^-1 - 0.8*z^-2)
     S0 = 1/(1+G0*C)
-
-    r1 = 0*wgn(2048 , 1 , 0.1 );
-    r2 = (1/i)*wgn(2048 , 1 , 0.1 ); %reference increases in magnitude when controller gain decreases
+    
     % this is to check the effect of feedback intensity vs excitation intensity
-
-    r = r1 + lsim( C , r2 , t );
+    r = r1 + lsim( C , r2 , t );%reference increases in magnitude when controller gain decreases
     u_r =  lsim(S0 , r ,t);
 
-    e_vector = [0.1  , 1].*wgn(2048 , 1 , 0.1 );
     for e = e_vector
         v=lsim(H0 , e, t);
         y=lsim(G0*S0 , r , t)+lsim(S0*H0 , e , t);
@@ -59,13 +58,13 @@ for i = [0.1,1 ] %1.9  %2-stage stops working when S0 is close to instable
         u_r_est = lsim(S_est , r , t);
 
         figure;hold on;
-        plot(t,r, 'DisplayName', 'reference')
+        plot(t,r,'*-', 'DisplayName', 'reference')
         plot(t,v, 'DisplayName', 'v (noise) ')
         plot(t,u , 'DisplayName', 'u (corrupted)');
         plot(t,u_r , '-' , 'DisplayName', 'u_r (noise-free)');
         plot(t,u_r_est ,'g--', 'DisplayName', 'u_r^{estimated}');
         plot(t,y,'--', 'DisplayName', 'y')
-        xlim([0 24]);
+        xlim([0 12]);
         xlabel('Time');
         ylabel('Signal')
         legend; grid on;
