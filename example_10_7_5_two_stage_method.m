@@ -1,6 +1,6 @@
 % Example 10.7.5 - two stage closed loop identification method
 % from Van den Hof lecture notes
-clear;clc; setappdata(0, 'AutoStagger_LRDown_Last', []);   % ensure first figure starts at top-leftwin_size_large
+clear;clc; setappdata(0, 'AutoStagger_LRDown_Last', []);   % ensure first figure starts at top-leftwin_size
 set(0, 'DefaultFigureCreateFcn', @autoStagger_LRDown_relSize);
 close all;
 
@@ -10,22 +10,22 @@ opts2=bodeoptions('cstprefs');opts2.PhaseVisible='on';opts2.MagLowerLimMode = 'm
 z=tf('z');
 Ts=1;
 
-freq_resolution =0.001;
-win_size_large = 2048/2%1/(freq_resolution*Ts); 
-
-% freq_resolution = 0.1;
-% win_size_small = 1/(freq_resolution*Ts); 
 %%
-t = [0:Ts:2048-1]';
-e_vector = [0.1  , 1].*wgn(2048 , 1 , 0.1 );
-r1 = 0*wgn(2048 , 1 , 0.1 );
-r2 = 1*wgn(2048 , 1 , 0.1 );
+data_points=2048*10;
+t = [0:Ts:data_points-1]';
+e_vector = [0.1  , 1].*wgn(data_points , 1 , 0.1 );
+r1 = 0*wgn(data_points , 1 , 0.1 );
+r2 = 1*wgn(data_points , 1 , 0.1 );
+
+win_size = data_points/2;
+frq_res =1/(win_size*Ts); 
 
 np=2;
 nz=2;
 G0 = 1/(1-1.6*z^-1+0.89*z^-2)
 H0 = (1 - 1.56*z^-1 + 1.045*z^-2 -0.3338*z^-3)/(1 - 2.35*z^-1 + 2.09*z^-2 -0.6675*z^-3)
 
+mar= [];
 
 for i = [1.5 , 0.5 ] %2-stage stops working when S0 is close to instable
     C=i*(z^-1 - 0.8*z^-2)
@@ -33,6 +33,7 @@ for i = [1.5 , 0.5 ] %2-stage stops working when S0 is close to instable
     
     % this is to check the effect of feedback intensity vs excitation intensity
     r = r1 + lsim( C , r2 , t );%reference increases in magnitude when controller gain decreases
+    mar = [mar ; mean(abs(r))]
     u_r =  lsim(S0 , r ,t);
 
     for e = e_vector
@@ -70,7 +71,7 @@ for i = [1.5 , 0.5 ] %2-stage stops working when S0 is close to instable
         legend; grid on;
 
         %% step 3
-        spa_100 = spa(iddata(y,u,Ts), win_size_large)
+        spa_100 = spa(iddata(y,u,Ts), win_size)
         %spa_10 = spa(iddata(y,u,Ts), win_size_small)
         G_est = tfest(u_r_est , y , np,nz ,'Ts',Ts,'Feedthrough',true)
         G_direct = tfest( u , y , np,nz,'Ts',Ts,'Feedthrough',true)
