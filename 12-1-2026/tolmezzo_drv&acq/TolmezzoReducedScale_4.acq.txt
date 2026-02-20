@@ -2,7 +2,7 @@ LNEC Test File eXtractor
 
 File: TolmezzoReducedScale_4.acq
 
-Created in: 2026-02-20 12:47:00.070803
+Created in: 2026-02-20 14:34:37.691329
 
 Number of channels: 7
 
