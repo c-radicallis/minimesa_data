@@ -2,7 +2,7 @@ LNEC Test File eXtractor
 
 File: tune_cutoff_10Hz.acq
 
-Created in: 2026-02-20 14:34:37.280183
+Created in: 2026-02-20 14:57:35.832720
 
 Number of channels: 7
 
