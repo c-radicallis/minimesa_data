@@ -11,13 +11,13 @@ z=tf('z');
 Ts=1;
 
 %%
-data_points=2048*10;
+data_points=2^15;
 t = [0:Ts:data_points-1]';
-e_vector = [0.1  , 1].*wgn(data_points , 1 , 0.1 );
+e_vector = [0.15  , 0.8].*wgn(data_points , 1 , 0.1 );
 r1 = 0*wgn(data_points , 1 , 0.1 );
 r2 = 1*wgn(data_points , 1 , 0.1 );
 
-win_size = data_points/2;
+win_size = data_points/2^7;
 frq_res =1/(win_size*Ts); 
 
 np=2;
@@ -58,17 +58,17 @@ for i = [1.5 , 0.5 ] %2-stage stops working when S0 is close to instable
         %% step 2
         u_r_est = lsim(S_est , r , t);
 
-        figure;hold on;
-        plot(t,r,'*-', 'DisplayName', 'reference')
-        plot(t,v, 'DisplayName', 'v (noise) ')
-        plot(t,u , 'DisplayName', 'u (corrupted)');
-        plot(t,u_r , '-' , 'DisplayName', 'u_r (noise-free)');
-        plot(t,u_r_est ,'g--', 'DisplayName', 'u_r^{estimated}');
-        plot(t,y,'--', 'DisplayName', 'y')
-        xlim([0 12]);
-        xlabel('Time');
-        ylabel('Signal')
-        legend; grid on;
+        % figure;hold on;
+        % plot(t,r,'*-', 'DisplayName', 'reference')
+        % plot(t,v, 'DisplayName', 'v (noise) ')
+        % plot(t,u , 'DisplayName', 'u (corrupted)');
+        % plot(t,u_r , '-' , 'DisplayName', 'u_r (noise-free)');
+        % plot(t,u_r_est ,'g--', 'DisplayName', 'u_r^{estimated}');
+        % plot(t,y,'--', 'DisplayName', 'y')
+        % xlim([0 12]);
+        % xlabel('Time');
+        % ylabel('Signal')
+        % legend; grid on;
 
         %% step 3
         spa_100 = spa(iddata(y,u,Ts), win_size)
@@ -87,9 +87,9 @@ for i = [1.5 , 0.5 ] %2-stage stops working when S0 is close to instable
 
         %% RESID
         %opt_resid = residOptions('MaxLag',20);
-        figure;
-        resid(iddata(y,u,Ts),G0,'r',G_direct,'b-.',G_est,'g--')%,opt_resid);%,OL_direct,OL_indirect
-        legend; grid on;
+        % figure;
+        % resid(iddata(y,u,Ts),G0,'r',G_direct,'b-.',G_est,'g--')%,opt_resid);%,OL_direct,OL_indirect
+        % legend; grid on;
 
     end
 end

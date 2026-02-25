@@ -7,7 +7,7 @@ Ts = 0.005;
 Ts_fpga= 1/5000;
 
 % bode plot options
-opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[1 100]};opts1.PhaseWrapping="on";opts1.PhaseWrappingBranch=-360;%opts1.Ylim={[-40 10]};
+opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[0.1 100]};opts1.PhaseWrapping="on";opts1.PhaseWrappingBranch=-360;%opts1.Ylim={[-40 10]};
 
 % Control channel AI2 Displacement - 16 bit signed integer to mm conversion
 a = 0.000485;
@@ -27,123 +27,80 @@ LTF_to_TXT_then_load( file , 'InputFolder', input_file_folder , 'OutputFolder', 
 x_drv_T_0 = mm2bits(x_drv_T_0*1e3); % convert to mm
 clear x_drv_L_0  x_drv_V_0
 
-% %%  data_P7
-% folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
-% file = 'pink_noise_40Hz_T3mm_0_P7.acq'; % load output acq
-% LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
-% x_acq_T = mm2bits(x_acq_T*1e3);
-% sv2_acq = -sv2_acq; %output is inverted because the wiring is fliped
-% Kp=7
-% results_P7_pink = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
-% 
-% %%  Data P10
-% folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
-% file = 'pink_noise_40Hz_T3mm_0_P10.acq'; % load output acq
-% LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
-% x_acq_T = mm2bits(x_acq_T*1e3);
-% sv2_acq = -sv2_acq; %output is inverted because the wiring is fliped
-% Kp=10
-% results_P10_pink = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
-
 %%  Data P15
 folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
 file = 'pink_noise_40Hz_T3mm_0_P15.acq'; % load output acq
 LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
 x_acq_T = mm2bits(x_acq_T*1e3);
 sv2_acq = -sv2_acq; %output is inverted because the wiring is fliped
-Kp=15
+Kp=15;
 results_P15_pink = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
 
-%% SISO System Identification Example Script
-% This script demonstrates how to perform SISO system identification
-% using input-output data2 in MATLAB with the System Identification Toolbox.
-opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[5 100]}; opts1.PhaseMatching='on'; opts1.Grid='on';
-
-%clc;
-%close all;
-
 OL_direct = results_P15_pink.OL_direct;
-OL_indirect = results_P15_pink.OL_indirect;
+OL_indirect =minreal(results_P15_pink.OL_indirect);
 OL_est_nonLin = ss(results_P15_pink.OL_est_nonLin);
 CL_from_OL_direct = results_P15_pink.CL_from_OL_direct;
 CL = results_P15_pink.CL;
-CL_from_OL_est_nonLin = results_P15_pink.CL_from_OL_est_nonLin;
+CL_from_OL_est_nonLin = ss(results_P15_pink.CL_from_OL_est_nonLin);
 
-% n=0;
-% while n<2
-% figure(1);hold on;
-% pzmap(OL_indirect)
-% legend;
-% figure(2);hold on;
-% bodeplot(OL_indirect,opts1)
-% legend;
-% OL_indirect =minreal(results_P15_pink.OL_indirect)
-% n=n+1;
-% end
-% 
-% figure;hold on;
-% pzmap(OL_direct,OL_indirect,OL_est_nonLin)
-% legend;
-
-OL_indirect =minreal(results_P15_pink.OL_indirect)
-
-%
+%%
 G_open=d2d(OL_est_nonLin,Ts_fpga,'tustin');
-G_closed = d2d(results_P15_pink.CL_from_OL_est_nonLin,Ts_fpga,'tustin');
+% sat = idSaturation('LinearInterval',[-16.0920,15.6920]);sat.Free =[0 0];
+% G_closed_nonLin = idnlhw( tf(Kp)*G_open, [], sat); %CL_nonLin
+G_closed = CL_from_OL_est_nonLin;
 
-% figure;hold on;bodeplot(OL_est_nonLin,G_open,opts1);legend;
-
+%%
 tuner_opts = pidtuneOptions('DesignFocus','reference-tracking');
 
 cutoff_frequency = 10; % Hz
 PIDF  = pidtune(G_open,'PIDF',cutoff_frequency*2*pi,tuner_opts)
 G_PIDF_10Hz = feedback(PIDF*G_open, 1);
-cutoff_frequency = 15; % Hz
-PIDF   = pidtune(G_open,'PIDF',cutoff_frequency*2*pi,tuner_opts)
-G_PIDF_15Hz = feedback(PIDF*G_open, 1);
-cutoff_frequency = 20; % Hz
-PIDF  = pidtune(G_open,'PIDF',cutoff_frequency*2*pi,tuner_opts)
-G_PIDF_20Hz = feedback(PIDF*G_open, 1);
+% cutoff_frequency = 15; % Hz
+% PIDF   = pidtune(G_open,'PIDF',cutoff_frequency*2*pi,tuner_opts)
+% G_PIDF_15Hz = feedback(PIDF*G_open, 1);
+% cutoff_frequency = 20; % Hz
+% PIDF  = pidtune(G_open,'PIDF',cutoff_frequency*2*pi,tuner_opts)
+% G_PIDF_20Hz = feedback(PIDF*G_open, 1);
 
-%
 % obs = vpa(obsv(G_open));
 % r_obsv = rank(obs)
 % ctrlb = vpa(ctrb(G_open));
 % r_ctrlb = rank(ctrlb)
 
-n_states=size(G_open.A,1);
-G_open.StateName  = arrayfun(@(k) sprintf('x%d',k), 1:n_states, 'UniformOutput', false);
-
-plant_aug = ss(G_open.A, G_open.B,[eye(n_states);G_open.C],0 , Ts_fpga);
-plant_aug.InputName = {'i_sv'};   % plant input: control signal
-plant_aug.OutputName = [G_open.StateName ; {'y_xT'}];  % plant output
-
-sumblk1 = sumblk('e = x_ref - y_xT'); % Compute the error signal: e = r - y
-
-integrator = tf(1,[1 0], Ts_fpga); % The integrator integrates the tracking error.
-integrator.InputName = {'e'};    % error: e = r - y
-integrator.OutputName = {'xi'};  % integrated error
-
-Q = diag([0*ones(1,n_states),1e2]);%1e3*diag([zeros(1,n_states),1]);%blkdiag(eye(nx), eye(ny));
-R = eye(size(G_open.B,2));
-K_lqi = lqi(G_open, Q, R)% Design the LQI controller for the original system
-
-K  = K_lqi(1:n_states);      % state feedback gains
-Ki = K_lqi(end);        % integrator gain
-controller = ss([], [], [], -[K, Ki]); %   u = -[K  Ki] * [x; xi]
-controller.InputName = [ G_open.StateName ; {'xi'}];
-controller.OutputName = {'i_sv'};
-Optimal_CL = connect(plant_aug,  controller , integrator, sumblk1, 'x_ref','y_xT');
-% Optimal_CL_minreal = minreal(Optimal_CL,1e-4)
+% n_states=size(G_open.A,1);
+% G_open.StateName  = arrayfun(@(k) sprintf('x%d',k), 1:n_states, 'UniformOutput', false);
 % 
+% plant_aug = ss(G_open.A, G_open.B,[eye(n_states);G_open.C],0 , Ts_fpga);
+% plant_aug.InputName = {'i_sv'};   % plant input: control signal
+% plant_aug.OutputName = [G_open.StateName ; {'y_xT'}];  % plant output
+% 
+% sumblk1 = sumblk('e = x_ref - y_xT'); % Compute the error signal: e = r - y
+% 
+% integrator = tf(1,[1 0], Ts_fpga); % The integrator integrates the tracking error.
+% integrator.InputName = {'e'};    % error: e = r - y
+% integrator.OutputName = {'xi'};  % integrated error
+% 
+% Q = diag([1*ones(1,n_states),1e1]);%1e3*diag([zeros(1,n_states),1]);%blkdiag(eye(nx), eye(ny));
+% R = eye(size(G_open.B,2));
+% K_lqi = lqi(G_open, Q, R)% Design the LQI controller for the original system
+% 
+% K  = K_lqi(1:n_states);      % state feedback gains
+% Ki = K_lqi(end);        % integrator gain
+% controller = ss([], [], [], -[K, Ki]); %   u = -[K  Ki] * [x; xi]
+% controller.InputName = [ G_open.StateName ; {'xi'}];
+% controller.OutputName = {'i_sv'};
+% Optimal_CL = connect(plant_aug,  controller , integrator, sumblk1, 'x_ref','y_xT');
+% % Optimal_CL_minreal = minreal(Optimal_CL,1e-4)
 % figure;hold on;pzmap(Optimal_CL,Optimal_CL_minreal);legend;
 
+%%
 figure;hold on;
 bodeplot(G_closed,opts1);
+bodeplot(CL_from_OL_est_nonLin ,opts1);
 bodeplot(G_PIDF_10Hz,opts1);
-bodeplot(G_PIDF_15Hz,opts1); 
-bodeplot(G_PIDF_20Hz,opts1);    
-bodeplot(Optimal_CL,opts1);
+% bodeplot(G_PIDF_15Hz,opts1); 
+% bodeplot(G_PIDF_20Hz,opts1);    
+% bodeplot(Optimal_CL,opts1);
 legend;
 
 %%  Data wc_10Hz
@@ -152,7 +109,7 @@ file = 'wc_10Hz_0.acq'; % load output acq
 LTF_to_TXT_then_load_wSV( file , folder_1201 , 'OutputFolder', folder_1201);
 x_acq_T = mm2bits(x_acq_T*1e3);
 sv2_acq = -sv2_acq; %output is inverted because the wiring is fliped
-% w_c = 10Hz
+
 Kp = 6.75;
 Ki = 68;
 Kd = .0712891;

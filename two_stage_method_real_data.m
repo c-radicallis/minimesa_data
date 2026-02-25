@@ -1,5 +1,4 @@
-clear;clc;close all; setappdata(0, 'AutoStagger_LRDown_Last', []);   % ensure first figure starts at top-left
-set(0, 'DefaultFigureCreateFcn', @autoStagger_LRDown_relSize);
+clear;clc;close all; setappdata(0, 'AutoStagger_LRDown_Last', []);  set(0, 'DefaultFigureCreateFcn', @autoStagger_LRDown_relSize); 
 addpath 'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\uniaxial_table_model'
 func_folder  =  'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\uniaxial_table_model\Adapting_Driver_Signal\';
 addpath(func_folder);
@@ -182,17 +181,17 @@ bodeplot(results_wc15_pink.OL_indirect, opts1);
 bodeplot(results_wc20_pink.OL_indirect, opts1);
 legend('P7','P10','P15','wc10','wc15','wc20'); grid on;
 
-figure; hold on; opts1.Title.String='OL_{est nonLin}';
+figure; hold on; opts1.Title.String='OL_{two-stage}';
 % bodeplot(results_P7_sineSweep.OL_est_nonLin, opts1);
 % bodeplot(results_P15_sineSweep.OL_est_nonLin, opts1);
 % bodeplot(results_P5_pink.OL_est_nonLin, opts1);
-bodeplot(results_P7_pink.OL_est_nonLin, opts1);
+% bodeplot(results_P7_pink.OL_est_nonLin, opts1);
 bodeplot(results_P10_pink.OL_est_nonLin, opts1);
 bodeplot(results_P15_pink.OL_est_nonLin, opts1);
 bodeplot(results_wc10_pink.OL_est_nonLin, opts1);
 bodeplot(results_wc15_pink.OL_est_nonLin, opts1);
 bodeplot(results_wc20_pink.OL_est_nonLin, opts1);
-legend('P7','P10','P15','wc10','wc15','wc20'); grid on;
+legend('P10','P15','wc10','wc15','wc20'); grid on; %'P7',
 
 % Let's compare CLOSED LOOP tranfers fucntions
 %opts1.MagLowerLim = -40;
@@ -220,7 +219,7 @@ bodeplot(results_P15_pink.CL, opts1);
 bodeplot(results_wc10_pink.CL, opts1);
 bodeplot(results_wc15_pink.CL, opts1);
 bodeplot(results_wc20_pink.CL, opts1);
-legend('P7','P10','P15','wc10','wc15','wc20'); grid on;
+legend('P7','P10','P15','wc10','wc15','wc20'); grid on;%
 
 figure; hold on; opts1.Title.String='CL from OL_{est nonLin}';
 % bodeplot(results_P7_sineSweep.CL_from_OL_est_nonLin, opts1);
@@ -232,7 +231,7 @@ bodeplot(results_P15_pink.CL_from_OL_est_nonLin, opts1);
 bodeplot(results_wc10_pink.CL_from_OL_est_nonLin, opts1);
 bodeplot(results_wc15_pink.CL_from_OL_est_nonLin, opts1);
 bodeplot(results_wc20_pink.CL_from_OL_est_nonLin, opts1);
-legend('P7','P10','P15','wc10','wc15','wc20'); grid on;
+legend('P7','P10','P15','wc10','wc15','wc20'); grid on; %
 
 
 
