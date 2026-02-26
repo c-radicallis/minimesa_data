@@ -84,7 +84,7 @@ integrator.InputName = {'e'};    % error: e = r - y
 integrator.OutputName = {'xi'};  % integrated error
 %%
 close all;
-Q = diag([0*ones(1,n_states),1e2]);%1e3*diag([zeros(1,n_states),1]);%blkdiag(eye(nx), eye(ny));
+Q = diag([1e-9*ones(1,n_states),3e2]);%1e3*diag([zeros(1,n_states),1]);%blkdiag(eye(nx), eye(ny));
 R = eye(size(OL_5000.B,2));
 K_lqi = lqi(OL_5000, Q, R)% Design the LQI controller for the original system
 
@@ -103,41 +103,43 @@ scale = 0.16;
 x_tgt_T = scale*x_tgt_T; % convert to mm
 ddx_tgt_T = scale*ddx_tgt_T; % convert to mm
 
-x_sim_T_10hz = lsim(CL_PIDF_10Hz ,  x_tgt_T , time_vector,'zoh');
-ddx_sim_T_10hz = secondDerivativeTime(x_sim_T_10hz , Ts);
+% x_sim_T_10hz = lsim(CL_PIDF_10Hz ,  x_tgt_T , time_vector,'zoh');
+% ddx_sim_T_10hz = secondDerivativeTime(x_sim_T_10hz , Ts);
 
 x_sim_T_15hz = lsim(CL_PIDF_15Hz ,  x_tgt_T , time_vector,'zoh');
 ddx_sim_T_15hz = secondDerivativeTime(x_sim_T_15hz , Ts);
 
-x_sim_T_20hz = lsim(CL_PIDF_20Hz ,  x_tgt_T , time_vector,'zoh');
-ddx_sim_T_20hz = secondDerivativeTime(x_sim_T_20hz , Ts);
+% x_sim_T_20hz = lsim(CL_PIDF_20Hz ,  x_tgt_T , time_vector,'zoh');
+% ddx_sim_T_20hz = secondDerivativeTime(x_sim_T_20hz , Ts);
 
 x_sim_T_optimal = lsim(d2d(Optimal_CL,Ts) ,  x_tgt_T, time_vector,'zoh');
 ddx_sim_T_optimal = secondDerivativeTime(x_sim_T_optimal , Ts);
 
-% Tolmezzo tune 10hz, 15hz , 20hz results
-folder_1201_tolmezzo ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\12-1-2026\tolmezzo_scl0.16\';
-file = 'tune_cutoff_10Hz.acq'; % load output acq
-LTF_to_TXT_then_load_wSV( file , folder_1201_tolmezzo );
-x_acq_T_10hz = x_acq_T;
-%sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
-ddx_acq_T_10hz_comp = secondDerivativeTime(x_acq_T , Ts); % No acceleration data was colected so i'll compute it
+% % Tolmezzo tune 10hz, 15hz , 20hz results
+% folder_1201_tolmezzo ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\12-1-2026\tolmezzo_scl0.16\';
+% file = 'tune_cutoff_10Hz.acq'; % load output acq
+% LTF_to_TXT_then_load_wSV( file , folder_1201_tolmezzo );
+% x_acq_T_10hz = x_acq_T;
+% %sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
+% ddx_acq_T_10hz_comp = secondDerivativeTime(x_acq_T , Ts); % No acceleration data was colected so i'll compute it
 
-file = 'tune_cutoff_15hz.acq'; % load output acq
-LTF_to_TXT_then_load_wSV( file , folder_1201_tolmezzo );
-x_acq_T_15hz= x_acq_T;
-%sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
-ddx_acq_T_15hz_comp = secondDerivativeTime(x_acq_T , Ts); % No acceleration data was colected so i'll compute it
+% file = 'tune_cutoff_15hz.acq'; % load output acq
+% LTF_to_TXT_then_load_wSV( file , folder_1201_tolmezzo );
+% x_acq_T_15hz= x_acq_T;
+% %sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
+% ddx_acq_T_15hz_comp = secondDerivativeTime(x_acq_T , Ts); % No acceleration data was colected so i'll compute it
 
-file = 'tune_cutoff_20hz.acq'; % load output acq
-LTF_to_TXT_then_load_wSV( file , folder_1201_tolmezzo );
-x_acq_T_20hz = x_acq_T;
-%sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
-ddx_acq_T_20hz_comp = secondDerivativeTime(x_acq_T , Ts); % No acceleration data was colected so i'll compute it
+% file = 'tune_cutoff_20hz.acq'; % load output acq
+% LTF_to_TXT_then_load_wSV( file , folder_1201_tolmezzo );
+% x_acq_T_20hz = x_acq_T;
+% %sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
+% ddx_acq_T_20hz_comp = secondDerivativeTime(x_acq_T , Ts); % No acceleration data was colected so i'll compute it
 
-%%Computing Response spectra of Adapted
+%% Computing Response spectra of Adapted
 folder_1201_tolmezzo_drv_acq ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\12-1-2026\tolmezzo_drv&acq\';
-file = 'TolmezzoReducedScale_4.acq'; % load output acq
+% file = 'TolmezzoReducedScale_1.acq';
+% file = 'TolmezzoReducedScale_2.acq';
+file = 'TolmezzoReducedScale_4.acq'; 
 LTF_to_TXT_then_load_wSV( file , folder_1201_tolmezzo_drv_acq );
 ddx_acq_T_comp = secondDerivativeTime(x_acq_T , Ts);
 
@@ -151,49 +153,53 @@ f_vector = logspace( log10(f_i) , log10(f_n) , n_points);
 [picos_ddx_tgt_T , picos_x_tgt_T] = ResponseSpectrum( time_vector , x_tgt_T , ddx_tgt_T, f_vector , 1);
 
 % Finding Response Spectre  of tuned pidf 10h 15hz 20hz in simulation
-[picos_ddx_sim_T_10hz, picos_x_sim_T_10hz] = ResponseSpectrum( time_vector , x_sim_T_10hz , ddx_sim_T_10hz, f_vector , 1);
+% [picos_ddx_sim_T_10hz, picos_x_sim_T_10hz] = ResponseSpectrum( time_vector , x_sim_T_10hz , ddx_sim_T_10hz, f_vector , 1);
 [picos_ddx_sim_T_15hz, picos_x_sim_T_15hz] = ResponseSpectrum( time_vector , x_sim_T_15hz , ddx_sim_T_15hz, f_vector , 1);
-[picos_ddx_sim_T_20hz, picos_x_sim_T_20hz] = ResponseSpectrum( time_vector , x_sim_T_20hz , ddx_sim_T_20hz, f_vector , 1);
+% [picos_ddx_sim_T_20hz, picos_x_sim_T_20hz] = ResponseSpectrum( time_vector , x_sim_T_20hz , ddx_sim_T_20hz, f_vector , 1);
 
 [picos_ddx_sim_T_optimal , picos_x_sim_T_optimal] = ResponseSpectrum( time_vector , x_sim_T_optimal , ddx_sim_T_optimal, f_vector , 1);
 
 % Finding Response Spectre  of tuned pidf 10h 15hz 20hz with acquired data
-[picos_ddx_acq_T_10hz, picos_x_acq_T_10hz] = ResponseSpectrum( time_vector , x_acq_T_10hz , ddx_acq_T_10hz_comp, f_vector , 1);
-[picos_ddx_acq_T_15hz, picos_x_acq_T_15hz] = ResponseSpectrum( time_vector , x_acq_T_15hz , ddx_acq_T_15hz_comp, f_vector , 1);
-[picos_ddx_acq_T_20hz, picos_x_acq_T_20hz] = ResponseSpectrum( time_vector , x_acq_T_20hz , ddx_acq_T_20hz_comp, f_vector , 1);
+% [picos_ddx_acq_T_10hz, picos_x_acq_T_10hz] = ResponseSpectrum( time_vector , x_acq_T_10hz , ddx_acq_T_10hz_comp, f_vector , 1);
+% [picos_ddx_acq_T_15hz, picos_x_acq_T_15hz] = ResponseSpectrum( time_vector , x_acq_T_15hz , ddx_acq_T_15hz_comp, f_vector , 1);
+% [picos_ddx_acq_T_20hz, picos_x_acq_T_20hz] = ResponseSpectrum( time_vector , x_acq_T_20hz , ddx_acq_T_20hz_comp, f_vector , 1);
 
-% Adapted driver response spectra
-[picos_ddx_acq_T_acq_4  , picos_x_acq_T_acq_4 ] = ResponseSpectrum( time_vector , x_acq_T, ddx_acq_T_comp, f_vector , 1);
+%% Adapted driver response spectra
+% [picos_ddx_acq_T_1  , picos_x_acq_T_1 ] = ResponseSpectrum( time_acq , x_acq_T, ddx_acq_T_comp, f_vector , 1);
+% [picos_ddx_acq_T_acq_2  , picos_x_acq_T_acq_2 ] = ResponseSpectrum( time_vector , x_acq_T, ddx_acq_T_comp, f_vector , 1);
+ [picos_ddx_acq_T_acq_4  , picos_x_acq_T_acq_4 ] = ResponseSpectrum( time_vector , x_acq_T, ddx_acq_T_comp, f_vector , 1);
 
 %%
 close;
-fig8 = figure(8);subplot(121); grid on;xlabel('Frequency (Hz)');ylabel('Acceleration (m/s^2)');title('Acceleration Response Spectra - Fault Normal');xlim([1 20]);%ylim([0 ceil(max(picos_ddx_acq_T_20hz(1:385,1))) ])
+fig8 = figure(8);subplot(121); grid on;xlabel('Frequency (Hz)');ylabel('Acceleration (m/s^2)');title('Acceleration Response Spectra - Fault Normal');xlim([1 10]);%ylim([0 ceil(max(picos_ddx_acq_T_20hz(1:385,1))) ])
 subplot(122);grid on;xlabel('Frequency (Hz)');ylabel('Displacement (m)');title('Displacement Response Spectra - Fault Normal');xlim([0.1 5]);
 color1 = 'blue';color2 = 'red' ;color3 = '#EDB120'; color4 = 'black';color5='#77AC30';color6='#00fff7';% Define colors for lines 1/3 and 2/4
 
-figure(fig8); subplot(121); grid on; legend(); hold on;
+figure(fig8); subplot(121); grid on; hold on;
 plot(f_vector, picos_ddx_tgt_T     ,'-' , 'LineWidth' , 2, 'Color', color1, 'DisplayName', 'Target');% - Normal
-plot(f_vector, picos_ddx_sim_T_10hz,'.-', 'LineWidth' , 2, 'Color', color2,'DisplayName',sprintf( 'PIDF ω_c=10Hz (sim) -  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_sim_T_10hz).^2 )));% - Normal
+% plot(f_vector, picos_ddx_sim_T_10hz,'.-', 'LineWidth' , 2, 'Color', color2,'DisplayName',sprintf( 'PIDF ω_c=10Hz (sim) -  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_sim_T_10hz).^2 )));% - Normal
 plot(f_vector, picos_ddx_sim_T_15hz,'.-', 'LineWidth' , 2, 'Color', color3,'DisplayName',sprintf( 'PIDF ω_c=15Hz (sim) -  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_sim_T_15hz).^2 )));% - Normal
-plot(f_vector, picos_ddx_sim_T_20hz,'.-', 'LineWidth' , 2, 'Color', color5,'DisplayName',sprintf( 'PIDF ω_c=20Hz (sim) -  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_sim_T_20hz).^2 )));% - Normal
-% plot(f_vector, picos_ddx_sim_T_optimal,'.-', 'LineWidth' , 2, 'Color', color6,'DisplayName',sprintf( 'LQI (sim) -  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_sim_T_optimal).^2 )));% - Normal
+% plot(f_vector, picos_ddx_sim_T_20hz,'.-', 'LineWidth' , 2, 'Color', color5,'DisplayName',sprintf( 'PIDF ω_c=20Hz (sim) -  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_sim_T_20hz).^2 )));% - Normal
+plot(f_vector, picos_ddx_sim_T_optimal,'.-', 'LineWidth' , 2, 'Color', color6,'DisplayName',sprintf( 'LQI (sim) -  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_sim_T_optimal).^2 )));% - Normal
 % plot(f_vector, picos_ddx_acq_T_10hz,'--', 'LineWidth' , 2, 'Color', color2,'DisplayName',sprintf( 'PIDF ω_c=10Hz (acq)-  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_acq_T_10hz).^2 )));% - Normal
 % plot(f_vector, picos_ddx_acq_T_15hz,'--', 'LineWidth' , 2, 'Color', color3,'DisplayName',sprintf( 'PIDF ω_c=15Hz (acq)-  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_acq_T_15hz).^2 )));% - Normal
 % plot(f_vector, picos_ddx_acq_T_20hz,'--', 'LineWidth' , 2, 'Color', color5,'DisplayName',sprintf( 'PIDF ω_c=20Hz (acq)-  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_acq_T_20hz).^2 )));% - Normal
-% plot(f_vector, picos_ddx_acq_T_acq_4,'-', 'LineWidth' , 2, 'Color', color4, 'DisplayName',sprintf( 'Adapted driver 4 (acq)- MSE= %.2e', mean((picos_ddx_tgt_T-picos_ddx_acq_T_acq_4).^2 )));
-% % plot(f_vector, picos_ddx_acq_T_acq_1 ,'-', 'LineWidth' , 2, 'DisplayName',sprintf( 'Adapted driver 1 -  MSE= %.2e', mean((picos_ddx_tgt_T-picos_ddx_acq_T_acq_1).^2 )));
-% % plot(f_vector, picos_ddx_acq_T_acq_2 ,'-', 'LineWidth' , 2, 'DisplayName',sprintf( 'Adapted driver 2 -  MSE= %.2e', mean((picos_ddx_tgt_T-picos_ddx_acq_T_acq_2).^2 )));
+% plot(f_vector, picos_ddx_acq_T_1,'-', 'LineWidth' , 2, 'Color', color4, 'DisplayName',sprintf( 'Driver 1 (acq) - MSE= %.2e', mean((picos_ddx_tgt_T-picos_ddx_acq_T_1).^2 )));
+% plot(f_vector, picos_ddx_acq_T_acq_2,'-', 'LineWidth' , 2, 'Color', color4, 'DisplayName',sprintf( 'Driver 2 (acq) - MSE= %.2e', mean((picos_ddx_tgt_T-picos_ddx_acq_T_acq_2).^2 )));
+plot(f_vector, picos_ddx_acq_T_acq_4,'-', 'LineWidth' , 2, 'Color', color4, 'DisplayName',sprintf( 'Driver 4 (acq) - MSE= %.2e', mean((picos_ddx_tgt_T-picos_ddx_acq_T_acq_4).^2 )));
 
 subplot(122); grid on;legend();hold on;
 plot(f_vector, picos_x_tgt_T     ,'-' , 'LineWidth' , 2, 'Color', color1, 'DisplayName', 'Target ');%- Normal
-plot(f_vector, picos_x_sim_T_10hz,'.-', 'LineWidth' , 2, 'Color', color2,'DisplayName',sprintf( 'PIDF ω_c=10Hz (sim) -  MSE= %.2e',      mean((picos_x_tgt_T-picos_x_sim_T_10hz).^2 )));% - Normal
+% plot(f_vector, picos_x_sim_T_10hz,'.-', 'LineWidth' , 2, 'Color', color2,'DisplayName',sprintf( 'PIDF ω_c=10Hz (sim) -  MSE= %.2e',      mean((picos_x_tgt_T-picos_x_sim_T_10hz).^2 )));% - Normal
 plot(f_vector, picos_x_sim_T_15hz,'.-', 'LineWidth' , 2, 'Color', color3,'DisplayName',sprintf( 'PIDF ω_c=15Hz (sim) -  MSE= %.2e',      mean((picos_x_tgt_T-picos_x_sim_T_15hz).^2 )));% - Normal
-plot(f_vector, picos_x_sim_T_20hz,'.-', 'LineWidth' , 2, 'Color', color5,'DisplayName',sprintf( 'PIDF ω_c=20Hz (sim) -  MSE= %.2e',      mean((picos_x_tgt_T-picos_x_sim_T_20hz).^2 )));% - Normal
-% plot(f_vector, picos_x_sim_T_optimal,'.-', 'LineWidth' , 2, 'Color', color6,'DisplayName',sprintf( 'LQI (sim) -  MSE= %.2e',      mean((picos_x_tgt_T-picos_x_sim_T_optimal).^2 )));% - Normal
+% plot(f_vector, picos_x_sim_T_20hz,'.-', 'LineWidth' , 2, 'Color', color5,'DisplayName',sprintf( 'PIDF ω_c=20Hz (sim) -  MSE= %.2e',      mean((picos_x_tgt_T-picos_x_sim_T_20hz).^2 )));% - Normal
+plot(f_vector, picos_x_sim_T_optimal,'.-', 'LineWidth' , 2, 'Color', color6,'DisplayName',sprintf( 'LQI (sim) -  MSE= %.2e',      mean((picos_x_tgt_T-picos_x_sim_T_optimal).^2 )));% - Normal
 % plot(f_vector, picos_x_acq_T_10hz,'--', 'LineWidth' , 2, 'Color', color2,'DisplayName',sprintf( 'PIDF ω_c=10Hz (acq)- MSE= %.2e',     mean((picos_x_tgt_T-picos_x_acq_T_10hz).^2 )));%- Normal
 % plot(f_vector, picos_x_acq_T_15hz,'--', 'LineWidth' , 2, 'Color', color3,'DisplayName',sprintf( 'PIDF ω_c=15Hz (acq)- MSE= %.2e',     mean((picos_x_tgt_T-picos_x_acq_T_15hz).^2 )));%- Normal
 % plot(f_vector, picos_x_acq_T_20hz,'--', 'LineWidth' , 2, 'Color', color5,'DisplayName',sprintf( 'PIDF ω_c=20Hz (acq)- MSE= %.2e',     mean((picos_x_tgt_T-picos_x_acq_T_20hz).^2 )));%- Normal
-% plot(f_vector, picos_x_acq_T_acq_4,'-', 'LineWidth' , 2, 'Color', color4, 'DisplayName',sprintf( 'Adapted driver 4 (acq)- MSE= %.2e', mean((picos_x_tgt_T-picos_x_acq_T_acq_4).^2 )));
+% plot(f_vector, picos_x_acq_T_1,'-', 'LineWidth' , 2, 'Color', color4, 'DisplayName',sprintf( 'Driver 1 (acq) - MSE= %.2e', mean((picos_x_tgt_T-picos_x_acq_T_1).^2 )));
+% plot(f_vector, picos_x_acq_T_acq_2,'-', 'LineWidth' , 2, 'Color', color4, 'DisplayName',sprintf( 'Driver 2 (acq) - MSE= %.2e', mean((picos_x_tgt_T-picos_x_acq_T_acq_2).^2 )));
+plot(f_vector, picos_x_acq_T_acq_4,'-', 'LineWidth' , 2, 'Color', color4, 'DisplayName',sprintf( 'Driver 4 (acq) - MSE= %.2e', mean((picos_x_tgt_T-picos_x_acq_T_acq_4).^2 )));
 
 fontsize(scale=1.8) ;
 
@@ -205,105 +211,107 @@ scale = 0.18;
 x_tgt_T = scale*x_tgt_T; % convert to mm
 ddx_tgt_T = scale*ddx_tgt_T; % convert to mm
 
-x_sim_T_10hz = lsim(CL_PIDF_10Hz ,  x_tgt_T , time_vector,'zoh');
-ddx_sim_T_10hz = secondDerivativeTime(x_sim_T_10hz , Ts);
+% x_sim_T_10hz = lsim(CL_PIDF_10Hz ,  x_tgt_T , time_vector,'zoh');
+% ddx_sim_T_10hz = secondDerivativeTime(x_sim_T_10hz , Ts);
 
 x_sim_T_15hz = lsim(CL_PIDF_15Hz ,  x_tgt_T , time_vector,'zoh');
 ddx_sim_T_15hz = secondDerivativeTime(x_sim_T_15hz , Ts);
 
-x_sim_T_20hz = lsim(CL_PIDF_20Hz ,  x_tgt_T , time_vector,'zoh');
-ddx_sim_T_20hz = secondDerivativeTime(x_sim_T_20hz , Ts);
+% x_sim_T_20hz = lsim(CL_PIDF_20Hz ,  x_tgt_T , time_vector,'zoh');
+% ddx_sim_T_20hz = secondDerivativeTime(x_sim_T_20hz , Ts);
 
 x_sim_T_optimal = lsim(d2d(Optimal_CL,Ts) ,  x_tgt_T, time_vector,'zoh');
 ddx_sim_T_optimal = secondDerivativeTime(x_sim_T_optimal , Ts);
 
-% laquila tune 10hz, 15hz , 20hz results
-folder_1201_tolmezzo ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\12-1-2026\laquila_scl0.18\';
-file = 'tune_cutoff_10Hz.acq'; % load output acq
-LTF_to_TXT_then_load_wSV( file , folder_1201_tolmezzo );
-x_acq_T_10hz = x_acq_T;
-%sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
-ddx_acq_T_10hz_comp = secondDerivativeTime(x_acq_T , Ts); % No acceleration data was colected so i'll compute it
+% % laquila tune 10hz, 15hz , 20hz results
+% folder_1201_tolmezzo ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\12-1-2026\laquila_scl0.18\';
+% file = 'tune_cutoff_10Hz.acq'; % load output acq
+% LTF_to_TXT_then_load_wSV( file , folder_1201_tolmezzo );
+% x_acq_T_10hz = x_acq_T;
+% %sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
+% ddx_acq_T_10hz_comp = secondDerivativeTime(x_acq_T , Ts); % No acceleration data was colected so i'll compute it
 
-file = 'tune_cutoff_15hz.acq'; % load output acq
-LTF_to_TXT_then_load_wSV( file , folder_1201_tolmezzo );
-x_acq_T_15hz= x_acq_T;
-%sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
-ddx_acq_T_15hz_comp = secondDerivativeTime(x_acq_T , Ts); % No acceleration data was colected so i'll compute it
+% file = 'tune_cutoff_15hz.acq'; % load output acq
+% LTF_to_TXT_then_load_wSV( file , folder_1201_tolmezzo );
+% x_acq_T_15hz= x_acq_T;
+% %sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
+% ddx_acq_T_15hz_comp = secondDerivativeTime(x_acq_T , Ts); % No acceleration data was colected so i'll compute it
 
-file = 'tune_cutoff_20hz.acq'; % load output acq
-LTF_to_TXT_then_load_wSV( file , folder_1201_tolmezzo );
-x_acq_T_20hz = x_acq_T;
-%sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
-ddx_acq_T_20hz_comp = secondDerivativeTime(x_acq_T , Ts); % No acceleration data was colected so i'll compute it
+% file = 'tune_cutoff_20hz.acq'; % load output acq
+% LTF_to_TXT_then_load_wSV( file , folder_1201_tolmezzo );
+% x_acq_T_20hz = x_acq_T;
+% %sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
+% ddx_acq_T_20hz_comp = secondDerivativeTime(x_acq_T , Ts); % No acceleration data was colected so i'll compute it
 
-%%Computing Response spectra of Adapted
+%% Computing Response spectra of Adapted
 folder_1201_laquila_drv_acq ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\12-1-2026\laquila_drv&acq\';
 
-file = 'laquilaReducedScale_2.acq'; % load output acq
+file = 'laquilaReducedScale_1.acq'; % load output acq
 LTF_to_TXT_then_load_wSV( file , folder_1201_laquila_drv_acq );
-x_acq_T_2=x_acq_T;
-ddx_acq_T_2_comp = secondDerivativeTime(x_acq_T_2 , Ts);
+x_acq_T_1=x_acq_T;
+ddx_acq_T_1_comp = secondDerivativeTime(x_acq_T_1 , Ts);
 
-file = 'laquilaReducedScale_4.acq'; % load output acq
-LTF_to_TXT_then_load_wSV( file , folder_1201_laquila_drv_acq );
-x_acq_T_4=x_acq_T;
-ddx_acq_T_4_comp = secondDerivativeTime(x_acq_T_4 , Ts);
+% file = 'laquilaReducedScale_2.acq'; % load output acq
+% LTF_to_TXT_then_load_wSV( file , folder_1201_laquila_drv_acq );
+% x_acq_T_2=x_acq_T;
+% ddx_acq_T_2_comp = secondDerivativeTime(x_acq_T_2 , Ts);
 
-% Response Spectra settings
-f_i=0.1; %freq inicial
-f_n=30;  %freq final
-n_points = 5e2;
-f_vector = logspace( log10(f_i) , log10(f_n) , n_points);
+% file = 'laquilaReducedScale_3.acq'; % load output acq
+% LTF_to_TXT_then_load_wSV( file , folder_1201_laquila_drv_acq );
+% x_acq_T_3=x_acq_T;
+% ddx_acq_T_3_comp = secondDerivativeTime(x_acq_T_3 , Ts);
+
+% file = 'laquilaReducedScale_4.acq'; % load output acq
+% LTF_to_TXT_then_load_wSV( file , folder_1201_laquila_drv_acq );
+% x_acq_T_4=x_acq_T;
+% ddx_acq_T_4_comp = secondDerivativeTime(x_acq_T_4 , Ts);
 
 % Finding Response Spectre  of Target
 [picos_ddx_tgt_T , picos_x_tgt_T] = ResponseSpectrum( time_vector , x_tgt_T , ddx_tgt_T, f_vector , 1);
 
 % Finding Response Spectre  of tuned pidf 10h 15hz 20hz in simulation
-[picos_ddx_sim_T_10hz, picos_x_sim_T_10hz] = ResponseSpectrum( time_vector , x_sim_T_10hz , ddx_sim_T_10hz, f_vector , 1);
+% [picos_ddx_sim_T_10hz, picos_x_sim_T_10hz] = ResponseSpectrum( time_vector , x_sim_T_10hz , ddx_sim_T_10hz, f_vector , 1);
 [picos_ddx_sim_T_15hz, picos_x_sim_T_15hz] = ResponseSpectrum( time_vector , x_sim_T_15hz , ddx_sim_T_15hz, f_vector , 1);
-[picos_ddx_sim_T_20hz, picos_x_sim_T_20hz] = ResponseSpectrum( time_vector , x_sim_T_20hz , ddx_sim_T_20hz, f_vector , 1);
+% [picos_ddx_sim_T_20hz, picos_x_sim_T_20hz] = ResponseSpectrum( time_vector , x_sim_T_20hz , ddx_sim_T_20hz, f_vector , 1);
 
 [picos_ddx_sim_T_optimal , picos_x_sim_T_optimal] = ResponseSpectrum( time_vector , x_sim_T_optimal , ddx_sim_T_optimal, f_vector , 1);
 
 % Finding Response Spectre  of tuned pidf 10h 15hz 20hz
-[picos_ddx_acq_T_10hz, picos_x_acq_T_10hz] = ResponseSpectrum( time_vector , x_acq_T_10hz , ddx_acq_T_10hz_comp, f_vector , 1);
-[picos_ddx_acq_T_15hz, picos_x_acq_T_15hz] = ResponseSpectrum( time_vector , x_acq_T_15hz , ddx_acq_T_15hz_comp, f_vector , 1);
-[picos_ddx_acq_T_20hz, picos_x_acq_T_20hz] = ResponseSpectrum( time_vector , x_acq_T_20hz , ddx_acq_T_20hz_comp, f_vector , 1);
+% [picos_ddx_acq_T_10hz, picos_x_acq_T_10hz] = ResponseSpectrum( time_vector , x_acq_T_10hz , ddx_acq_T_10hz_comp, f_vector , 1);
+% [picos_ddx_acq_T_15hz, picos_x_acq_T_15hz] = ResponseSpectrum( time_vector , x_acq_T_15hz , ddx_acq_T_15hz_comp, f_vector , 1);
+% [picos_ddx_acq_T_20hz, picos_x_acq_T_20hz] = ResponseSpectrum( time_vector , x_acq_T_20hz , ddx_acq_T_20hz_comp, f_vector , 1);
 
 % Adapted driver response spectra
-[picos_ddx_acq_T_acq_2  , picos_x_acq_T_acq_2 ] = ResponseSpectrum( time_vector , x_acq_T_2, ddx_acq_T_2_comp, f_vector , 1);
-[picos_ddx_acq_T_acq_4  , picos_x_acq_T_acq_4 ] = ResponseSpectrum( time_vector , x_acq_T_4, ddx_acq_T_4_comp, f_vector , 1);
+[picos_ddx_acq_T_1  , picos_x_acq_T_1 ] = ResponseSpectrum( time_acq , x_acq_T_1, ddx_acq_T_1_comp, f_vector , 1);
+% [picos_ddx_acq_T_2  , picos_x_acq_T_2 ] = ResponseSpectrum( time_vector , x_acq_T_2, ddx_acq_T_2_comp, f_vector , 1);
+% [picos_ddx_acq_T_3  , picos_x_acq_T_3 ] = ResponseSpectrum( time_vector , x_acq_T_3, ddx_acq_T_3_comp, f_vector , 1);
+% [picos_ddx_acq_T_4  , picos_x_acq_T_4 ] = ResponseSpectrum( time_vector , x_acq_T_4, ddx_acq_T_4_comp, f_vector , 1);
 
 %%
-fig9 = figure(9);subplot(121); grid on;xlabel('Frequency (Hz)');ylabel('Acceleration (m/s^2)');title('Acceleration Response Spectra - Fault Normal');xlim([1 30]);%ylim([0 ceil(max(picos_ddx_acq_T_20hz(1:395,1))) ])
-subplot(122);grid on;xlabel('Frequency (Hz)');ylabel('Displacement (m)');title('Displacement Response Spectra - Fault Normal');xlim([0.1 30]);
+fig9 = figure(9);subplot(121); grid on;xlabel('Frequency (Hz)');ylabel('Acceleration (m/s^2)');title('Acceleration Response Spectra - Fault Normal');xlim([1 10]);%ylim([0 ceil(max(picos_ddx_acq_T_20hz(1:395,1))) ])
+subplot(122);grid on;xlabel('Frequency (Hz)');ylabel('Displacement (m)');title('Displacement Response Spectra - Fault Normal');xlim([0.1 5]);
 
-figure(fig9); subplot(121); grid on; legend(); hold on;
+figure(fig9); subplot(121); grid on; hold on;
 plot(f_vector, picos_ddx_tgt_T     ,'-' , 'LineWidth' , 2, 'Color', color1, 'DisplayName', 'Target');% - Normal
-plot(f_vector, picos_ddx_sim_T_10hz,'.-', 'LineWidth' , 2, 'Color', color2,'DisplayName',sprintf( 'PIDF ω_c=10Hz (sim) -  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_sim_T_10hz).^2 )));% - Normal
+% plot(f_vector, picos_ddx_sim_T_10hz,'.-', 'LineWidth' , 2, 'Color', color2,'DisplayName',sprintf( 'PIDF ω_c=10Hz (sim) -  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_sim_T_10hz).^2 )));% - Normal
 plot(f_vector, picos_ddx_sim_T_15hz,'.-', 'LineWidth' , 2, 'Color', color3,'DisplayName',sprintf( 'PIDF ω_c=15Hz (sim) -  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_sim_T_15hz).^2 )));% - Normal
-plot(f_vector, picos_ddx_sim_T_20hz,'.-', 'LineWidth' , 2, 'Color', color5,'DisplayName',sprintf( 'PIDF ω_c=20Hz (sim) -  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_sim_T_20hz).^2 )));% - Normal
+% plot(f_vector, picos_ddx_sim_T_20hz,'.-', 'LineWidth' , 2, 'Color', color5,'DisplayName',sprintf( 'PIDF ω_c=20Hz (sim) -  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_sim_T_20hz).^2 )));% - Normal
 plot(f_vector, picos_ddx_sim_T_optimal,'.-', 'LineWidth' , 2, 'Color', color6,'DisplayName',sprintf( 'LQI (sim) -  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_sim_T_optimal).^2 )));% - Normal
 % plot(f_vector, picos_ddx_acq_T_10hz,'--', 'LineWidth' , 2, 'Color', color2,'DisplayName',sprintf( 'PIDF ω_c=10Hz (acq)-  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_acq_T_10hz).^2 )));% - Normal
 % plot(f_vector, picos_ddx_acq_T_15hz,'--', 'LineWidth' , 2, 'Color', color3,'DisplayName',sprintf( 'PIDF ω_c=15Hz (acq)-  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_acq_T_15hz).^2 )));% - Normal
 % plot(f_vector, picos_ddx_acq_T_20hz,'--', 'LineWidth' , 2, 'Color', color5,'DisplayName',sprintf( 'PIDF ω_c=20Hz (acq)-  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_acq_T_20hz).^2 )));% - Normal
-% plot(f_vector, picos_ddx_acq_T_acq_2 ,'-', 'LineWidth' , 2,  'DisplayName',sprintf( 'Adapted driver 2 MSE= %.2e', mean((picos_ddx_tgt_T-picos_ddx_acq_T_acq_2).^2 )));
-% plot(f_vector, picos_ddx_acq_T_acq_4,'-', 'LineWidth' , 2, 'Color', color4, 'DisplayName',sprintf( 'Adapted driver 4 (acq)- MSE= %.2e', mean((picos_ddx_tgt_T-picos_ddx_acq_T_acq_4).^2 )));
-% plot(f_vector, picos_ddx_acq_T_acq_1 ,'-', 'LineWidth' , 2, 'DisplayName',sprintf( 'Adapted driver 1 -  MSE= %.2e', mean((picos_ddx_tgt_T-picos_ddx_acq_T_acq_1).^2 )));
-% plot(f_vector, picos_ddx_acq_T_acq_2 ,'-', 'LineWidth' , 2, 'DisplayName',sprintf( 'Adapted driver 2 -  MSE= %.2e', mean((picos_ddx_tgt_T-picos_ddx_acq_T_acq_2).^2 )));
+plot(f_vector, picos_ddx_acq_T_1 ,'-', 'LineWidth' , 2,  'DisplayName',sprintf( 'Driver 1 - MSE= %.2e', mean((picos_ddx_tgt_T-picos_ddx_acq_T_1).^2 )));
 
 subplot(122); grid on;legend();hold on;
 plot(f_vector, picos_x_tgt_T     ,'-' , 'LineWidth' , 2, 'Color', color1, 'DisplayName', 'Target ');%- Normal
-plot(f_vector, picos_x_sim_T_10hz,'.-', 'LineWidth' , 2, 'Color', color2,'DisplayName',sprintf( 'PIDF ω_c=10Hz (sim) -  MSE= %.2e',      mean((picos_x_tgt_T-picos_x_sim_T_10hz).^2 )));% - Normal
+% plot(f_vector, picos_x_sim_T_10hz,'.-', 'LineWidth' , 2, 'Color', color2,'DisplayName',sprintf( 'PIDF ω_c=10Hz (sim) -  MSE= %.2e',      mean((picos_x_tgt_T-picos_x_sim_T_10hz).^2 )));% - Normal
 plot(f_vector, picos_x_sim_T_15hz,'.-', 'LineWidth' , 2, 'Color', color3,'DisplayName',sprintf( 'PIDF ω_c=15Hz (sim) -  MSE= %.2e',      mean((picos_x_tgt_T-picos_x_sim_T_15hz).^2 )));% - Normal
-plot(f_vector, picos_x_sim_T_20hz,'.-', 'LineWidth' , 2, 'Color', color5,'DisplayName',sprintf( 'PIDF ω_c=20Hz (sim) -  MSE= %.2e',      mean((picos_x_tgt_T-picos_x_sim_T_20hz).^2 )));% - Normal
+% plot(f_vector, picos_x_sim_T_20hz,'.-', 'LineWidth' , 2, 'Color', color5,'DisplayName',sprintf( 'PIDF ω_c=20Hz (sim) -  MSE= %.2e',      mean((picos_x_tgt_T-picos_x_sim_T_20hz).^2 )));% - Normal
 plot(f_vector, picos_x_sim_T_optimal,'.-', 'LineWidth' , 2, 'Color', color6,'DisplayName',sprintf( 'LQI (sim) -  MSE= %.2e',      mean((picos_x_tgt_T-picos_x_sim_T_optimal).^2 )));% - Normal
 % plot(f_vector, picos_x_acq_T_10hz,'--', 'LineWidth' , 2, 'Color', color2,'DisplayName',sprintf( 'PIDF ω_c=10Hz (acq)- MSE= %.2e',     mean((picos_x_tgt_T-picos_x_acq_T_10hz).^2 )));%- Normal
 % plot(f_vector, picos_x_acq_T_15hz,'--', 'LineWidth' , 2, 'Color', color3,'DisplayName',sprintf( 'PIDF ω_c=15Hz (acq)- MSE= %.2e',     mean((picos_x_tgt_T-picos_x_acq_T_15hz).^2 )));%- Normal
 % plot(f_vector, picos_x_acq_T_20hz,'--', 'LineWidth' , 2, 'Color', color5,'DisplayName',sprintf( 'PIDF ω_c=20Hz (acq)- MSE= %.2e',     mean((picos_x_tgt_T-picos_x_acq_T_20hz).^2 )));%- Normal
-% plot(f_vector, picos_x_acq_T_acq_2, '-', 'LineWidth' , 2, 'DisplayName',sprintf( 'Adapted driver 2 - MSE= %.2e', mean((picos_x_tgt_T-picos_x_acq_T_acq_2).^2 )));
-% plot(f_vector, picos_x_acq_T_acq_4,'-', 'LineWidth' , 2, 'Color', color4, 'DisplayName',sprintf( 'Adapted driver 4 (acq)- MSE= %.2e', mean((picos_x_tgt_T-picos_x_acq_T_acq_4).^2 )));
+plot(f_vector, picos_x_acq_T_1, '-', 'LineWidth' , 2, 'DisplayName',sprintf( 'Driver 1 - MSE= %.2e', mean((picos_x_tgt_T-picos_x_acq_T_1).^2 )));
 
 fontsize(scale=1.8) ;
 
@@ -316,7 +324,7 @@ if ~exist(timeDir, 'dir')% Create it if it doesn't already exist
 end
 
 set(fig8, 'WindowState', 'maximized');
-exportgraphics(fig8,fullfile(timeDir,'Response_Spectra_N.png'),'Resolution', 300,'BackgroundColor', 'white','ContentType', 'image');
+exportgraphics(fig8,fullfile(timeDir,'Response_Spectra_Tolmezzo.png'),'Resolution', 300,'BackgroundColor', 'white','ContentType', 'image');
 
 set(fig9, 'WindowState', 'maximized');
-exportgraphics(fig9,fullfile(timeDir,'Response_Spectra_P.png'),'Resolution', 300,'BackgroundColor', 'white','ContentType', 'image');
+exportgraphics(fig9,fullfile(timeDir,'Response_Spectra_Laquila.png'),'Resolution', 300,'BackgroundColor', 'white','ContentType', 'image');

@@ -2,7 +2,7 @@ LNEC Test File eXtractor
 
 File: laquilaReducedScale_2.acq
 
-Created in: 2026-02-25 18:46:47.890383
+Created in: 2026-02-25 20:53:31.508833
 
 Number of channels: 7
 
