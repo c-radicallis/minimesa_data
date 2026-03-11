@@ -16,7 +16,7 @@ Ts=1;z=tf('z',Ts);
 %%
 data_points=2^15;
 t = [0:Ts:data_points-1]';
-e_vector = [0.1 , 1 ].*wgn(data_points , 1 , 1 ); %[0.05 , 0.8 ]
+e_vector = [10 ].*wgn(data_points , 1 , 1 ); %[0.05 , 0.8 ]
 
 r2 = wgn(data_points , 1 , 1 );
 
@@ -30,7 +30,7 @@ ma_r2= [];
 ma_v=[];
 signal_to_noise= [];
 
-for i =[tf(5)]% [0.05*(z^-1-0.8*z^-2)]% , %tf(0.01),  0.5*(z^-1-0.8*z^-2)] %controller 
+for i =[tf(5),0.05*(z^-1-0.8*z^-2)]%[tf(5)]%  , %tf(0.01),  0.5*(z^-1-0.8*z^-2)] %controller 
     C= i;
     S0 = 1/(1+G0*C)
     
