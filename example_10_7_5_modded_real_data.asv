@@ -1,41 +1,39 @@
-% Example 10.7.5 - from Van den Hof lecture notes
-% two stage closed loop identification method modified for
-% reference r2 only, and proportional controller
+% Example 10.7.5 - from Van den Hof lecture notes two stage closed loop identification method modified for reference r2 only, and proportional controller
 
-clear;clc; setappdata(0, 'AutoStagger_LRDown_Last', []);   % ensure first figure starts at top-leftwin_size
-set(0, 'DefaultFigureCreateFcn', @autoStagger_LRDown_relSize);
-close all;
+clear;clc;%
+% setappdata(0, 'AutoStagger_LRDown_Last', []);   % ensure first figure starts at top-left win_size(0, 'DefaultFigureCreateFcn', @autoStagger_LRDown_relSize);
+% close all;
 
-% bode plot options
-opts2=bodeoptions('cstprefs');opts2.PhaseVisible='on';opts2.XLim={[0.2 pi]};opts2.PhaseWrapping="on"; %opts2.PhaseWrappingBranch=-360;
-opts2.MagLowerLimMode = 'manual';opts2.MagLowerLim=-15;
+opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[0.1 50]}; opts1.PhaseMatching='on'; opts1.Grid='on'; % bode plot options
 
-Ts=1;z=tf('z',Ts);
+Ts = 0.005;z=tf('z',Ts);
 
 %%
 data_points=2^15;
-t = [0:Ts:data_points-1]';
-e_vector = [10 ].*wgn(data_points , 1 , 1 ); %[0.05 , 0.8 ]
+t = (0:data_points-1)'*Ts;
+e_vector = 0.01*[0.01 , 0.1].*wgn(data_points , 1 , 1 ); %[0.05 , 0.8 ]
+r2 = 0.01*wgn(data_points , 1 , 1 );
 
-r2 = wgn(data_points , 1 , 1 );
+%%
+load('results_P15_pink.mat');
+G0 = results_P15_pink.OL_est_nonLin
+np=4;
+nz=4;
 
-np=2;
-nz=2;
-G0 = 1/(1-1.6*z^-1+0.89*z^-2)
 H0 = (1 - 1.56*z^-1 + 1.045*z^-2 -0.3338*z^-3)/(1 - 2.35*z^-1 + 2.09*z^-2 -0.6675*z^-3);
-
+%%
 ma_u= [];
 ma_r2= [];
 ma_v=[];
 signal_to_noise= [];
 
-for i =[tf(5),0.05*(z^-1-0.8*z^-2)]%[tf(5)]%  , %tf(0.01),  0.5*(z^-1-0.8*z^-2)] %controller 
+for i =[tf(20), 7+70*z^-1]%[tf(5)]%  , %tf(0.01),  0.5*(z^-1-0.8*z^-2)] %controller 
     C= i;
     S0 = 1/(1+G0*C)
     
     % this is to check the effect of feedback intensity vs excitation intensity
-    r =  lsim( C , r2, t );%reference increases in magnitude when controller gain decreases
-    
+    r =  lsim( C , r2, t );
+
     ma_r2 = [ma_r2 ; mean(abs(r2))];
     u_r =  lsim(S0 , r ,t);
 
@@ -77,26 +75,28 @@ for i =[tf(5),0.05*(z^-1-0.8*z^-2)]%[tf(5)]%  , %tf(0.01),  0.5*(z^-1-0.8*z^-2)]
         % legend; grid on;
 
         %% step 3
-        win_size_1 = 2^5;
-        frq_res_1 =1/(win_size_1*Ts); 
-        Nonparametric_1 = spa(iddata(y,u,Ts), win_size_1)
+        freq_res_1 = 1;
+        win_size_1 = 1/(freq_res_1*Ts);
+        f_vector_1= logspace( log10(2*freq_res_1*2*pi) , log10(50*2*pi) , 100);
+        Nonparametric_1 = spa(iddata(y,u,Ts), win_size_1,f_vector_1)
 
-        win_size_2 = data_points/4;
-        frq_res_2 =1/(win_size_2*Ts); 
-        Nonparametric_2 = spa(iddata(y,u,Ts), win_size_2)
-
+        freq_res_2 = 0.1;
+        win_size_2 = 1/(freq_res_2*Ts);
+        f_vector_2= logspace( log10(2*freq_res_2*2*pi) , log10(50*2*pi) , 100);
+        Nonparametric_2 = spa(iddata(y,u,Ts), win_size_2,f_vector_2)
+        %%  
         G_2stage = tfest(u_r_est , y , np,nz ,'Ts',Ts,'Feedthrough',true)
         G_direct = tfest( u , y , np,nz,'Ts',Ts,'Feedthrough',true)
 
         %%
         figure;hold on;
-        bodeplot(G0,'r', opts2);
-        bodeplot( -1/C, 'r--',opts2);ch = get(gca,'Children');set(ch(1),'DisplayName','-1/C');
-        bodeplot(Nonparametric_1 , 'm.', opts2);ch = get(gca,'Children');set(ch(1),'DisplayName',sprintf('Nonparametric (%.0f lags)', win_size_1));
-        bodeplot(Nonparametric_2 , 'c.' , opts2);ch = get(gca,'Children');set(ch(1),'DisplayName',sprintf('Nonparametric (%.0f lags)', win_size_2));
+        bodeplot(G0,'r', opts1);
+        bodeplot( -1/C, 'r--',opts1);ch = get(gca,'Children');set(ch(1),'DisplayName','-1/C');
+        bodeplot(Nonparametric_1 , 'm.', opts1);ch = get(gca,'Children');set(ch(1),'DisplayName',sprintf('Nonparametric (%.0f lags)', win_size_1));
+        bodeplot(Nonparametric_2 , 'c.' , opts1);ch = get(gca,'Children');set(ch(1),'DisplayName',sprintf('Nonparametric (%.0f lags)', win_size_2));
 
-        bodeplot( G_direct , 'b-.' , opts2);
-        bodeplot(G_2stage , 'g--', opts2);
+        bodeplot( G_direct , 'b-.' , opts1);
+        bodeplot(G_2stage , 'g--', opts1);
 
         legend; grid on;
 
