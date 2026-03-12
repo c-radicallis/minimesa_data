@@ -11,24 +11,34 @@ Ts = 0.005;z=tf('z',Ts);
 %%
 data_points=2^15;
 t = (0:data_points-1)'*Ts;
-e_vector = 0.01*[0.01 , 0.1].*wgn(data_points , 1 , 1 ); %[0.05 , 0.8 ]
-r2 = 0.01*wgn(data_points , 1 , 1 );
+e_vector = [0.01 , 0.1].*wgn(data_points , 1 , 1 ); %[0.05 , 0.8 ]
+r2 = wgn(data_points , 1 , 1 );
+
+%figure; plot(t,r2 , t, e_vector(:,2) , t,y)
+freq_res_1 = 1;
+win_size_1 = 1/(freq_res_1*Ts);
+f_vector_1= logspace( log10(freq_res_1*2*pi) , log10(40*2*pi) , 200);
+
+freq_res_2 = 0.1;
+win_size_2 = 1/(freq_res_2*Ts);
+f_vector_2= logspace( log10(freq_res_2*2*pi) , log10(40*2*pi) , 200);
 
 %%
-load('results_P15_pink.mat');
-G0 = results_P15_pink.OL_est_nonLin
-np=4;
-nz=4;
-
+load('1DST_model.mat');
+G0 = c2d(ss(G_Fp_isv*G_xT_Fp),Ts);
+%G0.Variable = 'z^-1';
+%G0 = minreal(G0)
+np=8; nz=4;
 H0 = (1 - 1.56*z^-1 + 1.045*z^-2 -0.3338*z^-3)/(1 - 2.35*z^-1 + 2.09*z^-2 -0.6675*z^-3);
-%%
-ma_u= [];
-ma_r2= [];
-ma_v=[];
-signal_to_noise= [];
 
-for i =[tf(20), 7+70*z^-1]%[tf(5)]%  , %tf(0.01),  0.5*(z^-1-0.8*z^-2)] %controller 
-    C= i;
+tuner_opts = pidtuneOptions('DesignFocus','reference-tracking');
+cutoff_frequency = 10; % Hz
+PIDF  = pidtune(G0,'PI',cutoff_frequency*2*pi,tuner_opts)
+
+ma_u= []; ma_r2= []; ma_v=[]; signal_to_noise= []; 
+%%
+for i =[tf(130), PIDF]%[tf(5)]%  , %tf(0.01),  0.5*(z^-1-0.8*z^-2)] %controller 
+    C= i;   
     S0 = 1/(1+G0*C)
     
     % this is to check the effect of feedback intensity vs excitation intensity
@@ -52,7 +62,7 @@ for i =[tf(20), 7+70*z^-1]%[tf(5)]%  , %tf(0.01),  0.5*(z^-1-0.8*z^-2)] %control
         % legend('r','v','y'); grid on;
 
         %% step1
-        S_est = polyest(r,u ,  [[0 2^6 0 0 0] 0],'Ts',Ts);%tfest(r,u,9)%armax(r,u , [9*[1 1 1] 1],opt)%oe(r ,u , [ 8 8 1 ] )%
+        S_est = polyest(r,u ,  [[0 2^7 0 0 0] 0],'Ts',Ts);%tfest(r,u,9)%armax(r,u , [9*[1 1 1] 1],opt)%oe(r ,u , [ 8 8 1 ] )%
         % step 2
         u_r_est = lsim(S_est , r , t);
 
@@ -75,18 +85,11 @@ for i =[tf(20), 7+70*z^-1]%[tf(5)]%  , %tf(0.01),  0.5*(z^-1-0.8*z^-2)] %control
         % legend; grid on;
 
         %% step 3
-        freq_res_1 = 1;
-        win_size_1 = 1/(freq_res_1*Ts);
-        f_vector_1= logspace( log10(2*freq_res_1*2*pi) , log10(50*2*pi) , 100);
         Nonparametric_1 = spa(iddata(y,u,Ts), win_size_1,f_vector_1)
-
-        freq_res_2 = 0.1;
-        win_size_2 = 1/(freq_res_2*Ts);
-        f_vector_2= logspace( log10(2*freq_res_2*2*pi) , log10(50*2*pi) , 100);
         Nonparametric_2 = spa(iddata(y,u,Ts), win_size_2,f_vector_2)
         %%  
-        G_2stage = tfest(u_r_est , y , np,nz ,'Ts',Ts,'Feedthrough',true)
-        G_direct = tfest( u , y , np,nz,'Ts',Ts,'Feedthrough',true)
+        G_2stage = tfest(u_r_est , y , np ,'Ts',Ts,'Feedthrough',true)
+        G_direct = tfest( u , y , np,'Ts',Ts,'Feedthrough',true)
 
         %%
         figure;hold on;
