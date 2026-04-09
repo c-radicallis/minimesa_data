@@ -5,6 +5,7 @@ lvdt = tf(8*2*pi,[1,8*2*pi]);
 cutoff_frequency=30;
 C_tune = pidtune( G , 'PI' , cutoff_frequency*2*pi )
 C = pid(1,200)
+opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[1 50]}; opts1.PhaseMatching='on'; opts1.Grid='on';
 
 %%
 sys = feedback(G*C , lvdt);
