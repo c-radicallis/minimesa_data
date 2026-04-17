@@ -63,17 +63,17 @@ u_r_est_nonLin = sim(S_est_nonLin , x_drv_T_0 );
 u_r_est_to_x_acq = iddata( x_acq_T , u_r_est_nonLin(end - length(time_acq) + 1 : end) ,Ts);
 u_r_est_to_x_acq_detrended = detrend(u_r_est_to_x_acq);
 OL_est_nonLin = tfest( u_r_est_to_x_acq_detrended , np_OL ,'Ts',Ts,'Feedthrough',true)
-CL_from_OL_est_nonLin= feedback(controller*OL_est_nonLin, 1)
+CL_from_OL_est_nonLin= feedback(controller*OL_est_nonLin, 1);
 
 sv_to_acq = iddata(  x_acq_T ,sv2_acq ,Ts);
 sv_to_acq_detrended = detrend(sv_to_acq);
-OL_direct = tfest( sv_to_acq_detrended , np_OL , 'Ts',Ts,  'Feedthrough',true)
+OL_direct = tfest( sv_to_acq_detrended , np_OL , 'Ts',Ts,  'Feedthrough',true);
 CL_from_OL_direct = feedback(controller*OL_direct, 1);
 
 drv_to_acq = iddata(  x_acq_T ,x_drv_T_0_cut ,Ts);
 drv_to_acq_detrended = detrend(drv_to_acq);
-CL = tfest(drv_to_acq_detrended , np_CL ,'Ts',Ts, 'Feedthrough',true,tfest_opt_CL)
-OL_indirect = CL/(controller*(1-CL))
+CL = tfest(drv_to_acq_detrended , np_CL ,'Ts',Ts, 'Feedthrough',true,tfest_opt_CL);
+OL_indirect = CL/(controller*(1-CL));
 
 % figure;hold on;
 % bodeplot(CL,'y', opts1);
