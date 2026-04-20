@@ -11,7 +11,7 @@ opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[1 50]};opts1.P
 
 a = 0.000485; b = -0.2; bits2mm = @(bits) a*bits+b; mm2bits = @(mm) (mm-b)/a; clear a b; % Control channel AI2 Displacement - 16 bit signed integer to mm conversion
 
-% input file - pink noise 40hz
+%% input file - pink noise 40hz
 input_file_folder ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\31-7-2025\tgt and noise drv\';
 file = 'pink_noise_40Hz_T3mm_0.drv'; % load input drv
 LTF_to_TXT_then_load( file , 'InputFolder', input_file_folder , 'OutputFolder', input_file_folder); % load input drv

@@ -1,0 +1,206 @@
+%% ── Q-weight optimisation via fminsearch ─────────────────────────────────
+% Weights are searched in log-space so the optimiser can roam over many
+% orders of magnitude without going negative.
+
+clear;clc;close all; 
+
+%%
+setappdata(0, 'AutoStagger_LRDown_Last', []); set(0, 'DefaultFigureCreateFcn', @autoStagger_LRDown_relSize);
+addpath 'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\uniaxial_table_model'
+func_folder  =  'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\uniaxial_table_model\Adapting_Driver_Signal\'; addpath(func_folder);
+
+Ts = 0.005;fir_np=100; np_CL=4; np_OL=4;
+
+opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[1 100]};opts1.PhaseWrapping="on";opts1.PhaseWrappingBranch=-360;
+opts1.PhaseVisible='off'; opts1.YLim={[-25 10]};
+
+a = 0.000485; b = -0.2; bits2mm = @(bits) a*bits+b; mm2bits = @(mm) (mm-b)/a; clear a b; % Control channel AI2 Displacement - 16 bit signed integer to mm conversion
+
+%% input file - pink noise 40hz
+input_file_folder ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\31-7-2025\tgt and noise drv\';
+file = 'pink_noise_40Hz_T3mm_0.drv'; % load input drv
+LTF_to_TXT_then_load( file , 'InputFolder', input_file_folder , 'OutputFolder', input_file_folder); % load input drv
+x_drv_T_0 = x_drv_T_0*1e3; % convert to mm
+clear x_drv_L_0  x_drv_V_0
+%  Data P15
+folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
+file = 'pink_noise_40Hz_T3mm_0_P1_I10.acq'; % load output acq
+LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
+x_acq_T = x_acq_T*1e3;
+sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
+Kp=15;
+results_P15_pink = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
+OL_200 = ss(results_P15_pink.OL_est_nonLin)
+
+tuner_opts = pidtuneOptions('DesignFocus','reference-tracking'); % Tune PIDF
+cutoff_frequency = 15; % Hz
+PIDF   = pidtune(OL_200,'PIDF',cutoff_frequency*2*pi,tuner_opts)
+CL_PIDF_15Hz = feedback(PIDF*OL_200, 1);
+
+n_states = size(OL_200.A,1); % Create augmented state space model
+OL_200.StateName  = arrayfun(@(k) sprintf('x%d',k), 1:n_states, 'UniformOutput', false);
+
+plant_aug = ss(OL_200.A, OL_200.B,[eye(n_states);OL_200.C],[zeros(n_states,1); OL_200.D] , Ts);
+plant_aug.InputName = {'i_sv'};   % plant input: control signal
+plant_aug.OutputName = [OL_200.StateName ; {'y_xT'}];  % plant output
+
+sumblk1 = sumblk('e = x_ref - y_xT'); % Compute the error signal: e = r - y
+integrator = tf(1,[1 0], Ts);  integrator.InputName = {'e'};  integrator.OutputName = {'xi'};  % The integrator integrates the tracking error. % error: e = r - y % integrated error
+
+%%  load Tolmezzo tgt
+folder_1201 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\12-1-2026\';
+file = 'TolmezzoReducedScale.tgt'; % load input drv
+LTF_to_TXT_then_load( file , 'InputFolder', folder_1201); % load input drv
+scale = 0.16;
+x_tgt_T = scale*x_tgt_T; 
+ddx_tgt_T = scale*ddx_tgt_T; 
+
+x_sim_PIDF = lsim(CL_PIDF_15Hz, x_tgt_T, time_vector, 'zoh');
+MSE_PIDF = mean((x_sim_PIDF - x_tgt_T).^2);
+
+%% ── Run the optimisation ─────────────────────────────────────────────────
+
+% Initial guess (log-space) — edit to reflect your engineering intuition
+Q1_0 = 1e-1;  Q2_0 = 1e-1;  Q3_0 = 1e-1;  Q4_0 = 1e-1;  Qi_0 = 1e1;
+% Q1_0 = eps;  Q2_0 = eps;  Q3_0 = eps;  Q4_0 = eps;  Qi_0 = 20;
+log_q0 = log([Q1_0, Q2_0, Q3_0, Q4_0, Qi_0]);
+
+stopFcn  = @(~, optimValues, ~) optimValues.fval < MSE_PIDF;  % stop when LQI beats PIDF
+% fminsearch options
+opts_opt = optimset('Display',    'iter',  ...
+                    'TolX',       1e-15,    ...
+                    'TolFun',     1e-15,    ...
+                    'MaxFunEvals', 1e12,   ...
+                    'MaxIter',     1e12, ...
+                    'OutputFcn',   stopFcn);
+
+% Wrap objective so fminsearch only sees log_q
+objFun = @(log_q) trackingCost(log_q, OL_200, plant_aug, integrator, sumblk1, x_tgt_T, time_vector, n_states);
+
+fprintf('=== Starting Q optimisation ===\n');
+[log_q_best, J_best] = fminsearch(objFun, log_q0, opts_opt);
+
+% ── Recover & display best weights ───────────────────────────────────────
+q_best = exp(log_q_best);
+Q1_best = q_best(1);
+Q2_best = q_best(2);
+Q3_best = q_best(3);
+Q4_best = q_best(4);
+Qi_best = q_best(5);
+
+fprintf('\n=== Optimisation complete ===\n');
+fprintf('PIDF MSE reference      : %.6e\n', MSE_PIDF);
+fprintf('Best MSE tracking error : %.6f\n', J_best);
+fprintf('Best Q weights:\n');
+fprintf('  Q1 = %.4e\n  Q2 = %.4e\n  Q3 = %.4e\n  Q4 = %.4e\n  Qi = %.4e\n', ...
+        Q1_best, Q2_best, Q3_best, Q4_best, Qi_best);
+if J_best < MSE_PIDF
+    fprintf('Result: LQI beats PIDF (%.1f%% improvement)\n', 100*(MSE_PIDF - J_best)/MSE_PIDF);
+else
+    fprintf('Result: LQI did NOT beat PIDF within iteration budget\n');
+end
+
+% ── Rebuild and plot the best closed-loop system ─────────────────────────
+Q_best   = diag(q_best);
+R        = 1;
+K_lqi_best    = lqi(OL_200, Q_best, R)
+K        = K_lqi_best(1:n_states);
+Ki       = K_lqi_best(end);
+
+controller_best = ss([], [], [], -[K, Ki]);
+controller_best.InputName  = [OL_200.StateName; {'xi'}];
+controller_best.OutputName = {'i_sv'};
+
+Optimal_CL_best = connect(plant_aug, controller_best, integrator, sumblk1, 'x_ref', 'y_xT');
+
+x_sim_best = lsim(Optimal_CL_best, x_tgt_T, time_vector, 'zoh');
+
+%% Manual tunning
+Q_manual = diag([eps*eye(1,n_states) , 1e4]) %eps*eye(1,n_states),
+R = eye(size(OL_200.B,2));
+K_lqi_manual = lqi(OL_200, Q_manual, R)% Design the LQI controller for the original system
+
+K  = K_lqi_manual(1:n_states);      % state feedback gains
+Ki = K_lqi_manual(end);        % integrator gain
+controller = ss([], [], [], -[K, Ki]); controller.InputName = [ OL_200.StateName ; {'xi'}]; controller.OutputName = {'i_sv'}; %   u = -[K  Ki] * [x; xi]
+Optimal_CL_manual = connect(plant_aug,  controller , integrator, sumblk1, 'x_ref','y_xT');
+Optimal_CL_manual_stable = isstable(Optimal_CL_manual);
+x_sim_manual = lsim(Optimal_CL_manual, x_tgt_T, time_vector, 'zoh'); MSE_manual=mean((x_sim_manual - x_tgt_T).^2);
+
+%%
+close all;
+figure;
+plot(time_vector, x_tgt_T,  'LineWidth', 1);  hold on;
+plot(time_vector, x_sim_PIDF, '--',  'LineWidth', 1);
+plot(time_vector, x_sim_best, '--',  'LineWidth', 1);
+plot(time_vector, x_sim_manual, '--',  'LineWidth', 1);
+xlabel('Time (s)');  ylabel('x_T');
+legend('Target', ...
+       sprintf('PIDF (MSE = %.2e)',        MSE_PIDF), ...
+       sprintf('Optimised LQI (MSE = %.2e)', J_best), ...
+       sprintf('Manual LQI (MSE = %.2e)',  MSE_manual));
+grid on;
+
+figure; hold on;
+bodeplot(CL_PIDF_15Hz, opts1);
+bodeplot(Optimal_CL_best, opts1);
+bodeplot(Optimal_CL_manual, opts1);
+title('Bode – Optimised closed-loop'); grid on;
+
+
+%% ── Objective function ────────────────────────────────────────────────────
+function J = trackingCost(log_q, OL_200, plant_aug, integrator, ...
+                           sumblk1, x_tgt_T, time_vector, n_states)
+    % Recover weights from log-space
+    q   = exp(log_q);           % [Q1 Q2 Q3 Q4 Qi]
+    Q   = diag(q);
+    R   = 1;
+
+    % ── Build LQI controller ──────────────────────────────────────────────
+    try
+        K_lqi = lqi(OL_200, Q, R);
+    catch
+        J = 1e12;   % lqi failed → penalise heavily
+        return
+    end
+
+    K  = K_lqi(1:n_states);
+    Ki = K_lqi(end);
+
+    controller = ss([], [], [], -[K, Ki]);
+    controller.InputName  = [OL_200.StateName; {'xi'}];
+    controller.OutputName = {'i_sv'};
+
+    % ── Close the loop ────────────────────────────────────────────────────
+    try
+        Optimal_CL = connect(plant_aug, controller, integrator, sumblk1, 'x_ref', 'y_xT');
+    catch
+        J = 1e12;
+        return
+    end
+
+    % ── Stability guard ───────────────────────────────────────────────────
+    if ~isstable(Optimal_CL)
+        J = 1e12;
+        return
+    end
+
+    % ── Simulate & compute tracking error ────────────────────────────────
+    try
+        x_sim = lsim(Optimal_CL, x_tgt_T, time_vector, 'zoh');
+    catch
+        J = 1e12;
+        return
+    end
+
+    % Blow-up guard
+    if max(abs(x_sim)) > max(abs(x_tgt_T)) * 1.5
+        J = 1e12;
+        return
+    end
+
+    % mean-square tracking error  (minimise this)
+    J = mean((x_sim - x_tgt_T).^2);
+
+    fprintf('  J = %.6f  |  Q = [%s]\n', J, num2str(q, '%.2e  '));
+end
