@@ -61,18 +61,19 @@ MSE_PIDF = mean((x_sim_PIDF - x_tgt_T).^2);
 %% ── Run the optimisation ─────────────────────────────────────────────────
 
 % Initial guess (log-space) — edit to reflect your engineering intuition
-Q1_0 = 1e-1;  Q2_0 = 1e-1;  Q3_0 = 1e-1;  Q4_0 = 1e-1;  Qi_0 = 1e1;
-% Q1_0 = eps;  Q2_0 = eps;  Q3_0 = eps;  Q4_0 = eps;  Qi_0 = 20;
+ % Q1_0 = 1e-1;  Q2_0 = 1e-1;  Q3_0 = 1e-1;  Q4_0 = 1e-1;  Qi_0 = 1e1;
+% Q1_0 = eps;  Q2_0 = eps;  Q3_0 = eps;  Q4_0 = eps;  Qi_0 = 200;
+Q1_0 = 1;  Q2_0 = 1;  Q3_0 = 1;  Q4_0 = 1;  Qi_0 = 1;
 log_q0 = log([Q1_0, Q2_0, Q3_0, Q4_0, Qi_0]);
 
-stopFcn  = @(~, optimValues, ~) optimValues.fval < MSE_PIDF;  % stop when LQI beats PIDF
-% fminsearch options
-opts_opt = optimset('Display',    'iter',  ...
-                    'TolX',       1e-15,    ...
-                    'TolFun',     1e-15,    ...
+outputFcn = @(~, ov, state) recordAndStop(ov, state, MSE_PIDF);
+
+opts_opt = optimset('Display',     'iter', ...
+                    'TolX',        1e-15,  ...
+                    'TolFun',      1e-15,  ...
                     'MaxFunEvals', 1e12,   ...
-                    'MaxIter',     1e12, ...
-                    'OutputFcn',   stopFcn);
+                    'MaxIter',     1e12,   ...
+                    'OutputFcn',   outputFcn);
 
 % Wrap objective so fminsearch only sees log_q
 objFun = @(log_q) trackingCost(log_q, OL_200, plant_aug, integrator, sumblk1, x_tgt_T, time_vector, n_states);
@@ -99,6 +100,12 @@ if J_best < MSE_PIDF
 else
     fprintf('Result: LQI did NOT beat PIDF within iteration budget\n');
 end
+figure;
+semilogy(opt_hist(:,1), opt_hist(:,2), 'b-o', 'MarkerSize', 3, 'LineWidth', 1); hold on;
+yline(MSE_PIDF, 'r--', 'LineWidth', 1.5, 'Label', 'PIDF baseline');
+yline(J_best,   'g--', 'LineWidth', 1.5, 'Label', 'Best LQI');
+xlabel('Iteration');  ylabel('MSE (log scale)');
+title('Optimisation convergence');  grid on;
 
 % ── Rebuild and plot the best closed-loop system ─────────────────────────
 Q_best   = diag(q_best);
@@ -128,7 +135,7 @@ Optimal_CL_manual_stable = isstable(Optimal_CL_manual);
 x_sim_manual = lsim(Optimal_CL_manual, x_tgt_T, time_vector, 'zoh'); MSE_manual=mean((x_sim_manual - x_tgt_T).^2);
 
 %%
-close all;
+%close all;
 figure;
 plot(time_vector, x_tgt_T,  'LineWidth', 1);  hold on;
 plot(time_vector, x_sim_PIDF, '--',  'LineWidth', 1);
@@ -203,4 +210,17 @@ function J = trackingCost(log_q, OL_200, plant_aug, integrator, ...
     J = mean((x_sim - x_tgt_T).^2);
 
     fprintf('  J = %.6f  |  Q = [%s]\n', J, num2str(q, '%.2e  '));
+end
+
+function stop = recordAndStop(optimValues, state, MSE_PIDF)
+    persistent history
+    if strcmp(state, 'init')
+        history = [];
+    end
+    stop = false;
+    if strcmp(state, 'iter')
+        history = [history; optimValues.iteration, optimValues.fval];
+        assignin('base', 'opt_hist', history);
+        stop = optimValues.fval < MSE_PIDF;
+    end
 end
