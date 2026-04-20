@@ -61,7 +61,7 @@ bodeplot(CL_PIDF_15Hz,opts1); grid on;
 %     i= i - 250
 for 
     Q = diag([Q1 , Q2 ,Q3 , Q4 , Qi]); %eps*eye(1,n_states),
-    R = eye(size(OL_200.B,2)); 
+    %R = eye(size(OL_200.B,2)); 
     K_lqi = lqi(OL_200, Q, R)% Design the LQI controller for the original system
 
     K  = K_lqi(1:n_states);      % state feedback gains
@@ -69,15 +69,13 @@ for
     controller = ss([], [], [], -[K, Ki]); controller.InputName = [ OL_200.StateName ; {'xi'}]; controller.OutputName = {'i_sv'}; %   u = -[K  Ki] * [x; xi]
     Optimal_CL = connect(plant_aug,  controller , integrator, sumblk1, 'x_ref','y_xT');
     stable = isstable( Optimal_CL)
-    if stable == 0
-        error('Stopping: Unstable closed loop');
-    else
-        bodeplot(Optimal_CL,opts1);
-        x_sim_T_optimal = lsim(Optimal_CL ,  x_tgt_T, time_vector,'zoh');
-        m = max( x_sim_T_optimal);
-        if m > max(x_tgt_T)*2
-            error('Stopping: Optimal is blowing up! i = %e \n x_sim= %e', i , m);
-        end
+    bodeplot(Optimal_CL,opts1);
+
+    % Simulation
+    x_sim_T_optimal = lsim(Optimal_CL ,  x_tgt_T, time_vector,'zoh');
+    m = max( x_sim_T_optimal);
+    if m > max(x_tgt_T)*2
+        error('Stopping: Optimal is blowing up! i = %e \n x_sim= %e', i , m);
     end
 end
 
