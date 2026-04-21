@@ -160,7 +160,6 @@ ddx_sim_PIDF = secondDerivativeTime(x_sim_PIDF , Ts);
 ddx_sim_best = secondDerivativeTime(x_sim_best , Ts);
 ddx_sim_manual = secondDerivativeTime(x_sim_manual , Ts);
 
-
 % Response Spectra settings
 f_i=0.1; %freq inicial
 f_n=30;  %freq final
@@ -191,74 +190,3 @@ plot(f_vector, picos_x_sim_best,'.-', 'LineWidth' , 2, 'Color', color3,'DisplayN
 plot(f_vector, picos_x_sim_manual,'.-', 'LineWidth' , 2, 'Color', color4,'DisplayName',sprintf( 'Manual LQI (sim) -  MSE= %.2e',      mean((picos_x_tgt_T-picos_x_sim_manual).^2 )));% - Normal
 
 fontsize(scale=1.8);set(fig8, 'WindowState', 'maximized');
-
-
-%% ── Objective function ────────────────────────────────────────────────────
-function J = trackingCost(log_q, OL_200, plant_aug, integrator, ...
-                           sumblk1, x_tgt_T, time_vector, n_states)
-    % Recover weights from log-space
-    q   = exp(log_q);           % [Q1 Q2 Q3 Q4 Qi]
-    Q   = diag(q);
-    R   = 1;
-
-    % ── Build LQI controller ──────────────────────────────────────────────
-    try
-        K_lqi = lqi(OL_200, Q, R);
-    catch
-        J = 1e12;   % lqi failed → penalise heavily
-        return
-    end
-
-    K  = K_lqi(1:n_states);
-    Ki = K_lqi(end);
-
-    controller = ss([], [], [], -[K, Ki]);
-    controller.InputName  = [OL_200.StateName; {'xi'}];
-    controller.OutputName = {'i_sv'};
-
-    % ── Close the loop ────────────────────────────────────────────────────
-    try
-        Optimal_CL = connect(plant_aug, controller, integrator, sumblk1, 'x_ref', 'y_xT');
-    catch
-        J = 1e12;
-        return
-    end
-
-    % ── Stability guard ───────────────────────────────────────────────────
-    if ~isstable(Optimal_CL)
-        J = 1e12;
-        return
-    end
-
-    % ── Simulate & compute tracking error ────────────────────────────────
-    try
-        x_sim = lsim(Optimal_CL, x_tgt_T, time_vector, 'zoh');
-    catch
-        J = 1e12;
-        return
-    end
-
-    % Blow-up guard
-    if max(abs(x_sim)) > max(abs(x_tgt_T)) * 1.5
-        J = 1e12;
-        return
-    end
-
-    % mean-square tracking error  (minimise this)
-    J = mean((x_sim - x_tgt_T).^2);
-
-    fprintf('  J = %.2e  |  Q = [%s]\n', J, num2str(q, '%.2e  '));
-end
-
-function stop = recordAndStop(optimValues, state, MSE_PIDF)
-    persistent history
-    if strcmp(state, 'init')
-        history = [];
-    end
-    stop = false;
-    if strcmp(state, 'iter')
-        history = [history; optimValues.iteration, optimValues.fval];
-        assignin('base', 'opt_hist', history);
-        % stop = optimValues.fval < MSE_PIDF;
-    end
-end
