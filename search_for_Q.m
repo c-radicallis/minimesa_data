@@ -123,7 +123,7 @@ Optimal_CL_best = connect(plant_aug, controller_best, integrator, sumblk1, 'x_re
 x_sim_best = lsim(Optimal_CL_best, x_tgt_T, time_vector, 'zoh');
 
 %% Manual tunning
-Q_manual = diag([eye(1,n_states) , 1.5 ]) %eps*eye(1,n_states),
+Q_manual = diag([ones(1,n_states) , 1e1 ]) %eps*eye(1,n_states),
 R = eye(size(OL_200.B,2));
 K_lqi_manual = lqi(OL_200, Q_manual, R)% Design the LQI controller for the original system
 
@@ -134,7 +134,8 @@ Optimal_CL_manual = connect(plant_aug,  controller , integrator, sumblk1, 'x_ref
 Optimal_CL_manual_stable = isstable(Optimal_CL_manual);
 x_sim_manual = lsim(Optimal_CL_manual, x_tgt_T, time_vector, 'zoh'); MSE_manual=mean((x_sim_manual - x_tgt_T).^2);
 
-%close all;
+%%
+close all;
 figure;hold on;
 plot(time_vector, x_tgt_T,  'g','LineWidth', 1);  set(gca, 'ColorOrderIndex', 1);  % reset counter
 plot(time_vector, x_sim_PIDF, '-',  'LineWidth', 1);
@@ -163,7 +164,7 @@ ddx_sim_manual = secondDerivativeTime(x_sim_manual , Ts);
 % Response Spectra settings
 f_i=0.1; %freq inicial
 f_n=30;  %freq final
-n_points = 1e2;
+n_points = 5e2;
 f_vector = logspace( log10(f_i) , log10(f_n) , n_points);
 
 [picos_ddx_tgt_T , picos_x_tgt_T] = ResponseSpectrum( time_vector , x_tgt_T , ddx_tgt_T, f_vector , 1);
@@ -174,19 +175,20 @@ f_vector = logspace( log10(f_i) , log10(f_n) , n_points);
 %%
 fig8 = figure(8);subplot(121); grid on;xlabel('Frequency (Hz)');ylabel('Acceleration (m/s^2)');title('Acceleration Response Spectra - Fault Normal');xlim([1 30]);%ylim([0 ceil(max(picos_ddx_acq_T_20hz(1:385,1))) ])
 subplot(122);grid on;xlabel('Frequency (Hz)');ylabel('Displacement (m)');title('Displacement Response Spectra - Fault Normal');xlim([0.1 10]);
-color1 = 'blue';color2 = 'red' ;color3 = '#EDB120'; color4 = 'black';color5='#77AC30';color6='#00fff7';% Define colors for lines 1/3 and 2/4
+% color1 = 'blue';color2 = 'red' ;color3 = '#EDB120'; color4 = 'black';color5='#77AC30';color6='#00fff7';% Define colors for lines 1/3 and 2/4
+RGB =  get(groot,"FactoryAxesColorOrder"); H = compose("#%02X%02X%02X",round(RGB*255)); color1 = 'g';color2 = H(1) ;color3 = H(2) ; color4 = H(3);
 
 figure(fig8); subplot(121); grid on; hold on;legend()
 plot(f_vector, picos_ddx_tgt_T     ,'-' , 'LineWidth' , 2, 'Color', color1, 'DisplayName', 'Target');% - Normal
-plot(f_vector, picos_ddx_sim_PIDF,'.-', 'LineWidth' , 2, 'Color', color3,'DisplayName',sprintf( 'PIDF ω_c=15Hz (sim) -  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_sim_PIDF).^2 )));% - Normal
-plot(f_vector, picos_ddx_sim_best,'.-', 'LineWidth' , 2, 'Color', color6,'DisplayName',sprintf( 'Optimised LQI (sim) -  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_sim_best).^2 )));% - Normal
-plot(f_vector, picos_ddx_sim_manual,'.-', 'LineWidth' , 2, 'Color', color5,'DisplayName',sprintf( 'Manual LQI (sim) -  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_sim_manual).^2 )));% - Normal
+plot(f_vector, picos_ddx_sim_PIDF,'.-', 'LineWidth' , 2, 'Color', color2,'DisplayName',sprintf( 'PIDF ω_c=15Hz (sim) -  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_sim_PIDF).^2 )));% - Normal
+plot(f_vector, picos_ddx_sim_best,'.-', 'LineWidth' , 2, 'Color', color3,'DisplayName',sprintf( 'Optimised LQI (sim) -  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_sim_best).^2 )));% - Normal
+plot(f_vector, picos_ddx_sim_manual,'.-', 'LineWidth' , 2, 'Color', color4,'DisplayName',sprintf( 'Manual LQI (sim) -  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_sim_manual).^2 )));% - Normal
 
 subplot(122); grid on;legend();hold on;
 plot(f_vector, picos_x_tgt_T     ,'-' , 'LineWidth' , 2, 'Color', color1, 'DisplayName', 'Target ');%- Normal
-plot(f_vector, picos_x_sim_PIDF,'.-', 'LineWidth' , 2, 'Color', color3,'DisplayName',sprintf( 'PIDF ω_c=15Hz (sim) -  MSE= %.2e',      mean((picos_x_tgt_T-picos_x_sim_PIDF).^2 )));% - Normal
-plot(f_vector, picos_x_sim_best,'.-', 'LineWidth' , 2, 'Color', color6,'DisplayName',sprintf( 'Optimised LQI (sim) -  MSE= %.2e',      mean((picos_x_tgt_T-picos_x_sim_best).^2 )));% - Normal
-plot(f_vector, picos_x_sim_manual,'.-', 'LineWidth' , 2, 'Color', color5,'DisplayName',sprintf( 'Manual LQI (sim) -  MSE= %.2e',      mean((picos_x_tgt_T-picos_x_sim_manual).^2 )));% - Normal
+plot(f_vector, picos_x_sim_PIDF,'.-', 'LineWidth' , 2, 'Color', color2,'DisplayName',sprintf( 'PIDF ω_c=15Hz (sim) -  MSE= %.2e',      mean((picos_x_tgt_T-picos_x_sim_PIDF).^2 )));% - Normal
+plot(f_vector, picos_x_sim_best,'.-', 'LineWidth' , 2, 'Color', color3,'DisplayName',sprintf( 'Optimised LQI (sim) -  MSE= %.2e',      mean((picos_x_tgt_T-picos_x_sim_best).^2 )));% - Normal
+plot(f_vector, picos_x_sim_manual,'.-', 'LineWidth' , 2, 'Color', color4,'DisplayName',sprintf( 'Manual LQI (sim) -  MSE= %.2e',      mean((picos_x_tgt_T-picos_x_sim_manual).^2 )));% - Normal
 
 fontsize(scale=1.8);set(fig8, 'WindowState', 'maximized');
 
