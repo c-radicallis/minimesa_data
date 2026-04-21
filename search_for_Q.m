@@ -25,7 +25,7 @@ x_drv_T_0 = x_drv_T_0*1e3; % convert to mm
 clear x_drv_L_0  x_drv_V_0
 %  Data P15
 folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
-file = 'pink_noise_40Hz_T3mm_0_P10.acq'; % load output acq
+file = 'pink_noise_40Hz_T3mm_0_P15.acq'; % load output acq
 LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
 x_acq_T = x_acq_T*1e3;
 sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
@@ -56,6 +56,14 @@ scale = 0.16;
 x_tgt_T = scale*x_tgt_T; 
 ddx_tgt_T = scale*ddx_tgt_T; 
 
+% Response Spectra settings
+f_i=0.1; %freq inicial
+f_n=30;  %freq final
+n_points = 1e2;
+f_vector = logspace( log10(f_i) , log10(f_n) , n_points);
+[picos_ddx_tgt_T , picos_x_tgt_T] = ResponseSpectrum( time_vector , x_tgt_T , ddx_tgt_T, f_vector , 1);
+
+%%
 x_sim_PIDF = lsim(CL_PIDF_15Hz, x_tgt_T, time_vector, 'zoh');     x_MSE_PIDF = mean((x_sim_PIDF - x_tgt_T).^2);
 ddx_sim_PIDF = lsim(CL_PIDF_15Hz, ddx_tgt_T, time_vector, 'zoh'); ddx_MSE_PIDF = mean(( ddx_sim_PIDF -  ddx_tgt_T).^2);
 
@@ -64,21 +72,21 @@ ddx_sim_PIDF = lsim(CL_PIDF_15Hz, ddx_tgt_T, time_vector, 'zoh'); ddx_MSE_PIDF =
 % Initial guess (log-space) — edit to reflect your engineering intuition
  % Q1_0 = 1e-1;  Q2_0 = 1e-1;  Q3_0 = 1e-1;  Q4_0 = 1e-1;  Qi_0 = 1e1;
 % Q1_0 = eps;  Q2_0 = eps;  Q3_0 = eps;  Q4_0 = eps;  Qi_0 = 200;
-Q1_0 = 1;  Q2_0 = 1;  Q3_0 = 1;  Q4_0 = 1;  Qi_0 = 1;
+Q1_0 = 1e-4;  Q2_0 = 1e-4;  Q3_0 = 1e-4;  Q4_0 = 1e-4;  Qi_0 = 1e-1;
 log_q0 = log([Q1_0, Q2_0, Q3_0, Q4_0, Qi_0]);
 
 outputFcn = @(~, ov, state) recordAndStop(ov, state);
 
 opts_opt = optimset('Display',     'iter', ...
-                    'TolX',        1e-15,  ...
-                    'TolFun',      1e-15,  ...
+                    'TolX',        1e-5,  ...
+                    'TolFun',      1e-12,  ...
                     'MaxFunEvals', 1e12,   ...
                     'MaxIter',     1e12,   ...
                     'OutputFcn',   outputFcn);
 
 % Wrap objective so fminsearch only sees log_q
 % objFun = @(log_q) trackingCost(log_q, OL_200, plant_aug, integrator, sumblk1, x_tgt_T, time_vector, n_states);
-objFun = @(log_q) AccelTrackingCost(log_q, OL_200, plant_aug, integrator, sumblk1, ddx_tgt_T, time_vector, n_states);
+objFun = @(log_q) AccelSpectraCost(log_q, OL_200, plant_aug, integrator, sumblk1, picos_ddx_tgt_T , f_vector, ddx_tgt_T, time_vector, n_states);
 
 fprintf('=== Starting Q optimisation ===\n');
 [log_q_best, J_best] = fminsearch(objFun, log_q0, opts_opt);
@@ -86,14 +94,12 @@ fprintf('=== Starting Q optimisation ===\n');
 % ── Recover & display best weights ───────────────────────────────────────
 q_best = exp(log_q_best); Q1_best = q_best(1); Q2_best = q_best(2); Q3_best = q_best(3); Q4_best = q_best(4); Qi_best = q_best(5);
 fprintf('\n=== Optimisation complete ===\n');
-% fprintf('PIDF ddx_MSE : %.6e\n', ddx_MSE_PIDF);
-% fprintf('Best LQI ddx_MSE : %.6f\n', J_best);
 fprintf('Best Q weights:\n');
 fprintf('  Q1 = %.4e\n  Q2 = %.4e\n  Q3 = %.4e\n  Q4 = %.4e\n  Qi = %.4e\n', Q1_best, Q2_best, Q3_best, Q4_best, Qi_best);
 
 figure;
 semilogy(opt_hist(:,1), opt_hist(:,2), 'b-o', 'MarkerSize', 3, 'LineWidth', 1); hold on;
-yline(ddx_MSE_PIDF, 'r--', 'LineWidth', 1.5, 'Label', 'PIDF baseline');
+% yline(ddx_MSE_PIDF, 'r--', 'LineWidth', 1.5, 'Label', 'PIDF baseline');
 yline(J_best,   'g--', 'LineWidth', 1.5, 'Label', 'Best LQI');
 xlabel('Iteration');  ylabel('MSE (log scale)');
 title('Optimisation convergence');  grid on;
@@ -115,7 +121,7 @@ x_sim_best = lsim(Optimal_CL_best, x_tgt_T, time_vector, 'zoh');    x_MSE_best =
 ddx_sim_best = lsim(Optimal_CL_best, ddx_tgt_T, time_vector, 'zoh');ddx_MSE_best = mean(( ddx_sim_best -  ddx_tgt_T).^2);
 
 %% Manual tunning
-Q_manual = diag([ones(1,n_states) , 1e1 ]) %eps*eye(1,n_states),
+Q_manual = diag([1e-4*ones(1,n_states) , 0.1 ]) % para Kp=10  usar Qi=10  % Kp=15 usar [1e-4*ones(1,n_states) , 0.1 ]
 R = eye(size(OL_200.B,2));
 K_lqi_manual = lqi(OL_200, Q_manual, R)% Design the LQI controller for the original system
 
@@ -127,8 +133,7 @@ Optimal_CL_manual_stable = isstable(Optimal_CL_manual);
 x_sim_manual = lsim(Optimal_CL_manual, x_tgt_T, time_vector, 'zoh'); x_MSE_manual=mean((x_sim_manual - x_tgt_T).^2);
 ddx_sim_manual = lsim(Optimal_CL_manual, ddx_tgt_T, time_vector, 'zoh'); ddx_MSE_manual=mean((ddx_sim_manual - ddx_tgt_T).^2);
 
-%%
-close all;
+%close all;
 figure;hold on;
 plot(time_vector, x_tgt_T,  'g','LineWidth', 1);  set(gca, 'ColorOrderIndex', 1);  % reset counter
 plot(time_vector, x_sim_PIDF, '-',  'LineWidth', 1);
@@ -136,9 +141,9 @@ plot(time_vector, x_sim_best,'-',  'LineWidth', 1);
 plot(time_vector, x_sim_manual, '-',  'LineWidth', 1);
 xlabel('Time (s)');  ylabel('x_T');
 legend('Target', ...
-       sprintf('PIDF (x_MSE = %.2e)',        x_MSE_PIDF), ...
-       sprintf('Optimised LQI (x_MSE = %.2e)', x_MSE_best), ...
-       sprintf('Manual LQI (x_MSE = %.2e)',  x_MSE_manual));
+       sprintf('PIDF (MSE = %.2e)',        x_MSE_PIDF), ...
+       sprintf('Optimised LQI (MSE = %.2e)', x_MSE_best), ...
+       sprintf('Manual LQI ( MSE = %.2e)',  x_MSE_manual));
 grid on;
 xlim([2.5 5]); ylim('auto');
 
@@ -150,13 +155,6 @@ title('Bode - Optimised closed-loop'); grid on;legend;
 
 %% Response Spectra
 
-% Response Spectra settings
-f_i=0.1; %freq inicial
-f_n=30;  %freq final
-n_points = 5e2;
-f_vector = logspace( log10(f_i) , log10(f_n) , n_points);
-
-[picos_ddx_tgt_T , picos_x_tgt_T] = ResponseSpectrum( time_vector , x_tgt_T , ddx_tgt_T, f_vector , 1);
 [picos_ddx_sim_PIDF, picos_x_sim_PIDF] = ResponseSpectrum( time_vector , x_sim_PIDF , ddx_sim_PIDF, f_vector , 1);
 [picos_ddx_sim_best , picos_x_sim_best] = ResponseSpectrum( time_vector , x_sim_best , ddx_sim_best, f_vector , 1);
 [picos_ddx_sim_manual , picos_x_sim_manual] = ResponseSpectrum( time_vector , x_sim_manual , ddx_sim_manual, f_vector , 1);

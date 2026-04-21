@@ -1,4 +1,4 @@
-function stop = recordAndStop(optimValues, state, MSE_PIDF)
+function stop = recordAndStop(optimValues, state)
     persistent history
     if strcmp(state, 'init')
         history = [];
@@ -7,6 +7,5 @@ function stop = recordAndStop(optimValues, state, MSE_PIDF)
     if strcmp(state, 'iter')
         history = [history; optimValues.iteration, optimValues.fval];
         assignin('base', 'opt_hist', history);
-        % stop = optimValues.fval < MSE_PIDF;
     end
 end
