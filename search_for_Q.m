@@ -25,7 +25,7 @@ x_drv_T_0 = x_drv_T_0*1e3; % convert to mm
 clear x_drv_L_0  x_drv_V_0
 %  Data P15
 folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
-file = 'pink_noise_40Hz_T3mm_0_P15.acq'; % load output acq
+file = 'pink_noise_40Hz_T3mm_0_P10.acq'; % load output acq
 LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
 x_acq_T = x_acq_T*1e3;
 sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
@@ -66,20 +66,24 @@ f_vector = logspace( log10(f_i) , log10(f_n) , n_points);
 %%
 x_sim_PIDF = lsim(CL_PIDF_15Hz, x_tgt_T, time_vector, 'zoh');     x_MSE_PIDF = mean((x_sim_PIDF - x_tgt_T).^2);
 ddx_sim_PIDF = lsim(CL_PIDF_15Hz, ddx_tgt_T, time_vector, 'zoh'); ddx_MSE_PIDF = mean(( ddx_sim_PIDF -  ddx_tgt_T).^2);
+[picos_ddx_sim_PIDF, picos_x_sim_PIDF] = ResponseSpectrum( time_vector , x_sim_PIDF , ddx_sim_PIDF, f_vector , 1);
 
 %% ── Run the optimisation ─────────────────────────────────────────────────
 
 % Initial guess (log-space) — edit to reflect your engineering intuition
- % Q1_0 = 1e-1;  Q2_0 = 1e-1;  Q3_0 = 1e-1;  Q4_0 = 1e-1;  Qi_0 = 1e1;
+ Q1_0 = 1;  Q2_0 = 1;  Q3_0 = 1;  Q4_0 = 1;  Qi_0 = 10;
 % Q1_0 = eps;  Q2_0 = eps;  Q3_0 = eps;  Q4_0 = eps;  Qi_0 = 200;
-Q1_0 = 1e-4;  Q2_0 = 1e-4;  Q3_0 = 1e-4;  Q4_0 = 1e-4;  Qi_0 = 1e-1;
+%Q1_0 = 1e-4;  Q2_0 = 1e-4;  Q3_0 = 1e-4;  Q4_0 = 1e-4;  Qi_0 = 1e-1;
+%Q1 = 4.5183e+14; Q2 = 3.4447e-01; Q3 = 4.0431e+03; Q4 = 5.1600e-02; Qi =3.1503e+15;  % for Kp = 10
+%Q1 = 3.1293e-03  ;Q2 = 1.8633e-03  ;Q3 = 3.9985e-04  ;Q4 = 1.2651e-05  ;Qi= 9.6979e-01;  % for Kp = 15   
+
 log_q0 = log([Q1_0, Q2_0, Q3_0, Q4_0, Qi_0]);
 
 outputFcn = @(~, ov, state) recordAndStop(ov, state);
 
 opts_opt = optimset('Display',     'iter', ...
                     'TolX',        1e-5,  ...
-                    'TolFun',      1e-12,  ...
+                    'TolFun',      1e-4,  ...
                     'MaxFunEvals', 1e12,   ...
                     'MaxIter',     1e12,   ...
                     'OutputFcn',   outputFcn);
@@ -121,7 +125,7 @@ x_sim_best = lsim(Optimal_CL_best, x_tgt_T, time_vector, 'zoh');    x_MSE_best =
 ddx_sim_best = lsim(Optimal_CL_best, ddx_tgt_T, time_vector, 'zoh');ddx_MSE_best = mean(( ddx_sim_best -  ddx_tgt_T).^2);
 
 %% Manual tunning
-Q_manual = diag([1e-4*ones(1,n_states) , 0.1 ]) % para Kp=10  usar Qi=10  % Kp=15 usar [1e-4*ones(1,n_states) , 0.1 ]
+Q_manual = diag([ones(1,n_states) , 10 ]) % para Kp=10  usar Qi=10  % Kp=15 usar [1e-4*ones(1,n_states) , 0.1 ]
 R = eye(size(OL_200.B,2));
 K_lqi_manual = lqi(OL_200, Q_manual, R)% Design the LQI controller for the original system
 
@@ -139,7 +143,7 @@ plot(time_vector, x_tgt_T,  'g','LineWidth', 1);  set(gca, 'ColorOrderIndex', 1)
 plot(time_vector, x_sim_PIDF, '-',  'LineWidth', 1);
 plot(time_vector, x_sim_best,'-',  'LineWidth', 1);
 plot(time_vector, x_sim_manual, '-',  'LineWidth', 1);
-xlabel('Time (s)');  ylabel('x_T');
+xlabel('Time (s)');  ylabel('x_T (m)');
 legend('Target', ...
        sprintf('PIDF (MSE = %.2e)',        x_MSE_PIDF), ...
        sprintf('Optimised LQI (MSE = %.2e)', x_MSE_best), ...
@@ -155,7 +159,6 @@ title('Bode - Optimised closed-loop'); grid on;legend;
 
 %% Response Spectra
 
-[picos_ddx_sim_PIDF, picos_x_sim_PIDF] = ResponseSpectrum( time_vector , x_sim_PIDF , ddx_sim_PIDF, f_vector , 1);
 [picos_ddx_sim_best , picos_x_sim_best] = ResponseSpectrum( time_vector , x_sim_best , ddx_sim_best, f_vector , 1);
 [picos_ddx_sim_manual , picos_x_sim_manual] = ResponseSpectrum( time_vector , x_sim_manual , ddx_sim_manual, f_vector , 1);
 
@@ -180,10 +183,15 @@ plot(f_vector, picos_x_sim_manual,'.-', 'LineWidth' , 2, 'Color', color4,'Displa
 fontsize(scale=1.8);set(fig8, 'WindowState', 'maximized');
 
 %%
-% ddx_sim = lsim(Optimal_CL_best, ddx_tgt_T, time_vector, 'zoh');
-% ddx_sim_foh = lsim(Optimal_CL_best, ddx_tgt_T, time_vector, 'foh');
-% figure; hold on, grid on;
-% plot(time_vector,ddx_sim);
-% plot(time_vector,ddx_sim_foh);
-% plot(time_vector,ddx_sim_best);
-% legend('from lsim zoh', 'from lsim foh','from secondDerivativeTime')
+baseFolder = 'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\search_for_Q_results';   % Base folder where you want to create the timestamped subfolder
+ts = datestr(now, 'yyyymmdd_HHMM');  % Create a timestamp string, e.g. '20250709_1530'
+timeDir = fullfile(baseFolder, ts);  % Build the full path to the new folder
+if ~exist(timeDir, 'dir')% Create it if it doesn't already exist
+    mkdir(timeDir)
+end
+
+exportgraphics(figure(1),fullfile(timeDir,'Convergence.png'),'Resolution', 300,'BackgroundColor', 'white','ContentType', 'image');
+exportgraphics(figure(2),fullfile(timeDir,'Ref_Tracking.png'),'Resolution', 300,'BackgroundColor', 'white','ContentType', 'image');
+exportgraphics(figure(3),fullfile(timeDir,'Bode.png'),'Resolution', 300,'BackgroundColor', 'white','ContentType', 'image');
+exportgraphics(fig8,fullfile(timeDir,'Response_Spectra_Tolmezzo.png'),'Resolution', 300,'BackgroundColor', 'white','ContentType', 'image');
+
