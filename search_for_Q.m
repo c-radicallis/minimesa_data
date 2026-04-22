@@ -25,7 +25,7 @@ x_drv_T_0 = x_drv_T_0*1e3; % convert to mm
 clear x_drv_L_0  x_drv_V_0
 %  Data P15
 folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
-file = 'pink_noise_40Hz_T3mm_0_P10.acq'; % load output acq
+file = 'pink_noise_40Hz_T3mm_0_P15.acq'; % load output acq
 LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
 x_acq_T = x_acq_T*1e3;
 sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
@@ -33,11 +33,13 @@ Kp=15;
 results_P15_pink = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
 OL_200 = ss(results_P15_pink.OL_est_nonLin)
 
+%%
 tuner_opts = pidtuneOptions('DesignFocus','reference-tracking'); % Tune PIDF
-cutoff_frequency = 15; % Hz
+cutoff_frequency = 12; % Hz
 PIDF   = pidtune(OL_200,'PIDF',cutoff_frequency*2*pi,tuner_opts)
 CL_PIDF_15Hz = feedback(PIDF*OL_200, 1);
 
+%%
 n_states = size(OL_200.A,1); % Create augmented state space model
 OL_200.StateName  = arrayfun(@(k) sprintf('x%d',k), 1:n_states, 'UniformOutput', false);
 
@@ -71,11 +73,11 @@ ddx_sim_PIDF = lsim(CL_PIDF_15Hz, ddx_tgt_T, time_vector, 'zoh'); ddx_MSE_PIDF =
 %% ── Run the optimisation ─────────────────────────────────────────────────
 
 % Initial guess (log-space) — edit to reflect your engineering intuition
- Q1_0 = 1;  Q2_0 = 1;  Q3_0 = 1;  Q4_0 = 1;  Qi_0 = 10;
+ % Q1_0 = 1;  Q2_0 = 1;  Q3_0 = 1;  Q4_0 = 1;  Qi_0 = 10;
 % Q1_0 = eps;  Q2_0 = eps;  Q3_0 = eps;  Q4_0 = eps;  Qi_0 = 200;
-%Q1_0 = 1e-4;  Q2_0 = 1e-4;  Q3_0 = 1e-4;  Q4_0 = 1e-4;  Qi_0 = 1e-1;
+% Q1_0 = 1e-2;  Q2_0 = 1e-2;  Q3_0 = 1e-2;  Q4_0 = 1e-2;  Qi_0 = 3;
 %Q1 = 4.5183e+14; Q2 = 3.4447e-01; Q3 = 4.0431e+03; Q4 = 5.1600e-02; Qi =3.1503e+15;  % for Kp = 10
-%Q1 = 3.1293e-03  ;Q2 = 1.8633e-03  ;Q3 = 3.9985e-04  ;Q4 = 1.2651e-05  ;Qi= 9.6979e-01;  % for Kp = 15   
+Q1_0 = 1  ;Q2_0 = 1e-03  ;Q3_0 = 1e-04  ;Q4_0 = 1e-05  ;Qi_0= 1;  % for Kp = 15   
 
 log_q0 = log([Q1_0, Q2_0, Q3_0, Q4_0, Qi_0]);
 
@@ -83,7 +85,7 @@ outputFcn = @(~, ov, state) recordAndStop(ov, state);
 
 opts_opt = optimset('Display',     'iter', ...
                     'TolX',        1e-5,  ...
-                    'TolFun',      1e-4,  ...
+                    'TolFun',      1e-5,  ...
                     'MaxFunEvals', 1e12,   ...
                     'MaxIter',     1e12,   ...
                     'OutputFcn',   outputFcn);
@@ -123,9 +125,10 @@ Optimal_CL_best = connect(plant_aug, controller_best, integrator, sumblk1, 'x_re
 
 x_sim_best = lsim(Optimal_CL_best, x_tgt_T, time_vector, 'zoh');    x_MSE_best = mean((x_sim_best - x_tgt_T).^2);
 ddx_sim_best = lsim(Optimal_CL_best, ddx_tgt_T, time_vector, 'zoh');ddx_MSE_best = mean(( ddx_sim_best -  ddx_tgt_T).^2);
+[picos_ddx_sim_best , picos_x_sim_best] = ResponseSpectrum( time_vector , x_sim_best , ddx_sim_best, f_vector , 1);
 
 %% Manual tunning
-Q_manual = diag([ones(1,n_states) , 10 ]) % para Kp=10  usar Qi=10  % Kp=15 usar [1e-4*ones(1,n_states) , 0.1 ]
+Q_manual = diag([ones(1,n_states), 10]) % para Kp=10  usar Qi=10  % Kp=15 usar [1e-4*ones(1,n_states) , 0.1 ]
 R = eye(size(OL_200.B,2));
 K_lqi_manual = lqi(OL_200, Q_manual, R)% Design the LQI controller for the original system
 
@@ -157,9 +160,6 @@ bodeplot(Optimal_CL_best, opts1);
 bodeplot(Optimal_CL_manual, opts1);
 title('Bode - Optimised closed-loop'); grid on;legend;
 
-%% Response Spectra
-
-[picos_ddx_sim_best , picos_x_sim_best] = ResponseSpectrum( time_vector , x_sim_best , ddx_sim_best, f_vector , 1);
 [picos_ddx_sim_manual , picos_x_sim_manual] = ResponseSpectrum( time_vector , x_sim_manual , ddx_sim_manual, f_vector , 1);
 
 %%

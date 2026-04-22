@@ -21,7 +21,7 @@ x_drv_T_0 = x_drv_T_0*1e3; % convert to mm
 clear x_drv_L_0  x_drv_V_0
 %%  Identification Data 
 folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
-file = 'pink_noise_40Hz_T3mm_0_P10.acq'; % load output acq 
+file = 'pink_noise_40Hz_T3mm_0_P7.acq'; % load output acq 
 LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
 x_acq_T = x_acq_T*1e3;
 sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped

@@ -48,7 +48,7 @@ function J = AccelSpectraCost(log_q, OL_200, plant_aug, integrator,sumblk1, pico
         return
     end
 
-    [picos_ddx , ~] = ResponseSpectrum( time_vector , ddx_sim , ddx_sim, f_vector , 0);
+    picos_ddx = ResponseSpectrumForCost( time_vector , ddx_sim );
     % mean-square accel tracking error  (minimise this)
     J = mean((picos_ddx - picos_ddx_tgt_T).^2);
 
