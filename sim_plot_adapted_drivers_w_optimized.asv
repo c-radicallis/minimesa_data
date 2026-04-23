@@ -29,6 +29,12 @@ load('optimized_benchmark_results\OL200_from_P10.mat')
 % id_results = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
 % OL_200 = ss(id_results.OL_est_nonLin)
 
+%% Tuning PIDF
+tuner_opts = pidtuneOptions('DesignFocus','reference-tracking'); % Tune PIDF
+cutoff_frequency = 7; % Hz
+PIDF   = pidtune(OL_200,'PIDF',cutoff_frequency*2*pi,tuner_opts)
+CL_PIDF = feedback(PIDF*OL_200, 1);
+
 %% Create augmented state space system
 n_states = size(OL_200.A,1); % Create augmented state space model
 OL_200.StateName  = arrayfun(@(k) sprintf('x%d',k), 1:n_states, 'UniformOutput', false);
@@ -50,54 +56,17 @@ if max_tgt>limit
 end
 max_abs_x_tgt_T = max( abs(x_tgt_T ))
 max_abs_x_tgt_L = max( abs(x_tgt_L ))
+% Compute target Response Spectra and define settings
+f_i=0.1; %freq inicial
+f_n=20;  %freq final
+n_points = 1e2;
+f_vector = logspace( log10(f_i) , log10(f_n) , n_points);
+[picos_ddx_tgt_T , picos_x_tgt_T] = ResponseSpectrum( time_vector , x_tgt_T , ddx_tgt_T, f_vector , 1);
 
-%% ── Run the optimisation of Q
-Q1 = 4.5183e+14; Q2 = 3.4447e-01; Q3 = 4.0431e+03; Q4 = 5.1600e-02; Qi =3.1503e+15;  % for Kp = 10 % Initial guess (log-space) — edit to reflect your engineering intuition
-log_q0 = log([Q1_0, Q2_0, Q3_0, Q4_0, Qi_0]);
-outputFcn = @(~, ov, state) recordAndStop(ov, state);
-opts_opt = optimset('Display',     'iter', ...
-                    'TolX',        1e-5,  ...
-                    'TolFun',      1e-5,  ...
-                    'MaxFunEvals', 1e12,   ...
-                    'MaxIter',     1e12,   ...
-                    'OutputFcn',   outputFcn);
-
-objFun = @(log_q) AccelSpectraCost(log_q, OL_200, plant_aug, integrator, sumblk1, picos_ddx_tgt_T , f_vector, ddx_tgt_T, time_vector, n_states);
-
-fprintf('=== Starting Q optimisation ===\n');
-[log_q_best, J_best] = fminsearch(objFun, log_q0, opts_opt);
-
-% ── Recover & display best weights ───────────────────────────────────────
-q_best = exp(log_q_best); Q1_best = q_best(1); Q2_best = q_best(2); Q3_best = q_best(3); Q4_best = q_best(4); Qi_best = q_best(5);
-fprintf('\n=== Optimisation complete ===\n');
-fprintf('Best Q weights:\n');
-fprintf('  Q1 = %.4e\n  Q2 = %.4e\n  Q3 = %.4e\n  Q4 = %.4e\n  Qi = %.4e\n', Q1_best, Q2_best, Q3_best, Q4_best, Qi_best);
-
-Q_best   = diag(q_best);
-R        = 1;
-K_lqi_best = lqi(OL_200, Q_best, R)
-K        = K_lqi_best(1:n_states);
-Ki       = K_lqi_best(end);
-
-controller_best = ss([], [], [], -[K, Ki]);
-controller_best.InputName  = [OL_200.StateName; {'xi'}];
-controller_best.OutputName = {'i_sv'};
-
-CL_LQI = connect(plant_aug, controller_best, integrator, sumblk1, 'x_ref', 'y_xT');
-
-x_T_LQI = lsim(CL_LQI ,  x_tgt_T , time_vector,'zoh');
-ddx_T_LQI = secondDerivativeTime(x_T_LQI , t_step);
-x_L_LQI = lsim(CL_LQI ,  x_tgt_L , time_vector,'zoh');
-ddx_L_LQI = secondDerivativeTime(x_L_LQI , t_step);
-
-%% Tuning PIDF  and running simulations
-tuner_opts = pidtuneOptions('DesignFocus','reference-tracking'); % Tune PIDF
-cutoff_frequency = 7; % Hz
-PIDF   = pidtune(OL_200,'PIDF',cutoff_frequency*2*pi,tuner_opts)
-CL_PIDF = feedback(PIDF*OL_200, 1);
-x_T_tuned = lsim(CL_PIDF ,  x_tgt_T , time_vector,'zoh');
+%%
+x_T_tuned = lsim(G_xT_xref_tuned ,  x_tgt_T , time_vector,'zoh');
 ddx_T_tuned = secondDerivativeTime(x_T_tuned , t_step);
-x_L_tuned = lsim(CL_PIDF ,  x_tgt_L , time_vector,'zoh');
+x_L_tuned = lsim(G_xT_xref_tuned ,  x_tgt_L , time_vector,'zoh');
 ddx_L_tuned = secondDerivativeTime(x_L_tuned , t_step);
 
 %% Lauch Adapt.exe % note the empty quotes "" are the window title placeholder
@@ -147,34 +116,36 @@ x_L_acq_2 = lsim(G_xT_xref ,  x_drv_L_2 , time_vector,'zoh');
 ddx_L_acq_2 = secondDerivativeTime(x_L_acq_2 , t_step);
 writeTXT_then_LTF(time_vector,[x_T_acq_2,x_L_acq_2],[ddx_T_acq_2,ddx_L_acq_2],folder, [ name, '_2.ACQ.txt' ]); 
 
-%% Response Spectra settings
+%% Create Figures - Transversal
+close all;
+
+% Response Spectra settings
 f_i=0.1; %freq inicial
-f_n=20;  %freq final
+f_n=30;  %freq final
 n_points = 5e2;
-f_vector_accel = logspace( log10(f_i) , log10(f_n) , n_points);
-f_vector_disp = f_vector_accel(1:200);
+f_vector = logspace( log10(f_i) , log10(f_n) , n_points);
 
 % Finding Response Spectre  of Target
-[picos_ddx_tgt_T , picos_x_tgt_T] = ResponseSpectrum(f_vector_accel, ddx_tgt_T, x_tgt_T, f_vector_disp);
-[picos_ddx_tgt_L , picos_x_tgt_L] = ResponseSpectrum(f_vector_accel, ddx_tgt_L, x_tgt_L, f_vector_disp);
+[picos_ddx_tgt_T , picos_x_tgt_T] = ResponseSpectrum( time_vector , x_tgt_T , ddx_tgt_T, f_vector , 1);
+[picos_ddx_tgt_L , picos_x_tgt_L] = ResponseSpectrum( time_vector , x_tgt_L , ddx_tgt_L, f_vector , 1);
 
 % Response Spectre  of Optimal
-[picos_ddx_T_tuned , picos_x_T_tuned] = ResponseSpectrum( f_vector_accel, ddx_T_tuned, x_T_tuned , f_vector_disp);
-[picos_ddx_L_tuned , picos_x_L_tuned] = ResponseSpectrum( f_vector_accel, ddx_L_tuned, x_L_tuned , f_vector_disp);
+[picos_ddx_T_tuned , picos_x_T_tuned] = ResponseSpectrum( time_vector , x_T_tuned , ddx_T_tuned, f_vector , 1);
+[picos_ddx_L_tuned , picos_x_L_tuned] = ResponseSpectrum( time_vector , x_L_tuned , ddx_L_tuned, f_vector , 1);
 
 % Response Spectre  of Optimal
-[picos_ddx_T_LQI , picos_x_T_LQI] = ResponseSpectrum( f_vector_accel, ddx_T_LQI, x_T_LQI , f_vector_disp);
-[picos_ddx_L_LQI , picos_x_L_LQI] = ResponseSpectrum( f_vector_accel, ddx_L_LQI, x_L_LQI , f_vector_disp);
+[picos_ddx_T_LQI , picos_x_T_LQI] = ResponseSpectrum( time_vector , x_T_LQI , ddx_T_LQI, f_vector , 1);
+[picos_ddx_L_LQI , picos_x_L_LQI] = ResponseSpectrum( time_vector , x_L_LQI , ddx_L_LQI, f_vector , 1);
 
-%% Computing Response spectra of Adapted
-[picos_ddx_T_acq_0  , picos_x_T_acq_0 ] = ResponseSpectrum( f_vector_accel, ddx_T_acq_0 , x_T_acq_0, f_vector_disp);
-[picos_ddx_T_acq_1  , picos_x_T_acq_1 ] = ResponseSpectrum( f_vector_accel, ddx_T_acq_1 , x_T_acq_1, f_vector_disp);
-[picos_ddx_T_acq_2  , picos_x_T_acq_2 ] = ResponseSpectrum( f_vector_accel, ddx_T_acq_2 , x_T_acq_2, f_vector_disp);
-[picos_ddx_L_acq_0  , picos_x_L_acq_0 ] = ResponseSpectrum( f_vector_accel, ddx_L_acq_0 , x_L_acq_0, f_vector_disp);
-[picos_ddx_L_acq_1  , picos_x_L_acq_1 ] = ResponseSpectrum( f_vector_accel, ddx_L_acq_1 , x_L_acq_1, f_vector_disp);
-[picos_ddx_L_acq_2  , picos_x_L_acq_2 ] = ResponseSpectrum( f_vector_accel, ddx_L_acq_2 , x_L_acq_2, f_vector_disp);
+% Computing Response spectra of Adapted
+[picos_ddx_T_acq_0  , picos_x_T_acq_0 ] = ResponseSpectrum( time_vector , x_T_acq_0 , ddx_T_acq_0, f_vector , 1);
+[picos_ddx_T_acq_1  , picos_x_T_acq_1 ] = ResponseSpectrum( time_vector , x_T_acq_1 , ddx_T_acq_1, f_vector , 1);
+[picos_ddx_T_acq_2  , picos_x_T_acq_2 ] = ResponseSpectrum( time_vector , x_T_acq_2 , ddx_T_acq_2, f_vector , 1);
+[picos_ddx_L_acq_0  , picos_x_L_acq_0 ] = ResponseSpectrum( time_vector , x_L_acq_0 , ddx_L_acq_0, f_vector , 1);
+[picos_ddx_L_acq_1  , picos_x_L_acq_1 ] = ResponseSpectrum( time_vector , x_L_acq_1 , ddx_L_acq_1, f_vector , 1);
+[picos_ddx_L_acq_2  , picos_x_L_acq_2 ] = ResponseSpectrum( time_vector , x_L_acq_2 , ddx_L_acq_2, f_vector , 1);
 
-%%
+
 fig8 = figure(8);subplot(121); grid on;xlabel('Frequency (Hz)');ylabel('Acceleration (m/s^2)');title('Acceleration Response Spectra - Fault Normal');xlim([1 20]);ylim([0 ceil(max(picos_ddx_T_tuned(1:385,1))) ])
 subplot(122);grid on;xlabel('Frequency (Hz)');ylabel('Displacement (m)');title('Displacement Response Spectra - Fault Normal');xlim([0.1 5]);
 color1 = 'blue';color2 = 'red' ;color3 = '#EDB120'; color4 = 'black';% Define colors for lines 1/3 and 2/4

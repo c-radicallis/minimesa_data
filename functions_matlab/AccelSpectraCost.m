@@ -1,5 +1,5 @@
 %% ── Objective function ────────────────────────────────────────────────────
-function J = AccelSpectraCost(log_q, OL_200, plant_aug, integrator,sumblk1, picos_ddx_tgt_T ,  ddx_tgt_T, time_vector, n_states)
+function J = AccelSpectraCost(log_q, OL_200, plant_aug, integrator,sumblk1, picos_ddx_tgt_T ,  ddx_tgt_T, n_states)
     % Recover weights from log-space
     q   = exp(log_q);           % [Q1 Q2 Q3 Q4 Qi]
     Q   = diag(q);
@@ -48,7 +48,7 @@ function J = AccelSpectraCost(log_q, OL_200, plant_aug, integrator,sumblk1, pico
         return
     end
 
-    picos_ddx = ResponseSpectrumForCost( time_vector , ddx_sim );
+    picos_ddx = ResponseSpectrumForCost(  ddx_sim );
     % mean-square accel tracking error  (minimise this)
     J = mean((picos_ddx - picos_ddx_tgt_T).^2);
 
