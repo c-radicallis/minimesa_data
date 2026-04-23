@@ -1,5 +1,5 @@
 %% ── Objective function ────────────────────────────────────────────────────
-function J = AccelSpectraCost(log_q, OL_200, plant_aug, integrator,sumblk1 ,n_states , picos_ddx_tgt_ForCost , ddx_tgt , time_vector , disp_limit)
+function J = AccelSpectraCost(log_q, OL_200, plant_aug, integrator,sumblk1 ,n_states , picos_ddx_tgt_ForCost , ddx_tgt , time_vector )
     % Recover weights from log-space
     q   = exp(log_q);           % [Q1 Q2 Q3 Q4 Qi]
     Q   = diag(q);
@@ -44,7 +44,7 @@ function J = AccelSpectraCost(log_q, OL_200, plant_aug, integrator,sumblk1 ,n_st
     end
 
     % Blow-up guard
-    if max(abs(ddx_sim)) > disp_limit * 1.5
+    if max(abs(ddx_sim)) > max(abs(ddx_tgt))*1.5
         J = 1e12;
         return
     end
