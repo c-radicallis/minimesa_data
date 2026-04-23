@@ -35,10 +35,11 @@ OL_200 = ss(results_P15_pink.OL_est_nonLin)
 
 %%
 tuner_opts = pidtuneOptions('DesignFocus','reference-tracking'); % Tune PIDF
-cutoff_frequency = 15; % Hz
+cutoff_frequency = 50; % Hz
 PIDF   = pidtune(OL_200,'PIDF',cutoff_frequency*2*pi,tuner_opts)
 CL_PIDF_15Hz = feedback(PIDF*OL_200, 1);
 
+%%
 n_states = size(OL_200.A,1); % Create augmented state space model
 OL_200.StateName  = arrayfun(@(k) sprintf('x%d',k), 1:n_states, 'UniformOutput', false);
 
@@ -76,7 +77,7 @@ ddx_sim_PIDF = lsim(CL_PIDF_15Hz, ddx_tgt_T, time_vector, 'zoh'); ddx_MSE_PIDF =
 % Q1_0 = eps;  Q2_0 = eps;  Q3_0 = eps;  Q4_0 = eps;  Qi_0 = 200;
 % Q1_0 = 1e-2;  Q2_0 = 1e-2;  Q3_0 = 1e-2;  Q4_0 = 1e-2;  Qi_0 = 3;
 %Q1 = 4.5183e+14; Q2 = 3.4447e-01; Q3 = 4.0431e+03; Q4 = 5.1600e-02; Qi =3.1503e+15;  % for Kp = 10
-Q1 = 1  ;Q2 = 1e-03  ;Q3 = 3.9985e-04  ;Q4 = 1.2651e-05  ;Qi= 9.6979e-01;  % for Kp = 15   
+Q1_0 = 1  ;Q2_0 = 1e-03  ;Q3_0 = 1e-04  ;Q4_0 = 1e-05  ;Qi_0= 1;  % for Kp = 15   
 
 log_q0 = log([Q1_0, Q2_0, Q3_0, Q4_0, Qi_0]);
 

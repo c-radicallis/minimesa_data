@@ -1,5 +1,5 @@
 %% ── Objective function ────────────────────────────────────────────────────
-function J = AccelSpectraCost(log_q, OL_200, plant_aug, integrator,sumblk1, picos_ddx_tgt_T , f_vector , ddx_tgt_T, time_vector, n_states)
+function J = AccelSpectraCost(log_q, OL_200, plant_aug, integrator,sumblk1, picos_ddx_tgt_T ,  ddx_tgt_T, time_vector, n_states)
     % Recover weights from log-space
     q   = exp(log_q);           % [Q1 Q2 Q3 Q4 Qi]
     Q   = diag(q);

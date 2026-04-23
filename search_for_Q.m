@@ -25,7 +25,7 @@ x_drv_T_0 = x_drv_T_0*1e3; % convert to mm
 clear x_drv_L_0  x_drv_V_0
 %  Data P15
 folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
-file = 'pink_noise_40Hz_T3mm_0_P15.acq'; % load output acq
+file = 'pink_noise_40Hz_T3mm_0_P10.acq'; % load output acq
 LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
 x_acq_T = x_acq_T*1e3;
 sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
@@ -35,18 +35,16 @@ OL_200 = ss(results_P15_pink.OL_est_nonLin)
 
 %%
 tuner_opts = pidtuneOptions('DesignFocus','reference-tracking'); % Tune PIDF
-cutoff_frequency = 12; % Hz
+cutoff_frequency = 7; % Hz
 PIDF   = pidtune(OL_200,'PIDF',cutoff_frequency*2*pi,tuner_opts)
-CL_PIDF_15Hz = feedback(PIDF*OL_200, 1);
+CL_PIDF = feedback(PIDF*OL_200, 1);
 
 %%
 n_states = size(OL_200.A,1); % Create augmented state space model
 OL_200.StateName  = arrayfun(@(k) sprintf('x%d',k), 1:n_states, 'UniformOutput', false);
-
 plant_aug = ss(OL_200.A, OL_200.B,[eye(n_states);OL_200.C],[zeros(n_states,1); OL_200.D] , Ts);
 plant_aug.InputName = {'i_sv'};   % plant input: control signal
 plant_aug.OutputName = [OL_200.StateName ; {'y_xT'}];  % plant output
-
 sumblk1 = sumblk('e = x_ref - y_xT'); % Compute the error signal: e = r - y
 integrator = tf(1,[1 -1], Ts);  integrator.InputName = {'e'};  integrator.OutputName = {'xi'};  % The integrator integrates the tracking error. % error: e = r - y % integrated error
 
@@ -60,7 +58,7 @@ ddx_tgt_T = scale*ddx_tgt_T;
 
 % Response Spectra settings
 f_i=0.1; %freq inicial
-f_n=30;  %freq final
+f_n=20;  %freq final
 n_points = 1e2;
 f_vector = logspace( log10(f_i) , log10(f_n) , n_points);
 [picos_ddx_tgt_T , picos_x_tgt_T] = ResponseSpectrum( time_vector , x_tgt_T , ddx_tgt_T, f_vector , 1);
@@ -155,7 +153,7 @@ grid on;
 xlim([2.5 5]); ylim('auto');
 
 figure; hold on;
-bodeplot(CL_PIDF_15Hz, opts1);
+bodeplot(CL_PIDF_15Hz, opts1);grid on;legend;
 bodeplot(Optimal_CL_best, opts1);
 bodeplot(Optimal_CL_manual, opts1);
 title('Bode - Optimised closed-loop'); grid on;legend;
