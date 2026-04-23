@@ -1,9 +1,10 @@
 %% ── Objective function ────────────────────────────────────────────────────
-function J = AccelSpectraCost(log_q, OL_200, plant_aug, integrator,sumblk1, picos_ddx_tgt_T ,  ddx_tgt_T, n_states)
+function J = AccelSpectraCost(log_q, OL_200, plant_aug, integrator,sumblk1 ,n_states , picos_ddx_tgt_ForCost , ddx_tgt , time_vector , disp_limit)
     % Recover weights from log-space
     q   = exp(log_q);           % [Q1 Q2 Q3 Q4 Qi]
     Q   = diag(q);
     R   = 1;
+    
 
     % ── Build LQI controller ──────────────────────────────────────────────
     try
@@ -36,21 +37,21 @@ function J = AccelSpectraCost(log_q, OL_200, plant_aug, integrator,sumblk1, pico
 
     % ── Simulate & compute tracking error ────────────────────────────────
     try
-        ddx_sim = lsim(Optimal_CL, ddx_tgt_T, time_vector, 'zoh');
+        ddx_sim = lsim(Optimal_CL, ddx_tgt, time_vector, 'zoh');
     catch
         J = 1e12;
         return
     end
 
     % Blow-up guard
-    if max(abs(ddx_sim)) > max(abs(ddx_tgt_T)) * 1.5
+    if max(abs(ddx_sim)) > disp_limit * 1.5
         J = 1e12;
         return
     end
 
-    picos_ddx = ResponseSpectrumForCost(  ddx_sim );
+    picos_ddx_ForCost = ResponseSpectrumForCost(  ddx_sim );
     % mean-square accel tracking error  (minimise this)
-    J = mean((picos_ddx - picos_ddx_tgt_T).^2);
+    J = mean((picos_ddx_ForCost - picos_ddx_tgt_ForCost).^2);
 
     fprintf('  J = %.2e  |  Q = [%s]\n', J, num2str(q, '%.2e  '));
 end

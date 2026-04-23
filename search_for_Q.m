@@ -153,7 +153,7 @@ grid on;
 xlim([2.5 5]); ylim('auto');
 
 figure; hold on;
-bodeplot(CL_PIDF_15Hz, opts1);grid on;legend;
+bodeplot(CL_PIDF_15Hz, opts1);%grid on;legend;
 bodeplot(Optimal_CL_best, opts1);
 bodeplot(Optimal_CL_manual, opts1);
 title('Bode - Optimised closed-loop'); grid on;legend;

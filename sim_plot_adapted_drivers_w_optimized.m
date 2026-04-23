@@ -43,16 +43,16 @@ folder  =  'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Platafo
 target = 'Elcentro.tgt'; 
 LTF_to_TXT_then_load(target,'InputFolder', folder)
 
-limit=4e-3; max_tgt=max([x_tgt_T ; x_tgt_L]);
-if max_tgt>limit
-    scale = round(limit/max_tgt , 2)
+disp_limit=4e-3; max_tgt=max([x_tgt_T ; x_tgt_L]);
+if max_tgt>disp_limit
+    scale = round(disp_limit/max_tgt , 2)
     x_tgt_T   = scale*x_tgt_T; x_tgt_L   = scale*x_tgt_L; ddx_tgt_T = scale*ddx_tgt_T; ddx_tgt_L = scale*ddx_tgt_L;
 end
 max_abs_x_tgt_T = max( abs(x_tgt_T ))
 max_abs_x_tgt_L = max( abs(x_tgt_L ))
 
 %% ── Run the optimisation of Q
-Q1 = 4.5183e+14; Q2 = 3.4447e-01; Q3 = 4.0431e+03; Q4 = 5.1600e-02; Qi =3.1503e+15;  % for Kp = 10 % Initial guess (log-space) — edit to reflect your engineering intuition
+Q1_0 = 4.5183e+14; Q2_0 = 3.4447e-01; Q3_0 = 4.0431e+03; Q4_0 = 5.1600e-02; Qi_0 =3.1503e+15;  % for Kp = 10 % Initial guess (log-space) — edit to reflect your engineering intuition
 log_q0 = log([Q1_0, Q2_0, Q3_0, Q4_0, Qi_0]);
 outputFcn = @(~, ov, state) recordAndStop(ov, state);
 opts_opt = optimset('Display',     'iter', ...
@@ -62,7 +62,8 @@ opts_opt = optimset('Display',     'iter', ...
                     'MaxIter',     1e12,   ...
                     'OutputFcn',   outputFcn);
 
-objFun = @(log_q) AccelSpectraCost(log_q, OL_200, plant_aug, integrator, sumblk1, picos_ddx_tgt_T , f_vector, ddx_tgt_T, time_vector, n_states);
+picos_ddx_tgt_T_ForCost = ResponseSpectrumForCost(  ddx_tgt_T );
+objFun = @(log_q) AccelSpectraCost(log_q, OL_200, plant_aug, integrator, sumblk1,   n_states, picos_ddx_tgt_T_ForCost , ddx_tgt_T , time_vector , disp_limit);
 
 fprintf('=== Starting Q optimisation ===\n');
 [log_q_best, J_best] = fminsearch(objFun, log_q0, opts_opt);
@@ -86,9 +87,9 @@ controller_best.OutputName = {'i_sv'};
 CL_LQI = connect(plant_aug, controller_best, integrator, sumblk1, 'x_ref', 'y_xT');
 
 x_T_LQI = lsim(CL_LQI ,  x_tgt_T , time_vector,'zoh');
-ddx_T_LQI = secondDerivativeTime(x_T_LQI , t_step);
+ddx_T_LQI = secondDerivativeTime(x_T_LQI , Ts);
 x_L_LQI = lsim(CL_LQI ,  x_tgt_L , time_vector,'zoh');
-ddx_L_LQI = secondDerivativeTime(x_L_LQI , t_step);
+ddx_L_LQI = secondDerivativeTime(x_L_LQI , Ts);
 
 %% Tuning PIDF  and running simulations
 tuner_opts = pidtuneOptions('DesignFocus','reference-tracking'); % Tune PIDF
@@ -96,9 +97,12 @@ cutoff_frequency = 7; % Hz
 PIDF   = pidtune(OL_200,'PIDF',cutoff_frequency*2*pi,tuner_opts)
 CL_PIDF = feedback(PIDF*OL_200, 1);
 x_T_tuned = lsim(CL_PIDF ,  x_tgt_T , time_vector,'zoh');
-ddx_T_tuned = secondDerivativeTime(x_T_tuned , t_step);
+ddx_T_tuned = secondDerivativeTime(x_T_tuned , Ts);
 x_L_tuned = lsim(CL_PIDF ,  x_tgt_L , time_vector,'zoh');
-ddx_L_tuned = secondDerivativeTime(x_L_tuned , t_step);
+ddx_L_tuned = secondDerivativeTime(x_L_tuned , Ts);
+
+%%
+figure; hold on; bodeplot(CL_PIDF, CL_LQI , opts1); grid on;legend;
 
 %% Lauch Adapt.exe % note the empty quotes "" are the window title placeholder
 if launch_Adapt
@@ -115,10 +119,10 @@ end   % execution stops here; lines below wonnt run
 name = target(1 : end-4); %#ok<UNRCH>
 LTF_to_TXT_then_load( [ name, '_0.DRV' ] ,'InputFolder',folder)
 x_T_acq_0 = lsim(G_xT_xref ,  x_drv_T_0 , time_vector,'zoh');
-ddx_T_acq_0 = secondDerivativeTime(x_T_acq_0 , t_step);
+ddx_T_acq_0 = secondDerivativeTime(x_T_acq_0 , Ts);
 % writeTXT_then_LTF(time_vector,x_T_acq_0,ddx_T_acq_0,folder,[ name, '_0.ACQ.txt' ]);
 x_L_acq_0 = lsim(G_xT_xref ,  x_drv_L_0 , time_vector,'zoh');
-ddx_L_acq_0 = secondDerivativeTime(x_L_acq_0 , t_step);
+ddx_L_acq_0 = secondDerivativeTime(x_L_acq_0 , Ts);
 writeTXT_then_LTF(time_vector,[x_T_acq_0,x_L_acq_0],[ddx_T_acq_0,ddx_L_acq_0],folder,[ name, '_0.ACQ.txt' ]);
 fprintf("\n \n Go to Adapt.exe and generate driver 1 (Click 'Process' button)\n \n")
 if return_on
@@ -128,10 +132,10 @@ end   % execution stops here; lines below wonnt run
 %% Simulation using updated driver 1
 LTF_to_TXT_then_load( [ name, '_1.DRV' ] ,'InputFolder',folder)
 x_T_acq_1 = lsim(G_xT_xref ,  x_drv_T_1 , time_vector,'zoh');
-ddx_T_acq_1 = secondDerivativeTime(x_T_acq_1 , t_step);
+ddx_T_acq_1 = secondDerivativeTime(x_T_acq_1 , Ts);
 %writeTXT_then_LTF(time_vector,x_T_acq_1,ddx_T_acq_1,folder,[ name, '_1.ACQ.txt' ]);
 x_L_acq_1 = lsim(G_xT_xref ,  x_drv_L_1 , time_vector,'zoh');
-ddx_L_acq_1 = secondDerivativeTime(x_L_acq_1 , t_step);
+ddx_L_acq_1 = secondDerivativeTime(x_L_acq_1 , Ts);
 writeTXT_then_LTF(time_vector,[x_T_acq_1,x_L_acq_1],[ddx_T_acq_1,ddx_L_acq_1],folder, [ name, '_1.ACQ.txt' ]); 
 fprintf("\n \n Go to Adapt.exe and generate driver 2 (Click 'Next Iteration' and then 'Process' button) \n \n")
 if return_on
@@ -141,10 +145,10 @@ end   % execution stops here; lines below wonnt run
 %% Simulation using updated driver 2
 LTF_to_TXT_then_load( [ name, '_2.DRV' ] ,'InputFolder',folder)
 x_T_acq_2 = lsim(G_xT_xref ,  x_drv_T_2 , time_vector,'zoh');
-ddx_T_acq_2 = secondDerivativeTime(x_T_acq_2 , t_step);
+ddx_T_acq_2 = secondDerivativeTime(x_T_acq_2 , Ts);
 % writeTXT_then_LTF(time_vector,x_T_acq_2,ddx_T_acq_2,folder,[ name, '_2.ACQ.txt' ]);
 x_L_acq_2 = lsim(G_xT_xref ,  x_drv_L_2 , time_vector,'zoh');
-ddx_L_acq_2 = secondDerivativeTime(x_L_acq_2 , t_step);
+ddx_L_acq_2 = secondDerivativeTime(x_L_acq_2 , Ts);
 writeTXT_then_LTF(time_vector,[x_T_acq_2,x_L_acq_2],[ddx_T_acq_2,ddx_L_acq_2],folder, [ name, '_2.ACQ.txt' ]); 
 
 %% Response Spectra settings
@@ -218,10 +222,10 @@ plot(f_vector, picos_x_L_acq_2, '-', 'LineWidth' , 2,  'DisplayName',sprintf( 'A
 %% Simulation using updated driver 3
 % LTF_to_TXT_then_load( [ name, '_3.DRV' ] ,'InputFolder',folder)
 % x_T_acq_3 = lsim(G_xT_xref ,  x_drv_T_3 , time_vector,'zoh');
-% ddx_T_acq_3 = secondDerivativeTime(x_T_acq_3 , t_step);
+% ddx_T_acq_3 = secondDerivativeTime(x_T_acq_3 , Ts);
 % % writeTXT_then_LTF(time_vector,x_T_acq_3,ddx_T_acq_3,folder,[ name, '_3.ACQ.txt' ]);
 % x_L_acq_3 = lsim(G_xT_xref ,  x_drv_L_3 , time_vector,'zoh');
-% ddx_L_acq_3 = secondDerivativeTime(x_L_acq_3 , t_step);
+% ddx_L_acq_3 = secondDerivativeTime(x_L_acq_3 , Ts);
 % writeTXT_then_LTF(time_vector,[x_T_acq_3,x_L_acq_3],[ddx_T_acq_3,ddx_L_acq_3],folder, [ name, '_3.ACQ.txt' ]); 
 % 
 % [picos_ddx_T_acq_3  , picos_x_T_acq_3 ] = ResponseSpectrum( time_vector , x_T_acq_3 , ddx_T_acq_3, f_vector , 1);
