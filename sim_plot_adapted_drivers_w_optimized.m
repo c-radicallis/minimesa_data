@@ -2,14 +2,13 @@ clear;clc;close all;
 addpath ('C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\uniaxial_table_model' , ...
     'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\uniaxial_table_model\Adapting_Driver_Signal\',...
     'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\functions_matlab')
-%
-launch_Adapt =0; % Set to 1 to lauch Adapt.exe
+%%
+launch_Adapt =1; % Set to 1 to lauch Adapt.exe
 return_on = 1; % Set to 1 for execution to stop before adapting drivers, or set to 0 if the adapted drivers have already been generated
-
+%% Bode Options
 opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[1 100]};opts1.PhaseWrapping="on";opts1.PhaseWrappingBranch=-360;
 opts1.PhaseVisible='off'; opts1.YLim={[-30 10]};
  Ts = 0.005;
-
 %% Load Plant Model
 load('optimized_benchmark_results\OL200_from_P10.mat')
 % % input file - pink noise 40hz
@@ -39,8 +38,8 @@ sumblk1 = sumblk('e = x_ref - y_xT'); % Compute the error signal: e = r - y
 integrator = tf(1,[1 -1], Ts);  integrator.InputName = {'e'};  integrator.OutputName = {'xi'};  % The integrator integrates the tracking error. % error: e = r - y % integrated error
 
 %% Load target
-folder  =  'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\uniaxial_table_model\Adapting_Driver_Signal\PRJ_Elcentro\';
-target = 'Elcentro.tgt'; 
+folder  =  'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\optimized_benchmark_results\Elcentro\';
+target = 'elcentro.tgt'; 
 LTF_to_TXT_then_load(target,'InputFolder', folder)
 
 disp_limit=4e-3; max_tgt=max([x_tgt_T ; x_tgt_L]);
@@ -52,13 +51,13 @@ max_abs_x_tgt_T = max( abs(x_tgt_T ))
 max_abs_x_tgt_L = max( abs(x_tgt_L ))
 
 %% ── Run the optimisation of Q
-Q1_0 = 4.5183e+14; Q2_0 = 3.4447e-01; Q3_0 = 4.0431e+03; Q4_0 = 5.1600e-02; Qi_0 =3.1503e+15;  % for Kp = 10 % Initial guess (log-space) — edit to reflect your engineering intuition
+Q1_0 = 4.5183e+14; Q2_0 = 3.4447e-01; Q3_0 = 4.0431e+03; Q4_0 = 5.1600e-02; Qi_0 =3.1503e+15; % Tolmezo % for Kp = 10 
 % Q1_0 = 1;  Q2_0 = 1;  Q3_0 = 1;  Q4_0 = 1;  Qi_0 = 10;
 
 log_q0 = log([Q1_0, Q2_0, Q3_0, Q4_0, Qi_0]);
 outputFcn = @(~, ov, state) recordAndStop(ov, state);
 opts_opt = optimset('Display',     'iter', ...
-                    'TolX',        1e-5,  ...
+                    'TolX',        1e-3,  ...
                     'TolFun',      1e-5,  ...
                     'MaxFunEvals', 1e12,   ...
                     'MaxIter',     1e12,   ...
@@ -70,8 +69,9 @@ objFun = @(log_q) AccelSpectraCost(log_q, OL_200, plant_aug, integrator, sumblk1
 fprintf('=== Starting Q optimisation ===\n');
 [log_q_best, J_best] = fminsearch(objFun, log_q0, opts_opt);
 
-% ── Recover & display best weights ───────────────────────────────────────
-q_best = exp(log_q_best); Q1_best = q_best(1); Q2_best = q_best(2); Q3_best = q_best(3); Q4_best = q_best(4); Qi_best = q_best(5);
+%% ── Recover & display best weights ───────────────────────────────────────
+load('C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\optimized_benchmark_results\Elcentro\q_best_Elcentro.mat') % q_best = exp(log_q_best); 
+Q1_best = q_best(1); Q2_best = q_best(2); Q3_best = q_best(3); Q4_best = q_best(4); Qi_best = q_best(5);
 fprintf('\n=== Optimisation complete ===\n');
 fprintf('Best Q weights:\n');
 fprintf('  Q1 = %.4e\n  Q2 = %.4e\n  Q3 = %.4e\n  Q4 = %.4e\n  Qi = %.4e\n', Q1_best, Q2_best, Q3_best, Q4_best, Qi_best);
@@ -87,7 +87,7 @@ controller_best.InputName  = [OL_200.StateName; {'xi'}];
 controller_best.OutputName = {'i_sv'};
 
 CL_LQI = connect(plant_aug, controller_best, integrator, sumblk1, 'x_ref', 'y_xT');
-figure; hold on; bodeplot(CL_PIDF, CL_LQI , opts1); grid on;legend;
+% figure; hold on; bodeplot(CL_PIDF, CL_LQI , opts1); grid on;legend;
 
 x_T_LQI = lsim(CL_LQI ,  x_tgt_T , time_vector,'zoh');
 ddx_T_LQI = secondDerivativeTime(x_T_LQI , Ts);
@@ -103,6 +103,8 @@ x_T_tuned = lsim(CL_PIDF ,  x_tgt_T , time_vector,'zoh');
 ddx_T_tuned = secondDerivativeTime(x_T_tuned , Ts);
 x_L_tuned = lsim(CL_PIDF ,  x_tgt_L , time_vector,'zoh');
 ddx_L_tuned = secondDerivativeTime(x_L_tuned , Ts);
+
+figure; hold on; bodeplot(CL_PIDF, CL_LQI , opts1); grid on;legend;
 
 %% Lauch Adapt.exe % note the empty quotes "" are the window title placeholder
 if launch_Adapt
