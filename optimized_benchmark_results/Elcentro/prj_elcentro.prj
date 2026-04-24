@@ -13,11 +13,11 @@
 <NumElts>2</NumElts>
 <Path>
 <Name>Caracterization Stimulus Signal</Name>
-<Val>C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\31-7-2025\tgt and noise drv\pink_noise_40Hz_T3mm_0.drv</Val>
+<Val>C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\pink_noise_40Hz_T3mm_0_P10_cut_to_match_acq.drv</Val>
 </Path>
 <Path>
 <Name>Caracterization Response Signal</Name>
-<Val>C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\pink_noise_40Hz_T3mm_0_P10.acq</Val>
+<Val>C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\pink_noise_40Hz_T3mm_0_P10_SV2_removed.acq</Val>
 </Path>
 </Cluster>
 <Cluster>
@@ -56,7 +56,7 @@
 </Cluster>
 <I32>
 <Name>Nº Windows</Name>
-<Val>2048</Val>
+<Val>128</Val>
 </I32>
 <EW>
 <Name>FRF Mode</Name>
@@ -87,7 +87,7 @@
 </U32>
 <DBL>
 <Name>Window Overlap</Name>
-<Val>0.50000000000000</Val>
+<Val>0.10000000000000</Val>
 </DBL>
 </Cluster>
 <Cluster>
@@ -98,7 +98,7 @@
 <NumElts>4</NumElts>
 <DBL>
 <Name>Cutoff freq</Name>
-<Val>0.12500000000000</Val>
+<Val>20.00000000000000</Val>
 </DBL>
 <I32>
 <Name>Order</Name>
@@ -164,11 +164,11 @@
 <NumElts>2</NumElts>
 <DBL>
 <Name>Crossover Freq</Name>
-<Val>100.00000000000000</Val>
+<Val>2.00000000000000</Val>
 </DBL>
 <Boolean>
 <Name>ON/OFF</Name>
-<Val>1</Val>
+<Val>0</Val>
 </Boolean>
 </Cluster>
 </Cluster>
@@ -192,7 +192,7 @@
 </DBL>
 <Boolean>
 <Name>Enable</Name>
-<Val>0</Val>
+<Val>1</Val>
 </Boolean>
 </Cluster>
 <Cluster>
@@ -212,7 +212,7 @@
 </DBL>
 <Boolean>
 <Name>Enable</Name>
-<Val>0</Val>
+<Val>1</Val>
 </Boolean>
 </Cluster>
 <Cluster>
