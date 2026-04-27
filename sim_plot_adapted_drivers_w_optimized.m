@@ -40,13 +40,13 @@ sumblk1 = sumblk('e = x_ref - y_xT'); % Compute the error signal: e = r - y
 integrator = tf(1,[1 -1], Ts);  integrator.InputName = {'e'};  integrator.OutputName = {'xi'};  % The integrator integrates the tracking error. % error: e = r - y % integrated error
 
 %% Load target
-folder  =  'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\optimized_benchmark_results\Rinaldi\';
-target = 'rinaldi.tgt'; 
+folder  =  'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\optimized_benchmark_results\Jiji\';
+target = 'jiji.tgt'; 
 LTF_to_TXT_then_load(target,'InputFolder', folder)
 
 disp_limit=4e-3; max_tgt = max(abs([x_tgt_T; x_tgt_L]))
 if max_tgt>disp_limit
-    scale = round(disp_limit/max_tgt , 3)
+    scale = 0.001 %round(disp_limit/max_tgt , 4)
     x_tgt_T   = scale*x_tgt_T; ddx_tgt_T = scale*ddx_tgt_T;  x_tgt_L   = scale*x_tgt_L;ddx_tgt_L = scale*ddx_tgt_L;
 end
 max_abs_x_tgt_T = max( abs( x_tgt_T ))

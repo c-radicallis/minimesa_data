@@ -56,7 +56,7 @@
 </Cluster>
 <I32>
 <Name>Nº Windows</Name>
-<Val>1024</Val>
+<Val>8192</Val>
 </I32>
 <EW>
 <Name>FRF Mode</Name>
@@ -74,7 +74,7 @@
 </Boolean>
 <Boolean>
 <Name>unwrap phase (F)</Name>
-<Val>0</Val>
+<Val>1</Val>
 </Boolean>
 <Boolean>
 <Name>convert to degree (F)</Name>
@@ -83,11 +83,11 @@
 </Cluster>
 <U32>
 <Name>Window Type</Name>
-<Val>9</Val>
+<Val>1</Val>
 </U32>
 <DBL>
 <Name>Window Overlap</Name>
-<Val>0.50000000000000</Val>
+<Val>0.98000000000000</Val>
 </DBL>
 </Cluster>
 <Cluster>
@@ -168,7 +168,7 @@
 </DBL>
 <Boolean>
 <Name>ON/OFF</Name>
-<Val>1</Val>
+<Val>0</Val>
 </Boolean>
 </Cluster>
 </Cluster>
@@ -188,11 +188,11 @@
 </DBL>
 <DBL>
 <Name>Correction Factor</Name>
-<Val>0.65000000000000</Val>
+<Val>0.50000000000000</Val>
 </DBL>
 <Boolean>
 <Name>Enable</Name>
-<Val>0</Val>
+<Val>1</Val>
 </Boolean>
 </Cluster>
 <Cluster>
@@ -208,11 +208,11 @@
 </DBL>
 <DBL>
 <Name>Correction Factor</Name>
-<Val>0.65000000000000</Val>
+<Val>0.50000000000000</Val>
 </DBL>
 <Boolean>
 <Name>Enable</Name>
-<Val>0</Val>
+<Val>1</Val>
 </Boolean>
 </Cluster>
 <Cluster>
@@ -238,6 +238,6 @@
 </Array>
 <DBL>
 <Name>Target Multiplier</Name>
-<Val>1.00000000000000</Val>
+<Val>1.40000000000000E-3</Val>
 </DBL>
 </LVData>
