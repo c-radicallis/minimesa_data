@@ -3,7 +3,7 @@ addpath ('C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataform
     'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\uniaxial_table_model\Adapting_Driver_Signal\' , ...
     'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\functions_matlab')
 %%
-launch_Adapt =1; % Set to 1 to lauch Adapt.exe
+launch_Adapt =0; % Set to 1 to lauch Adapt.exe
 return_on = 1; % Set to 1 for execution to stop before adapting drivers, or set to 0 if the adapted drivers have already been generated
 %% Bode Options
 opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[1 100]};opts1.PhaseWrapping="on";opts1.PhaseWrappingBranch=-360;
@@ -40,14 +40,14 @@ sumblk1 = sumblk('e = x_ref - y_xT'); % Compute the error signal: e = r - y
 integrator = tf(1,[1 -1], Ts);  integrator.InputName = {'e'};  integrator.OutputName = {'xi'};  % The integrator integrates the tracking error. % error: e = r - y % integrated error
 
 %% Load target
-folder  =  'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\optimized_benchmark_results\Kobe\';
-target = 'kobe.tgt'; 
+folder  =  'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\optimized_benchmark_results\Rinaldi\';
+target = 'rinaldi.tgt'; 
 LTF_to_TXT_then_load(target,'InputFolder', folder)
 
-disp_limit=4e-3; max_tgt = max(abs([x_tgt_T ; x_tgt_L]))
+disp_limit=4e-3; max_tgt = max(abs([x_tgt_T; x_tgt_L]))
 if max_tgt>disp_limit
     scale = round(disp_limit/max_tgt , 3)
-    x_tgt_T   = scale*x_tgt_T; x_tgt_L   = scale*x_tgt_L; ddx_tgt_T = scale*ddx_tgt_T; ddx_tgt_L = scale*ddx_tgt_L;
+    x_tgt_T   = scale*x_tgt_T; ddx_tgt_T = scale*ddx_tgt_T;  x_tgt_L   = scale*x_tgt_L;ddx_tgt_L = scale*ddx_tgt_L;
 end
 max_abs_x_tgt_T = max( abs( x_tgt_T ))
 max_abs_x_tgt_L = max( abs( x_tgt_L ))
@@ -93,9 +93,9 @@ CL_LQI = connect(plant_aug, controller_best, integrator, sumblk1, 'x_ref', 'y_xT
 % figure; hold on; bodeplot(CL_PIDF, CL_LQI , opts1); grid on;legend;
 
 x_T_LQI = lsim(CL_LQI ,  x_tgt_T , time_vector,'zoh');
-ddx_T_LQI = secondDerivativeTime(x_T_LQI , Ts);
+ddx_T_LQI = secondDerivativeTime3(x_T_LQI , Ts);
 x_L_LQI = lsim(CL_LQI ,  x_tgt_L , time_vector,'zoh');
-ddx_L_LQI = secondDerivativeTime(x_L_LQI , Ts);
+ddx_L_LQI = secondDerivativeTime3(x_L_LQI , Ts);
 
 %% Tuning PIDF  and running simulations
 tuner_opts = pidtuneOptions('DesignFocus','reference-tracking'); % Tune PIDF
@@ -103,9 +103,9 @@ cutoff_frequency = 7; % Hz
 PIDF   = pidtune(OL_200,'PIDF',cutoff_frequency*2*pi,tuner_opts)
 CL_PIDF = feedback(PIDF*OL_200, 1);
 x_T_tuned = lsim(CL_PIDF ,  x_tgt_T , time_vector,'zoh');
-ddx_T_tuned = secondDerivativeTime(x_T_tuned , Ts);
+ddx_T_tuned = secondDerivativeTime3(x_T_tuned , Ts);
 x_L_tuned = lsim(CL_PIDF ,  x_tgt_L , time_vector,'zoh');
-ddx_L_tuned = secondDerivativeTime(x_L_tuned , Ts);
+ddx_L_tuned = secondDerivativeTime3(x_L_tuned , Ts);
 
 %%
 opts1.MagUnits='abs';opts1.MagScale='log'; opts1.FreqScale='linear'; opts1.XLim={[1 40]}; opts1.YLim={[0.1 1]};
@@ -129,10 +129,10 @@ name = target(1 : end-4); %#ok<UNRCH>
 LTF_to_TXT_then_load( [ name, '_0.DRV' ] ,'InputFolder',folder)
 
 x_T_acq_0 = lsim(CL ,  x_drv_T_0 , time_vector,'zoh');
-ddx_T_acq_0 = secondDerivativeTime(x_T_acq_0 , Ts);
+ddx_T_acq_0 = secondDerivativeTime3(x_T_acq_0 , Ts);
 % writeTXT_then_LTF(time_vector,x_T_acq_0,ddx_T_acq_0,folder,[ name,'_0.ACQ.txt' ]); % -----  for Transverse direction only -----
 x_L_acq_0 = lsim(CL ,  x_drv_L_0 , time_vector,'zoh');
-ddx_L_acq_0 = secondDerivativeTime(x_L_acq_0 , Ts);
+ddx_L_acq_0 = secondDerivativeTime3(x_L_acq_0 , Ts);
 writeTXT_then_LTF(time_vector,[x_T_acq_0,x_L_acq_0],[ddx_T_acq_0,ddx_L_acq_0],folder,[ name, '_0.ACQ.txt' ]);
 
 fprintf("\n \n Go to Adapt.exe and generate driver 1 (Click 'Process' button)\n \n" + ...
@@ -144,11 +144,12 @@ end   % execution stops here; lines below wonnt run
 %% Simulation using updated driver 1
 LTF_to_TXT_then_load( [ name, '_1.DRV' ] ,'InputFolder',folder)
 x_T_acq_1 = lsim(CL ,  x_drv_T_1 , time_vector,'zoh');
-ddx_T_acq_1 = secondDerivativeTime(x_T_acq_1 , Ts);
-%writeTXT_then_LTF(time_vector,x_T_acq_1,ddx_T_acq_1,folder,[ name, '_1.ACQ.txt' ]);
+ddx_T_acq_1 = secondDerivativeTime3(x_T_acq_1 , Ts);
+% writeTXT_then_LTF(time_vector,x_T_acq_1,ddx_T_acq_1,folder,[ name, '_1.ACQ.txt' ]);
 x_L_acq_1 = lsim(CL ,  x_drv_L_1 , time_vector,'zoh');
-ddx_L_acq_1 = secondDerivativeTime(x_L_acq_1 , Ts);
+ddx_L_acq_1 = secondDerivativeTime3(x_L_acq_1 , Ts);
 writeTXT_then_LTF(time_vector,[x_T_acq_1,x_L_acq_1],[ddx_T_acq_1,ddx_L_acq_1],folder, [ name, '_1.ACQ.txt' ]); 
+
 fprintf("\n \n Go to Adapt.exe and generate driver 2 (Click 'Next Iteration' and then 'Process' button) \n \n " + ...
     "Then return to matlab and run the cell which simulates the output from the generated driver 2 ")
 if return_on
@@ -158,10 +159,10 @@ end   % execution stops here; lines below wonnt run
 %% Simulation using updated driver 2
 LTF_to_TXT_then_load( [ name, '_2.DRV' ] ,'InputFolder',folder)
 x_T_acq_2 = lsim(CL ,  x_drv_T_2 , time_vector,'zoh');
-ddx_T_acq_2 = secondDerivativeTime(x_T_acq_2 , Ts);
+ddx_T_acq_2 = secondDerivativeTime3(x_T_acq_2 , Ts);
 % writeTXT_then_LTF(time_vector,x_T_acq_2,ddx_T_acq_2,folder,[ name, '_2.ACQ.txt' ]);
 x_L_acq_2 = lsim(CL ,  x_drv_L_2 , time_vector,'zoh');
-ddx_L_acq_2 = secondDerivativeTime(x_L_acq_2 , Ts);
+ddx_L_acq_2 = secondDerivativeTime3(x_L_acq_2 , Ts);
 writeTXT_then_LTF(time_vector,[x_T_acq_2,x_L_acq_2],[ddx_T_acq_2,ddx_L_acq_2],folder, [ name, '_2.ACQ.txt' ]); 
 
 fprintf("\n \n Go to Adapt.exe and generate driver 3 (Click 'Next Iteration' and then 'Process' button) \n \n" + ...
@@ -173,10 +174,10 @@ end   % execution stops here; lines below wonnt run
 %% Simulation using updated driver 3
 LTF_to_TXT_then_load( [ name, '_3.DRV' ] ,'InputFolder',folder)
 x_T_acq_3 = lsim(CL ,  x_drv_T_3 , time_vector,'zoh');
-ddx_T_acq_3 = secondDerivativeTime(x_T_acq_3 , Ts);
+ddx_T_acq_3 = secondDerivativeTime3(x_T_acq_3 , Ts);
 % writeTXT_then_LTF(time_vector,x_T_acq_3,ddx_T_acq_3,folder,[ name, '_3.ACQ.txt' ]);
 x_L_acq_3 = lsim(CL ,  x_drv_L_3 , time_vector,'zoh');
-ddx_L_acq_3 = secondDerivativeTime(x_L_acq_3 , Ts);
+ddx_L_acq_3 = secondDerivativeTime3(x_L_acq_3 , Ts);
 writeTXT_then_LTF(time_vector,[x_T_acq_3,x_L_acq_3],[ddx_T_acq_3,ddx_L_acq_3],folder, [ name, '_3.ACQ.txt' ]); 
 
 %% Response Spectra settings
@@ -186,17 +187,14 @@ n_points = 5e2;
 f_vector_accel = logspace( log10(f_i) , log10(f_n) , n_points);
 f_vector_disp = f_vector_accel(1:344);% max(f_vector_disp)
 
-%%
-% Finding Response Spectre  of Target
+%%  % Finding Response Spectre  of Target
 [picos_ddx_tgt_T , picos_x_tgt_T] = ResponseSpectrum(f_vector_accel, ddx_tgt_T, x_tgt_T, f_vector_disp);
 [picos_ddx_tgt_L , picos_x_tgt_L] = ResponseSpectrum(f_vector_accel, ddx_tgt_L, x_tgt_L, f_vector_disp);
 
-% Response Spectre  of Optimal
-[picos_ddx_T_tuned , picos_x_T_tuned] = ResponseSpectrum( f_vector_accel, ddx_T_tuned, x_T_tuned , f_vector_disp);
+[picos_ddx_T_tuned , picos_x_T_tuned] = ResponseSpectrum( f_vector_accel, ddx_T_tuned, x_T_tuned , f_vector_disp); % Response Spectre  of PIDF
 [picos_ddx_L_tuned , picos_x_L_tuned] = ResponseSpectrum( f_vector_accel, ddx_L_tuned, x_L_tuned , f_vector_disp);
 
-% Response Spectre  of Optimal
-[picos_ddx_T_LQI , picos_x_T_LQI] = ResponseSpectrum( f_vector_accel, ddx_T_LQI, x_T_LQI , f_vector_disp);
+[picos_ddx_T_LQI , picos_x_T_LQI] = ResponseSpectrum( f_vector_accel, ddx_T_LQI, x_T_LQI , f_vector_disp);% Response Spectre  of Optimal
 [picos_ddx_L_LQI , picos_x_L_LQI] = ResponseSpectrum( f_vector_accel, ddx_L_LQI, x_L_LQI , f_vector_disp);
 
 %% Computing Response spectra of Adapted
@@ -214,8 +212,7 @@ accel_lims=[0.5 30];
 fig8 = figure(8);subplot(121); grid on;xlabel('Frequency (Hz)');ylabel('Acceleration (m/s^2)');title('Acceleration Response Spectra - Fault Normal');xlim(accel_lims);%ylim([0 ceil(max(picos_ddx_T_tuned(1:385,1))) ]);
 subplot(122);grid on;xlabel('Frequency (Hz)');ylabel('Displacement (m)');title('Displacement Response Spectra - Fault Normal');xlim([0.1 5]);
 color1 = 'blue';color2 = 'red' ;color3 = '#EDB120'; color4 = 'black';% Define colors for lines 1/3 and 2/4
-fontsize(scale=1.8);
-figure(fig8); subplot(121); grid on; hold on; set(gca, 'XScale', 'log');
+figure(fig8); subplot(121); grid on; hold on;  legend(); 
 plot(f_vector_accel, picos_ddx_tgt_T,'-', 'LineWidth' , 2, 'Color', color1, 'DisplayName', 'Target');% - Normal
 plot(f_vector_accel, picos_ddx_T_tuned,'--', 'LineWidth' , 2, 'Color', color2, 'DisplayName',sprintf( 'Tuned PIDF -  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_T_tuned).^2 )));% - Normal
 plot(f_vector_accel, picos_ddx_T_LQI,'--', 'LineWidth' , 2 , 'Color', color3, 'DisplayName',sprintf( 'Optimal Control - MSE= %.2e',   mean((picos_ddx_tgt_T-picos_ddx_T_LQI).^2 )));
@@ -223,9 +220,9 @@ plot(f_vector_accel, picos_ddx_T_acq_0 ,'-', 'LineWidth' , 2, 'Color', color4, '
 plot(f_vector_accel, picos_ddx_T_acq_1 ,'-', 'LineWidth' , 2, 'DisplayName',sprintf( 'Adapted driver 1 -  MSE= %.2e', mean((picos_ddx_tgt_T-picos_ddx_T_acq_1).^2 )));
 plot(f_vector_accel, picos_ddx_T_acq_2 ,'-', 'LineWidth' , 2, 'DisplayName',sprintf( 'Adapted driver 2 -  MSE= %.2e', mean((picos_ddx_tgt_T-picos_ddx_T_acq_2).^2 )));
 plot(f_vector_accel, picos_ddx_T_acq_3 ,'-', 'LineWidth' , 2, 'DisplayName',sprintf( 'Adapted driver 3 -  MSE= %.2e', mean((picos_ddx_tgt_T-picos_ddx_T_acq_3).^2 )));
-legend(); 
+% set(gca, 'XScale', 'log');
 
-subplot(122); grid on;hold on; set(gca, 'XScale', 'log');
+subplot(122); grid on;hold on; legend(); 
 plot(f_vector_disp, picos_x_tgt_T,'-', 'LineWidth' , 2, 'Color', color1, 'DisplayName', 'Target ');%- Normal
 plot(f_vector_disp, picos_x_T_tuned,'--', 'LineWidth' , 2, 'Color', color2, 'DisplayName',sprintf( 'Tuned PIDF - MSE= %.2e',     mean((picos_x_tgt_T-picos_x_T_tuned).^2 )));%- Normal
 plot(f_vector_disp, picos_x_T_LQI,'--', 'LineWidth' , 2, 'Color', color3, 'DisplayName',sprintf( 'Optimal Control - MSE= %.2e',  mean((picos_x_tgt_T-picos_x_T_LQI).^2 )));
@@ -233,13 +230,12 @@ plot(f_vector_disp, picos_x_T_acq_0, '-', 'LineWidth' , 2, 'Color', color4, 'Dis
 plot(f_vector_disp, picos_x_T_acq_1, '-', 'LineWidth' , 2,  'DisplayName',sprintf( 'Adapted driver 1 - MSE= %.2e', mean((picos_x_tgt_T-picos_x_T_acq_1).^2 )));
 plot(f_vector_disp, picos_x_T_acq_2, '-', 'LineWidth' , 2,  'DisplayName',sprintf( 'Adapted driver 2 - MSE= %.2e', mean((picos_x_tgt_T-picos_x_T_acq_2).^2 )));
 plot(f_vector_disp, picos_x_T_acq_3, '-', 'LineWidth' , 2,  'DisplayName',sprintf( 'Adapted driver 3 - MSE= %.2e', mean((picos_x_tgt_T-picos_x_T_acq_3).^2 )));
-legend();
-%fontsize(scale=1.8);
+% set(gca, 'XScale', 'log');
+fontsize(scale=1.8);set(fig8, 'WindowState', 'maximized');
 
 % Create Figures - Longitudinal
 fig9 = figure(9);subplot(121); grid on;xlabel('Frequency (Hz)');ylabel('Acceleration (m/s^2)');title('Acceleration Response Spectra - Fault Parallel');xlim(accel_lims);%ylim([0 ceil(max(picos_ddx_L_tuned(1:385,1))) ])
 subplot(122);grid on;xlabel('Frequency (Hz)');ylabel('Displacement (m)');title('Displacement Response Spectra - Fault Parallel');xlim([0.1 5]);
-fontsize(scale=1.8);
 figure(fig9); subplot(121); grid on; legend(); hold on;
 plot(f_vector_accel, picos_ddx_tgt_L,'-', 'LineWidth' , 2, 'Color', color1, 'DisplayName', 'Target');% - Normal
 plot(f_vector_accel, picos_ddx_L_tuned,'--', 'LineWidth' , 2, 'Color', color2, 'DisplayName',sprintf( 'Tuned PIDF -  MSE= %.2e',      mean((picos_ddx_tgt_L-picos_ddx_L_tuned).^2 )));% - Normal
@@ -248,7 +244,7 @@ plot(f_vector_accel, picos_ddx_L_acq_0 ,'-', 'LineWidth' , 2, 'Color', color4, '
 plot(f_vector_accel, picos_ddx_L_acq_1 ,'-', 'LineWidth' , 2, 'DisplayName',sprintf( 'Adapted driver 1 -  MSE= %.2e', mean((picos_ddx_tgt_L-picos_ddx_L_acq_1).^2 )));
 plot(f_vector_accel, picos_ddx_L_acq_2 ,'-', 'LineWidth' , 2, 'DisplayName',sprintf( 'Adapted driver 2 -  MSE= %.2e', mean((picos_ddx_tgt_L-picos_ddx_L_acq_2).^2 )));
 plot(f_vector_accel, picos_ddx_L_acq_3 ,'-', 'LineWidth' , 2, 'DisplayName',sprintf( 'Adapted driver 3 -  MSE= %.2e', mean((picos_ddx_tgt_L-picos_ddx_L_acq_3).^2 )));
-set(gca, 'XScale', 'log');
+% set(gca, 'XScale', 'log');
 subplot(122); grid on;legend();hold on;
 plot(f_vector_disp, picos_x_tgt_L,'-', 'LineWidth' , 2, 'Color', color1, 'DisplayName', 'Target ');%- Normal
 plot(f_vector_disp, picos_x_L_tuned,'--', 'LineWidth' , 2, 'Color', color2, 'DisplayName',sprintf( 'Tuned PIDF - MSE= %.2e',     mean((picos_x_tgt_L-picos_x_L_tuned).^2 )));%- Normal
@@ -257,18 +253,26 @@ plot(f_vector_disp, picos_x_L_acq_0, '-', 'LineWidth' , 2, 'Color', color4, 'Dis
 plot(f_vector_disp, picos_x_L_acq_1, '-', 'LineWidth' , 2,  'DisplayName',sprintf( 'Adapted driver 1 - MSE= %.2e', mean((picos_x_tgt_L-picos_x_L_acq_1).^2 )));
 plot(f_vector_disp, picos_x_L_acq_2, '-', 'LineWidth' , 2,  'DisplayName',sprintf( 'Adapted driver 2 - MSE= %.2e', mean((picos_x_tgt_L-picos_x_L_acq_2).^2 )));
 plot(f_vector_disp, picos_x_L_acq_3, '-', 'LineWidth' , 2,  'DisplayName',sprintf( 'Adapted driver 3 - MSE= %.2e', mean((picos_x_tgt_L-picos_x_L_acq_3).^2 )));
-set(gca, 'XScale', 'log');
+% set(gca, 'XScale', 'log');
+fontsize(scale=1.8);set(fig9, 'WindowState', 'maximized');
 
-
-set(fig8, 'WindowState', 'maximized'); set(fig9, 'WindowState', 'maximized');
+%%
+baseFolder = folder;   % Base folder where you want to create the timestamped subfolder
+ts = datestr(now, 'yyyymmdd_HHMM');  % Create a timestamp string, e.g. '20250709_1530'
+timeDir = fullfile(baseFolder, ts);  % Build the full path to the new folder
+if ~exist(timeDir, 'dir')% Create it if it doesn't already exist
+    mkdir(timeDir)
+end
+exportgraphics(fig8,fullfile(timeDir,'Response_Spectra_N.png'),'Resolution', 300,'BackgroundColor', 'white','ContentType', 'image');
+exportgraphics(fig9,fullfile(timeDir,'Response_Spectra_P.png'),'Resolution', 300,'BackgroundColor', 'white','ContentType', 'image');
 
 %% Simulation using updated driver 4
 % LTF_to_TXT_then_load( [ name, '_4.DRV' ] ,'InputFolder',folder)
 % x_T_acq_4 = lsim(CL ,  x_drv_T_4 , time_vector,'zoh');
-% ddx_T_acq_4 = secondDerivativeTime(x_T_acq_4 , Ts);
+% ddx_T_acq_4 = secondDerivativeTime3(x_T_acq_4 , Ts);
 % % writeTXT_then_LTF(time_vector,x_T_acq_4,ddx_T_acq_4,folder,[ name, '_4.ACQ.txt' ]);
 % x_L_acq_4 = lsim(CL ,  x_drv_L_4 , time_vector,'zoh');
-% ddx_L_acq_4 = secondDerivativeTime(x_L_acq_4 , Ts);
+% ddx_L_acq_4 = secondDerivativeTime3(x_L_acq_4 , Ts);
 % writeTXT_then_LTF(time_vector,[x_T_acq_4,x_L_acq_4],[ddx_T_acq_4,ddx_L_acq_4],folder, [ name, '_4.ACQ.txt' ]); 
 % 
 % [picos_ddx_T_acq_4  , picos_x_T_acq_4 ] = ResponseSpectrum( f_vector_accel, ddx_T_acq_4 , x_T_acq_4, f_vector_disp);
@@ -286,11 +290,7 @@ set(fig8, 'WindowState', 'maximized'); set(fig9, 'WindowState', 'maximized');
 % plot(f_vector_disp, picos_x_L_acq_4, '-', 'LineWidth' , 2,  'DisplayName',sprintf( 'Adapted driver 4 - MSE= %.2e', mean((picos_x_tgt_L-picos_x_L_acq_4).^2 )));
 
 %%
-baseFolder = folder;   % Base folder where you want to create the timestamped subfolder
-ts = datestr(now, 'yyyymmdd_HHMM');  % Create a timestamp string, e.g. '20250709_1530'
-timeDir = fullfile(baseFolder, ts);  % Build the full path to the new folder
-if ~exist(timeDir, 'dir')% Create it if it doesn't already exist
-    mkdir(timeDir)
-end
-exportgraphics(fig8,fullfile(timeDir,'Response_Spectra_N.png'),'Resolution', 300,'BackgroundColor', 'white','ContentType', 'image');
-exportgraphics(fig9,fullfile(timeDir,'Response_Spectra_P.png'),'Resolution', 300,'BackgroundColor', 'white','ContentType', 'image');
+% figure;hold on;
+% plot(time_vector , ddx_tgt_L);
+% int2_ddx_tgt_L=lsim(tf(1,[1 0 0],Ts) ,  ddx_tgt_L,time_vector )
+% plot(time_vector , int2_ddx_tgt_L);
