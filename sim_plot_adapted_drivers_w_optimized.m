@@ -4,7 +4,7 @@ addpath ('C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataform
     'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\functions_matlab')
 %%
 launch_Adapt =0; % Set to 1 to lauch Adapt.exe
-return_on = 1; % Set to 1 for execution to stop before adapting drivers, or set to 0 if the adapted drivers have already been generated
+return_on = 0; % Set to 1 for execution to stop before adapting drivers, or set to 0 if the adapted drivers have already been generated
 %% Bode Options
 opts1=bodeoptions('cstprefs');opts1.FreqUnits = 'Hz';opts1.XLim={[1 100]};opts1.PhaseWrapping="on";opts1.PhaseWrappingBranch=-360;
 opts1.PhaseVisible='off'; opts1.YLim={[-30 10]};
@@ -40,33 +40,34 @@ sumblk1 = sumblk('e = x_ref - y_xT'); % Compute the error signal: e = r - y
 integrator = tf(1,[1 -1], Ts);  integrator.InputName = {'e'};  integrator.OutputName = {'xi'};  % The integrator integrates the tracking error. % error: e = r - y % integrated error
 
 %% Load target
-folder  =  'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\optimized_benchmark_results\Jiji\';
-target = 'jiji.tgt'; 
+folder  =  'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\optimized_benchmark_results\Rinaldi\';
+target = 'rinaldi.tgt'; 
 LTF_to_TXT_then_load(target,'InputFolder', folder)
 
 disp_limit=4e-3; max_tgt = max(abs([x_tgt_T; x_tgt_L]))
 if max_tgt>disp_limit
-    scale = 0.001 %round(disp_limit/max_tgt , 4)
+    scale = round(disp_limit/max_tgt , 3)
     x_tgt_T   = scale*x_tgt_T; ddx_tgt_T = scale*ddx_tgt_T;  x_tgt_L   = scale*x_tgt_L;ddx_tgt_L = scale*ddx_tgt_L;
 end
 max_abs_x_tgt_T = max( abs( x_tgt_T ))
 max_abs_x_tgt_L = max( abs( x_tgt_L ))
 
 %% ── Run the optimisation of Q
-Q1_0 = 4.5183e+14; Q2_0 = 3.4447e-01; Q3_0 = 4.0431e+03; Q4_0 = 5.1600e-02; Qi_0 =3.1503e+15; % Tolmezo % for Kp = 10 
-% Q1_0 = 1;  Q2_0 = 1;  Q3_0 = 1;  Q4_0 = 1;  Qi_0 = 10;
+Q1_0 = 4.5183e+14; Q2_0 = 3.4447e-01; Q3_0 = 4.0431e+03; Q4_0 = 5.1600e-02; Qi_0 =3.1503e+16; % Tolmezo % for Kp = 10 
+%Q1_0 = 1;  Q2_0 = 1;  Q3_0 = 1;  Q4_0 = 1;  Qi_0 = 10;
 
 log_q0 = log([Q1_0, Q2_0, Q3_0, Q4_0, Qi_0]);
 outputFcn = @(~, ov, state) recordAndStop(ov, state);
 opts_opt = optimset('Display',     'iter', ...
-                    'TolX',        1e-3,  ...
-                    'TolFun',      1e-5,  ...
+                    'TolX',        1e-3,  ...%                    'TolX',        1e-3,  ...
+                    'TolFun',      1e-3,  ... %                    'TolFun',      1e-5,  ...
                     'MaxFunEvals', 1e12,   ...
                     'MaxIter',     1e12,   ...
                     'OutputFcn',   outputFcn);
 
-picos_ddx_tgt_T_ForCost = ResponseSpectrumForCost(  ddx_tgt_T );
-objFun = @(log_q) AccelSpectraCost(log_q, OL_200, plant_aug, integrator, sumblk1,   n_states, picos_ddx_tgt_T_ForCost , ddx_tgt_T , time_vector );
+% picos_ddx_tgt_T_ForCost = ResponseSpectrumForCost(  ddx_tgt_T );
+picos_ddx_tgt_L_ForCost = ResponseSpectrumForCost(  ddx_tgt_L );
+objFun = @(log_q) AccelSpectraCost(log_q, OL_200, plant_aug, integrator, sumblk1,   n_states, picos_ddx_tgt_L_ForCost , ddx_tgt_L , time_vector );
 
 fprintf('=== Starting Q optimisation ===\n');
 [log_q_best, J_best] = fminsearch(objFun, log_q0, opts_opt);

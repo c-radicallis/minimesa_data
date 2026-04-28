@@ -3,8 +3,8 @@ function picos_ddx_m = ResponseSpectrumForCost( ref_accel)
     zeta = 0.05;
 
     f_i      = 0.1;
-    f_n      = 20;
-    n_points = 1e3;
+    f_n      = 30;
+    n_points = 2e3;
     f_vector = logspace(log10(f_i), log10(f_n), n_points);
 
     picos_ddx_m = zeros(n_points, 1);
