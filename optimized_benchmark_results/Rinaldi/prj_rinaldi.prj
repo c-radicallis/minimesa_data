@@ -25,7 +25,7 @@
 <NumElts>1</NumElts>
 <Path>
 <Name>Target File</Name>
-<Val>C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\optimized_benchmark_results\Rinaldi\rinaldi.tgt</Val>
+<Val>C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\optimized_benchmark_results\Rinaldi\rinaldi_costape10_time.tgt</Val>
 </Path>
 </Cluster>
 </Cluster>
@@ -184,11 +184,11 @@
 </DBL>
 <DBL>
 <Name>Max. Freq. Compensation</Name>
-<Val>12.00000000000000</Val>
+<Val>5.00000000000000</Val>
 </DBL>
 <DBL>
 <Name>Correction Factor</Name>
-<Val>0.65000000000000</Val>
+<Val>1.00000000000000</Val>
 </DBL>
 <Boolean>
 <Name>Enable</Name>
@@ -204,11 +204,11 @@
 </DBL>
 <DBL>
 <Name>Max. Freq. Compensation</Name>
-<Val>30.00000000000000</Val>
+<Val>15.00000000000000</Val>
 </DBL>
 <DBL>
 <Name>Correction Factor</Name>
-<Val>1.00000000000000</Val>
+<Val>0.60000000000000</Val>
 </DBL>
 <Boolean>
 <Name>Enable</Name>
@@ -238,6 +238,6 @@
 </Array>
 <DBL>
 <Name>Target Multiplier</Name>
-<Val>1.20000000000000E-2</Val>
+<Val>1.40000000000000E-2</Val>
 </DBL>
 </LVData>

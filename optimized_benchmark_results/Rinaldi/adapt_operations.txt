@@ -1,0 +1,52 @@
+Normal = 20260428_1747
+Parallel = optimized_benchmark_results\Rinaldi\20260428_1648
+
+drv_0   30  1   30  1
+drv_1   30  0.6 30  0.6
+drv_2   15  0.6 15  0.6
+drv_3   10  0.6 10  0.6
+optimized_benchmark_results\Rinaldi\20260428_1652
+
+drv_0   30  1   30  1
+drv_1   30  0.6 30  0.6
+drv_2   12  0.6 15  0.6
+drv_3   10  0.6 15  0.6
+optimized_benchmark_results\Rinaldi\20260428_1658
+
+drv_0   30  1  
+drv_1   30  0.75
+drv_2   15  0.5
+drv_3   7  0.25
+optimized_benchmark_results\Rinaldi\20260428_1703
+
+drv_0   30  1  
+drv_1   25  0.6
+drv_2   15  0.5
+drv_3   10  0.5
+
+drv_0   30  0.5  
+drv_1   20  0.5
+drv_2   10  0.5
+drv_3   5  0.5
+
+drv_0   12  0.5  
+drv_1   12  0.5
+drv_2   12  0.5
+drv_3   12  0.5
+optimized_benchmark_results\Rinaldi\20260428_1710
+
+drv_0   30  0.4
+drv_1   30  0.4
+drv_2   15  0.4
+drv_3   7  0.4
+
+drv_0  0.95 30  1
+drv_1  0.95 11  0.5
+drv_2  0.95 11  0.5
+drv_3  0.95 11  0.25
+
+drv_0 30 1
+drv_1 5  1
+drv_2 5  1
+drv_3 5  1
+optimized_benchmark_results\Rinaldi\20260428_1747 = Normal direction okay

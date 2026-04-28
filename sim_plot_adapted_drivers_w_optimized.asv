@@ -42,24 +42,21 @@ integrator = tf(1,[1 -1], Ts);  integrator.InputName = {'e'};  integrator.Output
 %% Load target Rinaldi_Fernando
 % Rinaldi_Fernando= load('C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\optimized_benchmark_results\Rinaldi\RinaldiShakingTable.mat')
 % cols = num2cell(Rinaldi_Fernando.data, 1); [time_100, ddx_tgt_T_FO, ddx_tgt_L_FO] = cols{:};
-% 
-% jiji_intVX_XVA = load('C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\optimized_benchmark_results\Jiji\jiji_intVX_XVA.mat')
-% data_out = [jiji_intVX_XVA.data.time, jiji_intVX_XVA.data.a];% Combine time and a into one matrix
-% writematrix(data_out, 'jiji_intVX_XVA.txt', 'Delimiter', '\t'); % Write to text file
-% 
-% %
-% disp_limit=4e-3; max_tgt = max(abs([x_tgt_T_FO; x_tgt_L_FO]))
-% if max_tgt>disp_limit
-%     scale = round(disp_limit/max_tgt , 3)
-%     x_tgt_T_FO   = scale*x_tgt_T_FO; ddx_tgt_T_FO = scale*ddx_tgt_T_FO;  x_tgt_L_FO   = scale*x_tgt_L_FO;ddx_tgt_L_FO = scale*ddx_tgt_L_FO;
-% end
-% max_abs_x_tgt_T = max( abs( x_tgt_T_FO ))
-% max_abs_x_tgt_L = max( abs( x_tgt_L_FO ))
-% 
-% scale_FO = max(abs(ddx_tgt_L))/max(abs(ddx_tgt_L_FO))
-% figure; plot( time_vector , ddx_tgt_L , time_100, ddx_tgt_L_FO*scale_FO,'-')
-% picos_ddx_tgt_L_FO = ResponseSpectrum(f_vector_accel, ddx_tgt_L);
-% figure; plot(f_vector_accel, picos_ddx_tgt_L, f_vector_accel, picos_ddx_tgt_L_FO)
+
+
+
+disp_limit=4e-3; max_tgt = max(abs([x_tgt_T_FO; x_tgt_L_FO]))
+if max_tgt>disp_limit
+    scale = round(disp_limit/max_tgt , 3)
+    x_tgt_T_FO   = scale*x_tgt_T_FO; ddx_tgt_T_FO = scale*ddx_tgt_T_FO;  x_tgt_L_FO   = scale*x_tgt_L_FO;ddx_tgt_L_FO = scale*ddx_tgt_L_FO;
+end
+max_abs_x_tgt_T = max( abs( x_tgt_T_FO ))
+max_abs_x_tgt_L = max( abs( x_tgt_L_FO ))
+
+scale_FO = max(abs(ddx_tgt_L))/max(abs(ddx_tgt_L_FO))
+figure; plot( time_vector , ddx_tgt_L , time_100, ddx_tgt_L_FO*scale_FO,'-')
+picos_ddx_tgt_L_FO = ResponseSpectrum(f_vector_accel, ddx_tgt_L);
+figure; plot(f_vector_accel, picos_ddx_tgt_L, f_vector_accel, picos_ddx_tgt_L_FO)
 
 %% Load target 
 folder  =  'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\optimized_benchmark_results\Jiji\';
