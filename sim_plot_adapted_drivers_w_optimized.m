@@ -148,7 +148,7 @@ if return_on
 end   % execution stops here; lines below wonnt run
 
 %% Simulation using updated driver 0
-name = target(1 : end-4); %#ok<UNRCH>
+name = target(1 : end-4); 
 LTF_to_TXT_then_load( [ name, '_0.DRV' ] ,'InputFolder',folder)
 
 x_T_acq_0 = lsim(CL ,  x_drv_T_0 , time_vector,'zoh');
