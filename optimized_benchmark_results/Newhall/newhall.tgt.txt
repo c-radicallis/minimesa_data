@@ -1,8 +1,8 @@
 LNEC Test File eXtractor
 
-File: newhall.tgt
+File: Newhall.tgt
 
-Created in: 2026-04-27 15:55:07.733850
+Created in: 2026-05-01 18:57:29.118375
 
 Number of channels: 6
 

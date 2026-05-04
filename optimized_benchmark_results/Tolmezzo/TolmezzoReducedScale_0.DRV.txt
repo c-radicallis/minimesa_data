@@ -1,8 +1,8 @@
 LNEC Test File eXtractor
 
-File: TolmezzoReducedScale_0.DRV
+File: tolmezzoReducedScale_0.DRV
 
-Created in: 2026-04-27 15:48:29.156049
+Created in: 2026-05-01 11:58:05.722665
 
 Number of channels: 3
 

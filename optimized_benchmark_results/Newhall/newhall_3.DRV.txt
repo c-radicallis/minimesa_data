@@ -1,8 +1,8 @@
 LNEC Test File eXtractor
 
-File: newhall_3.DRV
+File: Newhall_3.DRV
 
-Created in: 2026-04-27 16:03:49.125141
+Created in: 2026-05-01 19:00:17.697943
 
 Number of channels: 3
 
