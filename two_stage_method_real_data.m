@@ -70,6 +70,7 @@ file = 'pink_noise_40Hz_T3mm_0.drv'; % load input drv
 LTF_to_TXT_then_load( file , 'InputFolder', input_file_folder , 'OutputFolder', input_file_folder); % load input drv
 x_drv_T_0 = x_drv_T_0*1e3; % convert to mm
 clear x_drv_L_0  x_drv_V_0
+% fs=200; figure; pspectrum(x_drv_T_0,fs); xscale log;
 
 %%  data_P5
 % folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
@@ -88,7 +89,6 @@ x_acq_T = x_acq_T*1e3;
 sv2_acq = bits2mm( -sv2_acq ); %output is inverted because the wiring is fliped
 Kp=7
 results_P7_pink = twoStageMethod(Kp , fir_np, np_CL , np_OL,  Ts , opts1, sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T);
-
 
 %%  Data P10
 folder_0711 ='C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\7-11-2025\';
