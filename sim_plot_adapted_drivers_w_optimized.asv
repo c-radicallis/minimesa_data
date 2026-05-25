@@ -136,8 +136,8 @@ ddx_L_tuned = secondDerivativeTime(x_L_tuned , Ts);
 % opts1.MagUnits='abs';opts1.MagScale='log'; opts1.FreqScale='linear'; opts1.XLim={[1 40]}; opts1.YLim={[0.1 1]};
 % CL_P10 = feedback(10*OL_200, 1);
 CL = id_results.CL;
-% figure; hold on; bodeplot(CL, CL_PIDF, CL_LQI , opts1); grid on;  %CL_P10,
-% legend("Direct Identification",'PID-F','LQI');
+figure; hold on; bodeplot(CL, CL_PIDF, CL_LQI , opts1); grid on;  %CL_P10,
+legend("Direct Identification",'PID-F','LQI');
 
 %% Lauch Adapt.exe % note the empty quotes "" are the window title placeholder
 if launch_Adapt
@@ -157,9 +157,9 @@ LTF_to_TXT_then_load( [ name, '_0.DRV' ] ,'InputFolder',folder)
 x_T_acq_0 = lsim(CL ,  x_drv_T_0 , time_vector,'zoh');
 ddx_T_acq_0 = secondDerivativeTime(x_T_acq_0 , Ts);
 % writeTXT_then_LTF(time_vector,x_T_acq_0,ddx_T_acq_0,folder,[ name,'_0.ACQ.txt' ]); % -----  for Transverse direction only -----
-% x_L_acq_0 = lsim(CL ,  x_drv_L_0 , time_vector,'zoh');
-% ddx_L_acq_0 = secondDerivativeTime(x_L_acq_0 , Ts);
-% writeTXT_then_LTF(time_vector,[x_T_acq_0,x_L_acq_0],[ddx_T_acq_0,ddx_L_acq_0],folder,[ name, '_0.ACQ.txt' ]);
+x_L_acq_0 = lsim(CL ,  x_drv_L_0 , time_vector,'zoh');
+ddx_L_acq_0 = secondDerivativeTime(x_L_acq_0 , Ts);
+writeTXT_then_LTF(time_vector,[x_T_acq_0,x_L_acq_0],[ddx_T_acq_0,ddx_L_acq_0],folder,[ name, '_0.ACQ.txt' ]);
 
 fprintf("\n \n Go to Adapt.exe and generate driver 1 (Click 'Process' button)\n \n" + ...
     "Then return to matlab and run the cell which simulates the output from the generated driver 1 ")
@@ -172,9 +172,9 @@ LTF_to_TXT_then_load( [ name, '_1.DRV' ] ,'InputFolder',folder)
 x_T_acq_1 = lsim(CL ,  x_drv_T_1 , time_vector,'zoh');
 ddx_T_acq_1 = secondDerivativeTime(x_T_acq_1 , Ts);
 % writeTXT_then_LTF(time_vector,x_T_acq_1,ddx_T_acq_1,folder,[ name, '_1.ACQ.txt' ]);
-% x_L_acq_1 = lsim(CL ,  x_drv_L_1 , time_vector,'zoh');
-% ddx_L_acq_1 = secondDerivativeTime(x_L_acq_1 , Ts);
-% writeTXT_then_LTF(time_vector,[x_T_acq_1,x_L_acq_1],[ddx_T_acq_1,ddx_L_acq_1],folder, [ name, '_1.ACQ.txt' ]); 
+x_L_acq_1 = lsim(CL ,  x_drv_L_1 , time_vector,'zoh');
+ddx_L_acq_1 = secondDerivativeTime(x_L_acq_1 , Ts);
+writeTXT_then_LTF(time_vector,[x_T_acq_1,x_L_acq_1],[ddx_T_acq_1,ddx_L_acq_1],folder, [ name, '_1.ACQ.txt' ]); 
 
 fprintf("\n \n Go to Adapt.exe and generate driver 2 (Click 'Next Iteration' and then 'Process' button) \n \n " + ...
     "Then return to matlab and run the cell which simulates the output from the generated driver 2 ")
@@ -187,9 +187,9 @@ LTF_to_TXT_then_load( [ name, '_2.DRV' ] ,'InputFolder',folder)
 x_T_acq_2 = lsim(CL ,  x_drv_T_2 , time_vector,'zoh');
 ddx_T_acq_2 = secondDerivativeTime(x_T_acq_2 , Ts);
 % writeTXT_then_LTF(time_vector,x_T_acq_2,ddx_T_acq_2,folder,[ name, '_2.ACQ.txt' ]);
-% x_L_acq_2 = lsim(CL ,  x_drv_L_2 , time_vector,'zoh');
-% ddx_L_acq_2 = secondDerivativeTime(x_L_acq_2 , Ts);
-% writeTXT_then_LTF(time_vector,[x_T_acq_2,x_L_acq_2],[ddx_T_acq_2,ddx_L_acq_2],folder, [ name, '_2.ACQ.txt' ]); 
+x_L_acq_2 = lsim(CL ,  x_drv_L_2 , time_vector,'zoh');
+ddx_L_acq_2 = secondDerivativeTime(x_L_acq_2 , Ts);
+writeTXT_then_LTF(time_vector,[x_T_acq_2,x_L_acq_2],[ddx_T_acq_2,ddx_L_acq_2],folder, [ name, '_2.ACQ.txt' ]); 
 
 fprintf("\n \n Go to Adapt.exe and generate driver 3 (Click 'Next Iteration' and then 'Process' button) \n \n" + ...
     "Then return to matlab and run the cell which simulates the output from the generated driver 3 ")
@@ -202,9 +202,9 @@ LTF_to_TXT_then_load( [ name, '_3.DRV' ] ,'InputFolder',folder)
 x_T_acq_3 = lsim(CL ,  x_drv_T_3 , time_vector,'zoh');
 ddx_T_acq_3 = secondDerivativeTime(x_T_acq_3 , Ts);
 % writeTXT_then_LTF(time_vector,x_T_acq_3,ddx_T_acq_3,folder,[ name, '_3.ACQ.txt' ]);
-% x_L_acq_3 = lsim(CL ,  x_drv_L_3 , time_vector,'zoh');
-% ddx_L_acq_3 = secondDerivativeTime(x_L_acq_3 , Ts);
-% writeTXT_then_LTF(time_vector,[x_T_acq_3,x_L_acq_3],[ddx_T_acq_3,ddx_L_acq_3],folder, [ name, '_3.ACQ.txt' ]); 
+x_L_acq_3 = lsim(CL ,  x_drv_L_3 , time_vector,'zoh');
+ddx_L_acq_3 = secondDerivativeTime(x_L_acq_3 , Ts);
+writeTXT_then_LTF(time_vector,[x_T_acq_3,x_L_acq_3],[ddx_T_acq_3,ddx_L_acq_3],folder, [ name, '_3.ACQ.txt' ]); 
 
 %% Response Spectra settings
 f_i=0.1; %freq inicial
@@ -215,13 +215,13 @@ f_vector_disp = f_vector_accel(1:344);max(f_vector_disp)
 
 %%  % Finding Response Spectre  of Target
 [picos_ddx_tgt_T , picos_x_tgt_T] = ResponseSpectrum(f_vector_accel, ddx_tgt_T, x_tgt_T, f_vector_disp);
-% [picos_ddx_tgt_L , picos_x_tgt_L] = ResponseSpectrum(f_vector_accel, ddx_tgt_L, x_tgt_L, f_vector_disp);
+[picos_ddx_tgt_L , picos_x_tgt_L] = ResponseSpectrum(f_vector_accel, ddx_tgt_L, x_tgt_L, f_vector_disp);
 
-% [picos_ddx_T_tuned , picos_x_T_tuned] = ResponseSpectrum( f_vector_accel, ddx_T_tuned, x_T_tuned , f_vector_disp); % Response Spectre  of PIDF
-% [picos_ddx_L_tuned , picos_x_L_tuned] = ResponseSpectrum( f_vector_accel, ddx_L_tuned, x_L_tuned , f_vector_disp);
-% 
-% [picos_ddx_T_LQI , picos_x_T_LQI] = ResponseSpectrum( f_vector_accel, ddx_T_LQI, x_T_LQI , f_vector_disp);% Response Spectre  of Optimal
-% [picos_ddx_L_LQI , picos_x_L_LQI] = ResponseSpectrum( f_vector_accel, ddx_L_LQI, x_L_LQI , f_vector_disp);
+[picos_ddx_T_tuned , picos_x_T_tuned] = ResponseSpectrum( f_vector_accel, ddx_T_tuned, x_T_tuned , f_vector_disp); % Response Spectre  of PIDF
+[picos_ddx_L_tuned , picos_x_L_tuned] = ResponseSpectrum( f_vector_accel, ddx_L_tuned, x_L_tuned , f_vector_disp);
+
+[picos_ddx_T_LQI , picos_x_T_LQI] = ResponseSpectrum( f_vector_accel, ddx_T_LQI, x_T_LQI , f_vector_disp);% Response Spectre  of Optimal
+[picos_ddx_L_LQI , picos_x_L_LQI] = ResponseSpectrum( f_vector_accel, ddx_L_LQI, x_L_LQI , f_vector_disp);
 
 % Computing Response spectra of Adapted
 [picos_ddx_T_acq_0  , picos_x_T_acq_0 ] = ResponseSpectrum( f_vector_accel, ddx_T_acq_0 , x_T_acq_0, f_vector_disp);
@@ -229,10 +229,10 @@ f_vector_disp = f_vector_accel(1:344);max(f_vector_disp)
 [picos_ddx_T_acq_2  , picos_x_T_acq_2 ] = ResponseSpectrum( f_vector_accel, ddx_T_acq_2 , x_T_acq_2, f_vector_disp);
 [picos_ddx_T_acq_3  , picos_x_T_acq_3 ] = ResponseSpectrum( f_vector_accel, ddx_T_acq_3 , x_T_acq_3, f_vector_disp);
 
-% [picos_ddx_L_acq_0  , picos_x_L_acq_0 ] = ResponseSpectrum( f_vector_accel, ddx_L_acq_0 , x_L_acq_0, f_vector_disp);
-% [picos_ddx_L_acq_1  , picos_x_L_acq_1 ] = ResponseSpectrum( f_vector_accel, ddx_L_acq_1 , x_L_acq_1, f_vector_disp);
-% [picos_ddx_L_acq_2  , picos_x_L_acq_2 ] = ResponseSpectrum( f_vector_accel, ddx_L_acq_2 , x_L_acq_2, f_vector_disp);
-% [picos_ddx_L_acq_3 , picos_x_L_acq_3] = ResponseSpectrum( f_vector_accel  , ddx_L_acq_3 , x_L_acq_3, f_vector_disp);
+[picos_ddx_L_acq_0  , picos_x_L_acq_0 ] = ResponseSpectrum( f_vector_accel, ddx_L_acq_0 , x_L_acq_0, f_vector_disp);
+[picos_ddx_L_acq_1  , picos_x_L_acq_1 ] = ResponseSpectrum( f_vector_accel, ddx_L_acq_1 , x_L_acq_1, f_vector_disp);
+[picos_ddx_L_acq_2  , picos_x_L_acq_2 ] = ResponseSpectrum( f_vector_accel, ddx_L_acq_2 , x_L_acq_2, f_vector_disp);
+[picos_ddx_L_acq_3 , picos_x_L_acq_3] = ResponseSpectrum( f_vector_accel  , ddx_L_acq_3 , x_L_acq_3, f_vector_disp);
 
 %% 
 close all;
@@ -242,30 +242,22 @@ subplot(122);grid on;xlabel('Frequency (Hz)');ylabel('Displacement (m)');title('
 color1 = 'blue';color2 = 'red' ;color3 = '#EDB120'; color4 = 'black';c = get(groot, 'DefaultAxesColorOrder'); color5 = c(5,:); color6 = c(6,:); color7 = c(7,:);
 figure(fig8); subplot(121); grid on; hold on;  legend(); 
 plot(f_vector_accel, picos_ddx_tgt_T,'-', 'LineWidth' , 2, 'Color', color1, 'DisplayName', 'Target');% - Normal
-% plot(f_vector_accel, picos_ddx_T_tuned,'--', 'LineWidth' , 2, 'Color', color2, 'DisplayName',sprintf( 'PID-F -  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_T_tuned).^2 )));% - Normal
-% plot(f_vector_accel, picos_ddx_T_LQI,'--', 'LineWidth' , 2 , 'Color', color3, 'DisplayName',sprintf( 'LQI - MSE= %.2e',   mean((picos_ddx_tgt_T-picos_ddx_T_LQI).^2 )));
-mse_val = mean((picos_ddx_tgt_T-picos_ddx_T_acq_0).^2 ); exponent = floor(log10(abs(mse_val))); base = mse_val / 10^exponent;
-plot(f_vector_accel, picos_ddx_T_acq_0 ,'-', 'LineWidth' , 2, 'Color', color4, 'DisplayName',sprintf('OLI driver 0 - MSE= %.2f ·10^{%d} m/s^{2}', base, exponent));
-mse_val = mean((picos_ddx_tgt_T-picos_ddx_T_acq_1).^2 ); exponent = floor(log10(abs(mse_val))); base = mse_val / 10^exponent;
-plot(f_vector_accel, picos_ddx_T_acq_1 ,'-', 'LineWidth' , 2, 'Color', color5, 'DisplayName',sprintf('OLI driver 1 - MSE= %.2f ·10^{%d} m/s^{2}', base, exponent));
-mse_val = mean((picos_ddx_tgt_T-picos_ddx_T_acq_2).^2 ); exponent = floor(log10(abs(mse_val))); base = mse_val / 10^exponent;
-plot(f_vector_accel, picos_ddx_T_acq_2 ,'-', 'LineWidth' , 2, 'Color', color6, 'DisplayName',sprintf('OLI driver 2 - MSE= %.2f ·10^{%d} m/s^{2}', base, exponent));
-mse_val = mean((picos_ddx_tgt_T-picos_ddx_T_acq_3).^2 ); exponent = floor(log10(abs(mse_val))); base = mse_val / 10^exponent;
-plot(f_vector_accel, picos_ddx_T_acq_3 ,'-', 'LineWidth' , 2, 'Color', color7, 'DisplayName',sprintf('OLI driver 3 - MSE= %.2f ·10^{%d} m/s^{2}', base, exponent));
+plot(f_vector_accel, picos_ddx_T_tuned,'--', 'LineWidth' , 2, 'Color', color2, 'DisplayName',sprintf( 'PID-F -  MSE= %.2e',      mean((picos_ddx_tgt_T-picos_ddx_T_tuned).^2 )));% - Normal
+plot(f_vector_accel, picos_ddx_T_LQI,'--', 'LineWidth' , 2 , 'Color', color3, 'DisplayName',sprintf( 'LQI - MSE= %.2e',   mean((picos_ddx_tgt_T-picos_ddx_T_LQI).^2 )));
+% plot(f_vector_accel, picos_ddx_T_acq_0 ,'-', 'LineWidth' , 2, 'Color', color4, 'DisplayName',sprintf( 'OLI driver 0 - MSE= %.2e', mean((picos_ddx_tgt_T-picos_ddx_T_acq_0).^2 )));
+% plot(f_vector_accel, picos_ddx_T_acq_1 ,'-', 'LineWidth' , 2, 'Color', color5, 'DisplayName',sprintf( 'OLI driver 1 -  MSE= %.2e', mean((picos_ddx_tgt_T-picos_ddx_T_acq_1).^2 )));
+% plot(f_vector_accel, picos_ddx_T_acq_2 ,'-', 'LineWidth' , 2, 'Color', color6, 'DisplayName',sprintf( 'OLI driver 2 -  MSE= %.2e', mean((picos_ddx_tgt_T-picos_ddx_T_acq_2).^2 )));
+plot(f_vector_accel, picos_ddx_T_acq_3 ,'-', 'LineWidth' , 2, 'Color', color7, 'DisplayName',sprintf( 'OLI driver 3 -  MSE= %.2e', mean((picos_ddx_tgt_T-picos_ddx_T_acq_3).^2 )));
 set(gca, 'XScale', 'log');
 
 subplot(122); grid on;hold on; legend(); 
 plot(f_vector_disp, picos_x_tgt_T,'-', 'LineWidth' , 2, 'Color', color1, 'DisplayName', 'Target ');%- Normal
-% plot(f_vector_disp, picos_x_T_tuned,'--', 'LineWidth' , 2, 'Color', color2, 'DisplayName',sprintf( 'PID-F - MSE= %.2e',     mean((picos_x_tgt_T-picos_x_T_tuned).^2 )));%- Normal
-% plot(f_vector_disp, picos_x_T_LQI,'--', 'LineWidth' , 2, 'Color', color3, 'DisplayName',sprintf( 'LQI - MSE= %.2e',  mean((picos_x_tgt_T-picos_x_T_LQI).^2 )));
-mse_val = mean((picos_x_tgt_T-picos_x_T_acq_0).^2 );  exponent = floor(log10(abs(mse_val))); base = mse_val / 10^exponent;
-plot(f_vector_disp, picos_x_T_acq_0, '-', 'LineWidth' , 2, 'Color', color4, 'DisplayName',sprintf('OLI driver 0 - MSE= %.2f ·10^{%d} m', base, exponent));
-mse_val = mean((picos_x_tgt_T-picos_x_T_acq_1).^2 );  exponent = floor(log10(abs(mse_val))); base = mse_val / 10^exponent;
-plot(f_vector_disp, picos_x_T_acq_1, '-', 'LineWidth' , 2, 'Color', color5, 'DisplayName',sprintf('OLI driver 1 - MSE= %.2f ·10^{%d} m', base, exponent));
-mse_val = mean((picos_x_tgt_T-picos_x_T_acq_2).^2 );  exponent = floor(log10(abs(mse_val))); base = mse_val / 10^exponent;
-plot(f_vector_disp, picos_x_T_acq_2, '-', 'LineWidth' , 2, 'Color', color6, 'DisplayName',sprintf('OLI driver 2 - MSE= %.2f ·10^{%d} m', base, exponent));
-mse_val = mean((picos_x_tgt_T-picos_x_T_acq_3).^2 );  exponent = floor(log10(abs(mse_val))); base = mse_val / 10^exponent;
-plot(f_vector_disp, picos_x_T_acq_3, '-', 'LineWidth' , 2, 'Color', color7, 'DisplayName',sprintf('OLI driver 3 - MSE= %.2f ·10^{%d} m', base, exponent));
+plot(f_vector_disp, picos_x_T_tuned,'--', 'LineWidth' , 2, 'Color', color2, 'DisplayName',sprintf( 'PID-F - MSE= %.2e',     mean((picos_x_tgt_T-picos_x_T_tuned).^2 )));%- Normal
+plot(f_vector_disp, picos_x_T_LQI,'--', 'LineWidth' , 2, 'Color', color3, 'DisplayName',sprintf( 'LQI - MSE= %.2e',  mean((picos_x_tgt_T-picos_x_T_LQI).^2 )));
+% plot(f_vector_disp, picos_x_T_acq_0, '-', 'LineWidth' , 2, 'Color', color4, 'DisplayName',sprintf( 'OLI driver 0 - MSE= %.2e', mean((picos_x_tgt_T-picos_x_T_acq_0).^2 )));
+% plot(f_vector_disp, picos_x_T_acq_1, '-', 'LineWidth' , 2, 'Color', color5, 'DisplayName',sprintf( 'OLI driver 1 - MSE= %.2e', mean((picos_x_tgt_T-picos_x_T_acq_1).^2 )));
+% plot(f_vector_disp, picos_x_T_acq_2, '-', 'LineWidth' , 2, 'Color', color6, 'DisplayName',sprintf( 'OLI driver 2 - MSE= %.2e', mean((picos_x_tgt_T-picos_x_T_acq_2).^2 )));
+plot(f_vector_disp, picos_x_T_acq_3, '-', 'LineWidth' , 2, 'Color', color7, 'DisplayName',sprintf( 'OLI driver 3 - MSE= %.2e', mean((picos_x_tgt_T-picos_x_T_acq_3).^2 )));
 set(gca, 'XScale', 'log');
 fontsize(scale=1.8);set(fig8, 'WindowState', 'maximized');
 %%

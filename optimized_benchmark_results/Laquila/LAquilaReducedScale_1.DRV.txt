@@ -1,8 +1,8 @@
 LNEC Test File eXtractor
 
-File: laquilaReducedScale_1.DRV
+File: LAquilaReducedScale_1.DRV
 
-Created in: 2026-04-30 23:03:09.957092
+Created in: 2026-05-25 13:21:26.573712
 
 Number of channels: 3
 
