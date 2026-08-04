@@ -1,15 +1,19 @@
 function results = twoStageMethod(...
     controller , fir_np, np_CL , np_OL,...
     Ts , opts1,  ...
-    sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T,...
-    n_splits)
+    sv2_acq, x_drv_T_0, time_drv_0, time_acq, x_acq_T, ...
+   correlations)
 
 tfest_opt_CL = tfestOptions('EnforceStability',1);
 
 [x_drv_T_0_cut , time_acq_aligned] = alignTimeVectorEnds(time_drv_0 , x_drv_T_0, time_acq , Ts);
 
+if nargin < 12 || isempty(correlations)
+    correlations = 0;    % or whatever default you want
+end
+
 %this is not working properly because of the shifting of acq signals
-%because of the missing data dut to late start acquisition
+%because of the missing data due to late starting of acquisition
 % if nargin < 12   % cut not provided
 %     n_splits = 1;
 % end
@@ -62,17 +66,17 @@ u_r_est_nonLin = sim(S_est_nonLin , x_drv_T_0 );
 
 u_r_est_to_x_acq = iddata( x_acq_T , u_r_est_nonLin(end - length(time_acq) + 1 : end) ,Ts);
 u_r_est_to_x_acq_detrended = detrend(u_r_est_to_x_acq);
-OL_est_nonLin = tfest( u_r_est_to_x_acq_detrended , np_OL ,'Ts',Ts,'Feedthrough',true)
-CL_from_OL_est_nonLin= feedback(controller*OL_est_nonLin, 1);
+OL_two_stage = tfest( u_r_est_to_x_acq_detrended , np_OL ,'Ts',Ts)
+CL_from_OL_two_stage= feedback(controller*OL_two_stage, 1);
 
 sv_to_acq = iddata(  x_acq_T ,sv2_acq ,Ts);
 sv_to_acq_detrended = detrend(sv_to_acq);
-OL_direct = tfest( sv_to_acq_detrended , np_OL , 'Ts',Ts,  'Feedthrough',true);
+OL_direct = tfest( sv_to_acq_detrended , np_OL , 'Ts',Ts);
 CL_from_OL_direct = feedback(controller*OL_direct, 1);
 
 drv_to_acq = iddata(  x_acq_T ,x_drv_T_0_cut ,Ts);
 drv_to_acq_detrended = detrend(drv_to_acq);
-CL = tfest(drv_to_acq_detrended , np_CL ,'Ts',Ts, 'Feedthrough',true,tfest_opt_CL);
+CL = tfest(drv_to_acq_detrended , np_CL ,'Ts',Ts, tfest_opt_CL);
 OL_indirect = CL/(controller*(1-CL));
 
 % figure;hold on;
@@ -82,22 +86,24 @@ OL_indirect = CL/(controller*(1-CL));
 % %bodeplot(OL_est , 'g--', opts1);
 % bodeplot( OL_direct , 'b--' , opts1);
 % bodeplot( OL_indirect , 'm--' , opts1);
-% bodeplot(CL_from_OL_est_nonLin , 'r-', opts1);
-% bodeplot(OL_est_nonLin , 'r--', opts1);
+% bodeplot(CL_from_OL_two_stage , 'r-', opts1);
+% bodeplot(OL_two_stage , 'r--', opts1);
 % legend; grid on;
 
-% %RESIDUALS
-% opt_resid = residOptions('MaxLag',25);
-% figure;
-% resid(sv_to_acq_detrended,OL_direct,OL_indirect,OL_est_nonLin,opt_resid);%,OL_direct,OL_indirect
-% legend; grid on;
+if correlations == true
+    %RESIDUALS
+    opt_resid = residOptions('MaxLag',25);
+    figure;
+    resid(sv_to_acq_detrended,OL_direct,OL_indirect,OL_two_stage,opt_resid);%,OL_direct,OL_indirect
+    legend; grid on;
+end
 
 % figure;
-% resid(iddata(x_drv_T_0_cut,x_acq_T,Ts),CL,CL_from_OL_direct,CL_from_OL_est_nonLin);%,OL_direct,OL_indirect
+% resid(iddata(x_drv_T_0_cut,x_acq_T,Ts),CL,CL_from_OL_direct,CL_from_OL_two_stage);%,OL_direct,OL_indirect
 % legend; grid on;
 % %RESIDUALS (BUT MANUALLY)(JUST MAKING SURE)
-% x_OL_est_nonLin = lsim(OL_est_nonLin , sv2_acq,time_acq_aligned);
-% E =  x_OL_est_nonLin - x_acq_T;
+% x_OL_two_stage = lsim(OL_two_stage , sv2_acq,time_acq_aligned);
+% E =  x_OL_two_stage - x_acq_T;
 % figure; autocorr(E);
 % R_XE = xcorr(E,sv2_acq, 'coeff');
 % figure, plot(-time_acq_aligned(end) : Ts : time_acq_aligned(end), R_XE)
@@ -113,8 +119,8 @@ results.OL_direct = OL_direct;
 results.CL_from_OL_direct = CL_from_OL_direct;
 results.CL = CL;
 results.OL_indirect = OL_indirect;
-results.OL_est_nonLin = OL_est_nonLin;
-results.CL_from_OL_est_nonLin = CL_from_OL_est_nonLin;
+results.OL_two_stage = OL_two_stage;
+results.CL_from_OL_two_stage = CL_from_OL_two_stage;
 
 
 end

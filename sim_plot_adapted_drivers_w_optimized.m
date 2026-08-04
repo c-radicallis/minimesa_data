@@ -78,8 +78,8 @@ end
 %% ── Run the optimisation of Q
 Q1_0 = 4.5183e+15; Q2_0 = 3.4447e-01; Q3_0 = 4.0431e+03; Q4_0 = 5.1600e-02; Qi_0 =3.1503e+16; % Tolmezo % for Kp = 10 
 %Q1_0 = 1;  Q2_0 = 1;  Q3_0 = 1;  Q4_0 = 1;  Qi_0 = 10;
-
 log_q0 = log([Q1_0, Q2_0, Q3_0, Q4_0, Qi_0]);
+%%
 outputFcn = @(~, ov, state) recordAndStop(ov, state);
 opts_opt = optimset('Display',     'iter', ...
                     'TolX',        1e-3,  ...%                    'TolX',        1e-3,  ...
@@ -97,7 +97,7 @@ fprintf('=== Starting Q optimisation ===\n');
 
 %% ── Recover & display best weights ───────────────────────────────────────
 %load('C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\optimized_benchmark_results\Elcentro\q_best_Elcentro.mat') 
-q_best = exp(log_q_best); 
+q_best = exp(log_q0);%log_q_best); 
 Q1_best = q_best(1); Q2_best = q_best(2); Q3_best = q_best(3); Q4_best = q_best(4); Qi_best = q_best(5);
 fprintf('\n=== Optimisation complete ===\n');
 fprintf('Best Q weights:\n');

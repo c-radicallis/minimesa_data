@@ -1,6 +1,8 @@
 clear;clc;close all; setappdata(0, 'AutoStagger_LRDown_Last', []);   % ensure first figure starts at top-left
+%%
 set(0, 'DefaultFigureCreateFcn', @autoStagger_LRDown_relSize);
 addpath 'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\uniaxial_table_model'
+addpath 'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\minimesa_data\functions_matlab\'
 func_folder  =  'C:\Users\afons\OneDrive - Universidade de Lisboa\Controlo de Plataforma Sismica\uniaxial_table_model\Adapting_Driver_Signal\';
 addpath(func_folder);
 Ts = 0.005;
@@ -114,6 +116,7 @@ LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
 x_acq_T = x_acq_T*1e3;
 sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
 
+%%
 data12_OL = iddata(x_acq_T, sv2_acq, Ts);
 n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
 data12_CL =  iddata(x_acq_T(1:nmin), x_drv_T_0(1:nmin), Ts);
@@ -174,7 +177,10 @@ true_tune_13 = pid(10,0,0,0.0019455 , Ts_fpga  );
 LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
 x_acq_T = x_acq_T*1e3;
 sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
-
+% nx = 2:6;
+% sys = n4sid(sv2_acq,x_acq_T,nx,'Ts',Ts);
+% sys = n4sid(x_drv_T_0,x_acq_T,nx,'Ts',Ts);
+%%
 data13_OL = iddata(x_acq_T, sv2_acq, Ts);
 n1 = numel(x_drv_T_0);n2 = numel(x_acq_T);nmin = min(n1, n2);
 data13_CL =  iddata(x_acq_T(1:nmin), x_drv_T_0(1:nmin), Ts);
@@ -227,6 +233,10 @@ LTF_to_TXT_then_load_wSV( file , folder_0711 , 'OutputFolder', folder_0711);
 x_acq_T = x_acq_T*1e3;
 sv2_acq = bits2mm(-sv2_acq); %output is inverted because the wiring is fliped
 
+% nx = 2:6;
+% sys = n4sid(sv2_acq,x_acq_T,nx,'Ts',Ts);
+
+%%
 np_OL = 4; %number of poles for tf est
 
 data14_OL = iddata(x_acq_T, sv2_acq, Ts);
@@ -249,23 +259,23 @@ spa_OL_from_Tune_and_CL_spa =  spa_data14_CL_full/(d2d(true_tune_14,Ts)*(1-spa_d
 spa_CL_from_Tune_and_OL_spa = feedback(d2d(true_tune_14,Ts)*spa_data14_OL_full, 1);
 CL_from_Tune_and_OL_tfest = feedback(true_tune_14*d2d(tfest_spa_data14_OL,Ts_fpga), 1);
 
-% Open Loop
+%% Open Loop
 fig14 = figure(14);ax14 = axes(fig14); hold(ax14, 'on'); title('Open loop');
 bodeplot(spa_data14_OL_full,"k.");
-bodeplot(spa_data14_OL   ,opts1,"r*");%showConfidence(h)
+% bodeplot(spa_data14_OL   ,opts1,"r*");%showConfidence(h)
 bodeplot(tfest_spa_data14_OL   ,opts1,"b");%showConfidence(h);
-bodeplot(spa_OL_from_Tune_and_CL_spa   ,opts1,"g*");
-legend("Blackman-Tukey spectral analysis","subset of data to fit model","estimated TF","OL from tune and CL"); grid on;
+% bodeplot(spa_OL_from_Tune_and_CL_spa   ,opts1,"g*");
+% legend("Blackman-Tukey spectral analysis","subset of data to fit model","estimated TF","OL from tune and CL"); grid on;
 
-% Closed Loop
+%% Closed Loop
 fig24 = figure(24);ax24 = axes(fig24); hold(ax24, 'on'); title('Closed loop'); 
 bodeplot(spa_data14_CL_full,"k.");
-bodeplot(spa_data14_CL   ,opts1,"r*");% showConfidence(h)
+% bodeplot(spa_data14_CL   ,opts1,"r*");% showConfidence(h)
 bodeplot(tfest_spa_data14_CL   ,opts1,"b");% showConfidence(h);
-bodeplot(spa_CL_from_Tune_and_OL_spa   ,opts1,"g*"); 
-bodeplot(CL_from_Tune_and_OL_tfest   ,opts1,"g-");
+% bodeplot(spa_CL_from_Tune_and_OL_spa   ,opts1,"g*"); 
+% bodeplot(CL_from_Tune_and_OL_tfest   ,opts1,"g-");
 bodeplot(ssest_data14_CL,opts1,"y-");
-legend("Blackman-Tukey spectral analysis","subset of data to fit model","estimated TF","CL from tune and OL spa","CL from tune and OL tfest"); grid on;
+% legend("Blackman-Tukey spectral analysis","subset of data to fit model","estimated TF","CL from tune and OL spa","CL from tune and OL tfest"); grid on;
 
 % %
 % Ymodel = lsim(tfest_spa_data14_OL,sv2_acq,time_acq); 
