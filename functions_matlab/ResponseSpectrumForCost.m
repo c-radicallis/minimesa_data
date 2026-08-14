@@ -1,4 +1,5 @@
 function picos_ddx_m = ResponseSpectrumForCost( ref_accel)
+    Ts = 0.005;
     m    = 1;
     zeta = 0.05;
 
@@ -14,7 +15,7 @@ function picos_ddx_m = ResponseSpectrumForCost( ref_accel)
         c = zeta * 2 * m * 2*pi*f_vector(i);
 
         % Discretize and use filter instead of lsim
-        sys_d    = c2d(tf([c k], [m c k]), 0.005, 'zoh');
+        sys_d    = c2d(tf([c k], [m c k]), Ts , 'zoh');
         [b, a]   = tfdata(sys_d, 'v');
         ddx_m    = filter(b, a, ref_accel);
 
